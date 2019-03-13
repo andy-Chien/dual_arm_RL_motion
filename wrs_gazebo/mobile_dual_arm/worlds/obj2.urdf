@@ -1,0 +1,203 @@
+<?xml version="1.0"?>
+<robot
+  name="obj2">
+  <link
+    name="lunchbox">
+    <inertial>
+      <origin
+        xyz="8.6736E-18 0 -0.025"
+        rpy="0 0 0" />
+      <mass
+        value="0.535" />
+      <inertia
+        ixx="0.00371"
+        ixy="0"
+        ixz="0"
+        iyy="0.0021609"
+        iyz="0"
+        izz="0.0048427" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://obj2/meshes/lunchbox.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://obj2/meshes/lunchbox.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="riceball">
+    <inertial>
+      <origin
+        xyz="0.0175 0 0.00014145"
+        rpy="0 0 0" />
+      <mass
+        value="0.11" />
+      <inertia
+        ixx="7.011E-05"
+        ixy="0"
+        ixz="2.7E-07"
+        iyy="8.42E-05"
+        iyz="0"
+        izz="7.871E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://obj2/meshes/riceball.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://obj2/meshes/riceball.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="a"
+    type="fixed">
+    <origin
+      xyz="0.182552595103116 -0.176161371948745 0.0199021565213709"
+      rpy="2.36553201269565E-17 1.93745035311216E-33 1.41931920761739E-16" />
+    <parent
+      link="lunchbox" />
+    <child
+      link="riceball" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+  <link
+    name="drink">
+    <inertial>
+      <origin
+        xyz="2.4941E-08 -0.0019956 -0.050688"
+        rpy="0 0 0" />
+      <mass
+        value="0.26" />
+      <inertia
+        ixx="0.00109"
+        ixy="0"
+        ixz="0"
+        iyy="0.0010888"
+        iyz="2.589E-05"
+        izz="0.00027699" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://obj2/meshes/drink.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://obj2/meshes/drink.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="b"
+    type="fixed">
+    <origin
+      xyz="0.00631524424596615 -0.288839348928517 0.0700000000819564"
+      rpy="0 0 0.236090111934853" />
+    <parent
+      link="lunchbox" />
+    <child
+      link="drink" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+  <link
+    name="sandwich">
+    <inertial>
+      <origin
+        xyz="0.0031696 0.016173 -0.019252"
+        rpy="0 0 0" />
+      <mass
+        value="0.105" />
+      <inertia
+        ixx="0.00028292"
+        ixy="5.18E-06"
+        ixz="-8.1E-06"
+        iyy="0.00025419"
+        iyz="1.645E-05"
+        izz="0.00015442" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://obj2/meshes/sandwich.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://obj2/meshes/sandwich.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="c"
+    type="fixed">
+    <origin
+      xyz="0.0395148801781737 -0.527045510687948 0.111072045951562"
+      rpy="0 0 0.39309481042652" />
+    <parent
+      link="lunchbox" />
+    <child
+      link="sandwich" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+</robot>

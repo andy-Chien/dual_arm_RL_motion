@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- ros_control plugin -->
+  <!--gazebo>
+    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+      <robotNamespace>/urdf_0129</robotNamespace>
+      <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
+    </plugin>
+  </gazebo-->
+
+  <xacro:macro name="suction_gazebo" params="side">
+
+  <!-- Link1 -->
+  <gazebo reference="${side}_tool_link">
+    <mu1>0.2</mu1>
+    <mu2>0.2</mu2>
+    <material>Gazebo/white</material>
+    <selfCollide>false</selfCollide>
+  </gazebo>
+
+  <gazebo reference="${side}_tool_end_Link">
+    <mu1>0.2</mu1>
+    <mu2>0.2</mu2>
+    <material>Gazebo/grey</material>
+    <selfCollide>false</selfCollide>
+  </gazebo>
+
+  </xacro:macro>
+
+</robot>

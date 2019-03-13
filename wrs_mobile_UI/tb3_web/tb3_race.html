@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" name="author" content="Minda">
+    <title>tb3_race</title>
+
+    <!-- css lib -->
+    <link rel="stylesheet" href="font-awesome-4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="bootstrap-3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="jquery-ui-1.12.1/jquery-ui.css">
+    <!-- js lib -->
+    <script src="jquery-ui-1.12.1/external/jquery/jquery.js"></script>
+    <script src="jquery-ui-1.12.1/jquery-ui.min.js"></script>
+    <script src="bootstrap-3.3.7/js/bootstrap.min.js"></script>
+    <!-- Ros lib -->
+    <script src="js/ros/eventemitter2.min.js"></script>
+    <script src="js/ros/roslib.js"></script>
+
+    <!-- =========================== Custom ============================ -->
+    <!-- css lib -->
+    <link rel="stylesheet" href="css/form.css">
+
+    <!-- js lib -->
+    <script src="js/variable.js"></script>
+</head>
+
+<body class="Overflow" onload="Init()">
+    <div class="modal-dialog Interface-Background Interface-Size Overflow">
+        <div class="modal-content">
+            <div class="modal-header">
+                <table class="Table-W100">
+                    <tr>
+                        <td>
+                            <h2 class="modal-title" id="Interface-Title">Turtlebot_Race</h2>
+                        </td>
+                        <td>
+                            <div id="WifiButton">
+                                <i class="fa fa-3x fa-wifi" id="WifiButton-style" aria-hidden="true" data-toggle="modal" data-target="#connect_Robot"></i>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="modal-body Interface-BodySize">
+                <div id="CameraSwitch">
+                    <table class="Table-W100 Table-H90 Table-Center">
+                        <tr>
+                            <td>
+                                <div>
+                                    <input type="button" class="Button-style" id="Camera-Src" name="CameraElement" value="src" onclick="Open_Camera(this.value)" />
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div>
+                                    <input type="button" class="Button-style" id="Camera-Mask" name="CameraElement" value="mask" onclick="Open_Camera(this.value)" />
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div>
+                                    <input type="checkbox" id="Camera-View" name="CameraElement" />
+                                    <label id="Camera-View" for="Camera-View">View</label>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="form-group" align="center" id="View-Window">
+                    <img id="player" src="img/offline.png">
+                </div>
+                <div class="form-group" align="center" id="Param-Window">
+                    <table class="Table-W100 Table-Center">
+                        <tr>
+                            <td>
+                                <div class="form-group" align="center" id="Set-Param">
+                                    <!-- Set Param Ul -->
+                                    <ul id="Set-Param-ul" class="nav nav-tabs">
+                                        <li class="active dropdown">
+                                            <a href="#" id="RobotTabDrop" class="dropdown-toggle" data-toggle="dropdown">Robot 
+                                            <b class="caret"></b>
+                                        </a>
+                                            <ul class="dropdown-menu" role="menu" aria-labelledby="RobotTabDrop">
+                                                <li><a class="active" href="#Robot-Param" tabindex="-1" data-toggle="tab">Param</a></li>
+                                                <li><a href="#Robot-Strategy" tabindex="-1" data-toggle="tab">Strategy</a></li>
+                                            </ul>
+                                        </li>
+                                        <li class="active dropdown">
+                                            <a href="#" id="VisionTabDrop" class="dropdown-toggle" data-toggle="dropdown">Vision 
+                                                <b class="caret"></b>
+                                            </a>
+                                            <ul class="dropdown-menu" role="menu" aria-labelledby="RobotTabDrop">
+                                                <li><a href="#Vision-HSV" tabindex="-1" data-toggle="tab">HSV</a></li>
+                                                <li><a href="#Vision-Param" tabindex="-1" data-toggle="tab">Param</a></li>
+                                            </ul>
+                                        </li>
+                                    </ul>
+                                    <!-- Set Param Content  -->
+                                    <div id="Set-Param-Content" class="tab-content">
+                                        <div class="tab-pane fade in active" id="Robot-Param">
+                                            <p>fuck</p>
+                                        </div>
+                                        <div class="tab-pane fade" id="Robot-Strategy">
+                                            <p>fuck</p>
+                                        </div>
+                                        <div class="tab-pane fade" id="Vision-HSV">
+                                            <table class="Table-W100 Table-Center Table-H90">
+                                                <tr>
+                                                    <td class="Td-W10">
+                                                        <label>Hmin</label>
+                                                    </td>
+                                                    <td class="Td-W70">
+                                                        <input id="slider_Hue_Bar_min" class="HSV-silder" name="HSVElement" type="range" min="0" max="255" oninput="showLabel(this.value, 'HSVLabelElement',0);Save_HSV()"></input>
+                                                    </td>
+                                                    <td class="Td-W20">
+                                                        <label name="HSVLabelElement">255</label>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="Td-W10">
+                                                        <label>Hmax</label>
+                                                    </td>
+                                                    <td class="Td-W70">
+                                                        <input id="slider_Hue_Bar_max" class="HSV-silder" name="HSVElement" type="range" min="0" max="255" oninput="showLabel(this.value, 'HSVLabelElement',1);Save_HSV()"></input>
+                                                    </td>
+                                                    <td class="Td-W20">
+                                                        <label name="HSVLabelElement">255</label>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="Td-W10">
+                                                        <label>Smin</label>
+                                                    </td>
+                                                    <td class="Td-W70">
+                                                        <input id="slider_Sat_Bar_min" class="HSV-silder" name="HSVElement" type="range" min="0" max="255" oninput="showLabel(this.value, 'HSVLabelElement',2);Save_HSV()"></input>
+                                                    </td>
+                                                    <td class="Td-W20">
+                                                        <label name="HSVLabelElement">255</label>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="Td-W10">
+                                                        <label>Smax</label>
+                                                    </td>
+                                                    <td class="Td-W70">
+                                                        <input id="slider_Sat_Bar_max" class="HSV-silder" name="HSVElement" type="range" min="0" max="255" oninput="showLabel(this.value, 'HSVLabelElement',3);Save_HSV()"></input>
+                                                    </td>
+                                                    <td class="Td-W20">
+                                                        <label name="HSVLabelElement">255</label>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="Td-W10">
+                                                        <label>Vmin</label>
+                                                    </td>
+                                                    <td class="Td-W70">
+                                                        <input id="slider_Val_Bar_min" class="HSV-silder" name="HSVElement" type="range" min="0" max="255" oninput="showLabel(this.value, 'HSVLabelElement',4);Save_HSV()"></input>
+                                                    </td>
+                                                    <td class="Td-W20">
+                                                        <label name="HSVLabelElement">255</label>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="Td-W10">
+                                                        <label>Vmax</label>
+                                                    </td>
+                                                    <td class="Td-W70">
+                                                        <input id="slider_Val_Bar_max" class="HSV-silder" name="HSVElement" type="range" min="0" max="255" oninput="showLabel(this.value, 'HSVLabelElement',5);Save_HSV()"></input>
+                                                    </td>
+                                                    <td class="Td-W20">
+                                                        <label name="HSVLabelElement">255</label>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                            <table class="Table-W100 Table-Center Table-H10">
+                                                <tr>
+                                                    <td>
+                                                        <select autocomplete="off" id="HSVSelect" onchange="Change_HSVmode()">
+                                                        <option value ="0">Red</option>
+                                                        <option value ="1">Blue</option>
+                                                        <option value ="2">Yellow</option>
+                                                        <option value ="3">White</option>
+                                                        <option value ="4">Black</option>
+                                                    </select>
+                                                    </td>
+                                                    <td>
+                                                        <button id="HSV-Sent" onclick="Save_HSV()">sent</button>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                        <div class="tab-pane fade" id="Vision-Param">
+                                            <table class="Table-W100 Table-H90 Table-Center">
+                                                <tr>
+                                                    <td class="Td-W10">
+                                                        <label>Center</label>
+                                                    </td>
+                                                    <td class="Td-W70">
+                                                        <input id="slider_Center" name="VisionParamElement" type="range" min="-200" max="200" oninput="showLabel(this.value, 'VisionParamLabelElement',0)"></input>
+                                                    </td>
+                                                    <td class="Td-W20">
+                                                        <label name="VisionParamLabelElement">200</label>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="Td-W10">
+                                                        <label>X</label>
+                                                    </td>
+                                                    <td class="Td-W70">
+                                                        <input id="slider_X" name="VisionParamElement" type="range" min="0" max="300" oninput="showLabel(this.value, 'VisionParamLabelElement',1)"></input>
+                                                    </td>
+                                                    <td class="Td-W20">
+                                                        <label name="VisionParamLabelElement">300</label>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="Td-W10">
+                                                        <label>Angle</label>
+                                                    </td>
+                                                    <td class="Td-W70">
+                                                        <input id="slider_Angle" name="VisionParamElement" type="range" min="0" max="300" oninput="showLabel(this.value, 'VisionParamLabelElement',2)"></input>
+                                                    </td>
+                                                    <td class="Td-W20">
+                                                        <label name="VisionParamLabelElement">300</label>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="Td-W10">
+                                                        <label>Height</label>
+                                                    </td>
+                                                    <td class="Td-W70">
+                                                        <input id="slider_Height" name="VisionParamElement" type="range" min="0" max="100" oninput="showLabel(this.value, 'VisionParamLabelElement',3)"></input>
+                                                    </td>
+                                                    <td class="Td-W20">
+                                                        <label name="VisionParamLabelElement">100</label>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                            <table class="Table-W100 Table-Center Table-H10">
+                                                <tr>
+                                                    <td>
+                                                        <button onclick="Save_VisionParam()">sent</button>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="form-group" align="center" id="Display">
+
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Wifi Setting-->
+    <div class="modal fade Interface-Background" id="connect_Robot" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-sm">
+            <div class="WifiContent-style">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">Connect To Robot</h4>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="form-group">
+                            <label for="RobotIPDATA" class="control-label">Robot_IP:</label>
+                            <input name="RobotIPDATA" type="text" class="form-control" id="RobotIP" value=IP.textContent>
+                        </div>
+                        <div class="form-group">
+                            <label for="RobotHostDATA" class="control-label">Robot_Host:</label>
+                            <input name="RobotHostDATA" type="text" class="form-control" id="RobotHost" value=Host.textContent>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal" onclick="ros.close();">Close</button>
+                    <button type="button" class="btn btn-primary" id="send-message" onclick="RobotConnect();history.go(0);">Connect</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+<footer>
+    <script src="js/slider/SliderControl.js"></script>
+    <script src="js/init.js"></script>
+
+    <!-- ros lib -->
+    <script src="js/ros/RobotConnect.js"></script>
+    <script src="js/ros/Rostopic.js"></script>
+    <script src="js/ros/RosParameter.js"></script>
+    <script src="js/ros/video.js"></script>
+</footer>
+
+</html>

@@ -1,0 +1,204 @@
+.Overflow {
+    /*  margin: 0;
+    padding: 0;
+    /*-moz-background-size: cover;*/
+    /*    background-size: 40%;
+    height: 1080px;
+    width: auto;*/
+    overflow-y: hidden;
+    overflow-x: hidden;
+}
+
+.Table-W100 {
+    width: 100%;
+}
+
+.Table-H90 {
+    height: 90%;
+}
+
+.Table-H10 {
+    height: 10%;
+}
+
+.Table-Center {
+    text-align: center;
+}
+
+.Td-colspan2 {
+    column-span: 2;
+}
+
+.Td-W70 {
+    width: 70%;
+}
+
+.Td-W20 {
+    width: 15%;
+}
+
+.Td-W10 {
+    width: 15%;
+}
+
+
+/*===========================================*/
+
+
+/* Interface form*/
+
+.Interface-Background {
+    background-color: rgba(255, 255, 255, 0.3);
+    background-size: cover;
+}
+
+.Interface-Size {
+    position: relative;
+    height: 1000px;
+    width: 800px;
+}
+
+.Interface-BodySize {
+    height: 850px;
+}
+
+
+/*===========================================*/
+
+
+/* Interface title */
+
+#WifiButton {
+    position: relative;
+    top: 20%;
+    text-align: center;
+}
+
+#WifiButton-style {
+    color: rgba(255, 0, 0, 1);
+    background-color: #67c7ef;
+    border-radius: 20px;
+    border: 1px solid rgba(0, 0, 0, .2);
+}
+
+
+/*--------------------------------------------*/
+
+
+/* wifi interface */
+
+.WifiContent-style {
+    position: relative;
+    background-color: #FFFFFF;
+    -webkit-background-clip: padding-box;
+    background-clip: padding-box;
+    border: 1px solid #999;
+    /* border: 1px solid rgba(0, 0, 0, .2); */
+    border-radius: 6px;
+    outline: 0;
+    -webkit-box-shadow: 0 3px 9px rgba(0, 0, 0, .5);
+    box-shadow: 0 3px 9px rgba(0, 0, 0, .5);
+}
+
+
+/*===========================================*/
+
+
+/* Interface body */
+
+
+/* view Switch */
+
+#CameraSwitch {
+    position: relative;
+    /* top: 20%; */
+    left: -1%;
+    height: 100px;
+    width: 70px;
+    /* background-color: rgba(255, 0, 0); */
+}
+
+.Button-style {
+    height: 30%;
+    width: 100%;
+}
+
+
+/*--------------------------------------------*/
+
+
+/* view window */
+
+#View-Window {
+    position: relative;
+    top: -12.5%;
+    left: 10%;
+    height: 480px;
+    width: 600px;
+    background-color: rgba(0, 0, 0);
+}
+
+#player {
+    height: 100%;
+    width: 100%;
+}
+
+
+/*--------------------------------------------*/
+
+#Param-Window {
+    position: relative;
+    bottom: 12.5%;
+    left: 0%;
+}
+
+
+/* Set Param */
+
+#Set-Param {
+    position: relative;
+    bottom: -1%;
+    left: 7%;
+    height: 300px;
+    width: 300px;
+    border: 1px solid rgba(0, 0, 0, 1);
+    /* background-color: rgba(255, 255, 0, 1); */
+}
+
+
+/*--------------------------------------------*/
+
+
+/* HSV */
+
+#Vision-HSV {
+    height: 250px;
+    width: 100%;
+}
+
+
+/*--------------------------------------------*/
+
+
+/* Vision Param */
+
+#Vision-Param {
+    height: 250px;
+    width: 100%;
+}
+
+
+/*===========================================*/
+
+#Display {
+    position: relative;
+    bottom: 0%;
+    left: 7%;
+    height: 300px;
+    width: 300px;
+    border: 1px solid rgba(0, 0, 0, 1);
+    /* background-color: rgba(255, 255, 0, 1); */
+}
+
+
+/*===========================================*/

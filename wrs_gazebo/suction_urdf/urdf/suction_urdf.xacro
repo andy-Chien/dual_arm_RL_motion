@@ -1,0 +1,346 @@
+<?xml version="1.0"?>
+
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:include filename="$(find suction_urdf)/urdf/suction.transmission.xacro" />
+  <xacro:include filename="$(find suction_urdf)/urdf/suction.gazebo.xacro" />
+
+  <xacro:macro name="suction" params="side parent *origin">  
+    <link
+      name="${side}_tool_link">
+      <inertial>
+        <origin
+          xyz="-0.003041 0.0027723 0.043545"
+          rpy="0 0 0" />
+        <mass
+          value="0.11123" />
+        <inertia
+          ixx="8.4875E-05"
+          ixy="4.1003E-07"
+          ixz="4.0241E-06"
+          iyy="0.00010438"
+          iyz="6.5325E-07"
+          izz="4.7593E-05" />
+      </inertial>
+      <visual>
+        <origin
+          xyz="0 0 0"
+          rpy="0 0 0" />
+        <geometry>
+          <mesh
+            filename="package://suction_urdf/meshes/tool_link.STL" />
+        </geometry>
+        <material
+          name="">
+          <color
+            rgba="1 1 1 1" />
+        </material>
+      </visual>
+      <collision>
+        <origin
+          xyz="0 0 0"
+          rpy="0 0 0" />
+        <geometry>
+          <mesh
+            filename="package://suction_urdf/meshes/tool_link.STL" />
+        </geometry>
+      </collision>
+    </link>
+    <link
+      name="${side}_tool_end_Link">
+      <inertial>
+        <origin
+          xyz="9.909E-05 0.0039906 0.025651"
+          rpy="0 0 0" />
+        <mass
+          value="0.033438" />
+        <inertia
+          ixx="2.0813E-05"
+          ixy="1.7379E-08"
+          ixz="9.2823E-08"
+          iyy="1.8619E-05"
+          iyz="4.6462E-06"
+          izz="5.6779E-06" />
+      </inertial>
+      <visual>
+        <origin
+          xyz="0 0 0"
+          rpy="0 0 0" />
+        <geometry>
+          <mesh
+            filename="package://suction_urdf/meshes/tool_end_Link.STL" />
+        </geometry>
+        <material
+          name="">
+          <color
+            rgba="0.79216 0.81961 0.93333 1" />
+        </material>
+      </visual>
+      <collision>
+        <origin
+          xyz="0 0 0"
+          rpy="0 0 0" />
+        <geometry>
+          <mesh
+            filename="package://suction_urdf/meshes/tool_end_Link.STL" />
+        </geometry>
+      </collision>
+    </link>
+    <joint
+      name="${side}_tool_joint"
+      type="revolute">
+      <origin
+        xyz="0 0.002 0.1045"
+        rpy="-1.7985E-15 -2.9973E-16 1.1669E-16" />
+      <parent
+        link="${side}_tool_link" />
+      <child
+        link="${side}_tool_end_Link" />
+      <axis
+        xyz="0 1 0" />
+      <limit
+        lower="-3.14"
+	      upper="3.14"
+        effort="5"
+        velocity="0.5" />
+    </joint>
+
+    <link
+      name="${side}_end_Link1">
+      <gravity>0</gravity>
+      <inertial>
+        <origin
+          xyz="0 0 0"
+          rpy="0 0 0" />
+        <mass
+          value="0.0001" />
+        <inertia
+          ixx="2.0813E-05"
+          ixy="1.7379E-08"
+          ixz="9.2823E-08"
+          iyy="1.8619E-05"
+          iyz="4.6462E-06"
+          izz="5.6779E-06" />
+      </inertial>
+      <visual>
+        <origin
+          xyz="0 0 0"
+          rpy="0 0 0" />
+	<geometry>
+           <box size="0.01 0.01 0.01"/>
+        </geometry>
+        <material
+          name="transparent">
+          <color
+            rgba="0 0 0 0" />
+        </material>
+      </visual>
+    </link>
+    <joint name="${side}_end_joint1" type="revolute">
+	<origin
+        xyz="0 -0.001 0.06"
+        rpy="0 1.5708 0" />
+	<parent link="${side}_tool_end_Link"/>
+	<child link="${side}_end_Link1"/>
+        <axis
+            xyz="1 0 0" />
+        <limit
+            lower="0"
+	    upper="0"
+            effort="5"
+            velocity="5" />
+        <dynamics damping="0.0" friction="10"/>
+    </joint>
+
+    <link
+      name="${side}_end_Link2">
+      <gravity>0</gravity>
+      <inertial>
+        <origin
+          xyz="0 0 0"
+          rpy="0 0 0" />
+        <mass
+          value="0.0001" />
+        <inertia
+          ixx="2.0813E-05"
+          ixy="1.7379E-08"
+          ixz="9.2823E-08"
+          iyy="1.8619E-05"
+          iyz="4.6462E-06"
+          izz="5.6779E-06" />
+      </inertial>
+      <visual>
+        <origin
+          xyz="0 0 0"
+          rpy="0 0 0" />
+	<geometry>
+           <box size="0.01 0.01 0.01"/>
+        </geometry>
+        <material
+          name="transparent">
+          <color
+            rgba="0 0 0 0" />
+        </material>
+      </visual>
+    </link>
+    <joint name="${side}_end_joint2" type="revolute">
+	<origin
+        xyz="-0.0125 -0.001 0.06"
+        rpy="0 1.5708 0" />
+	<parent link="${side}_tool_end_Link"/>
+	<child link="${side}_end_Link2"/>
+        <axis
+            xyz="1 0 0" />
+        <limit
+            lower="0"
+	    upper="0"
+            effort="5"
+            velocity="5" />
+        <dynamics damping="0.0" friction="10"/>
+    </joint>
+
+    <link
+      name="${side}_end_Link3">
+      <gravity>0</gravity>
+      <inertial>
+        <origin
+          xyz="0 0 0"
+          rpy="0 0 0" />
+        <mass
+          value="0.0001" />
+        <inertia
+          ixx="2.0813E-05"
+          ixy="1.7379E-08"
+          ixz="9.2823E-08"
+          iyy="1.8619E-05"
+          iyz="4.6462E-06"
+          izz="5.6779E-06" />
+      </inertial>
+      <visual>
+        <origin
+          xyz="0 0 0"
+          rpy="0 0 0" />
+	<geometry>
+           <box size="0.01 0.01 0.01"/>
+        </geometry>
+        <material
+          name="transparent">
+          <color
+            rgba="0 0 0 0" />
+        </material>
+      </visual>
+    </link>
+    <joint name="${side}_end_joint3" type="revolute">
+	<origin
+        xyz="0.0125 -0.001 0.06"
+        rpy="0 1.5708 0" />
+	<parent link="${side}_tool_end_Link"/>
+	<child link="${side}_end_Link3"/>
+        <axis
+            xyz="1 0 0" />
+        <limit
+            lower="0"
+	    upper="0"
+            effort="5"
+            velocity="5" />
+        <dynamics damping="0.0" friction="10"/>
+    </joint>
+
+    <link
+      name="${side}_end_Link4">
+      <gravity>0</gravity>
+      <inertial>
+        <origin
+          xyz="0 0 0"
+          rpy="0 0 0" />
+        <mass
+          value="0.0001" />
+        <inertia
+          ixx="2.0813E-05"
+          ixy="1.7379E-08"
+          ixz="9.2823E-08"
+          iyy="1.8619E-05"
+          iyz="4.6462E-06"
+          izz="5.6779E-06" />
+      </inertial>
+      <visual>
+        <origin
+          xyz="0 0 0"
+          rpy="0 0 0" />
+	<geometry>
+           <box size="0.01 0.01 0.01"/>
+        </geometry>
+        <material
+          name="transparent">
+          <color
+            rgba="0 0 0 0" />
+        </material>
+      </visual>
+    </link>
+    <joint name="${side}_end_joint4" type="revolute">
+	<origin
+        xyz="0 -0.001 0.0475"
+        rpy="0 1.5708 0" />
+	<parent link="${side}_tool_end_Link"/>
+	<child link="${side}_end_Link4"/>
+        <axis
+            xyz="1 0 0" />
+        <limit
+            lower="0"
+	    upper="0"
+            effort="5"
+            velocity="5" />
+        <dynamics damping="0.0" friction="10"/>
+    </joint>
+
+    <link
+      name="${side}_end_Link5">
+      <gravity>0</gravity>
+      <inertial>
+        <origin
+          xyz="0 0 0"
+          rpy="0 0 0" />
+        <mass
+          value="0.0001" />
+        <inertia
+          ixx="2.0813E-05"
+          ixy="1.7379E-08"
+          ixz="9.2823E-08"
+          iyy="1.8619E-05"
+          iyz="4.6462E-06"
+          izz="5.6779E-06" />
+      </inertial>
+      <visual>
+        <origin
+          xyz="0 0 0"
+          rpy="0 0 0" />
+	<geometry>
+           <box size="0.01 0.01 0.01"/>
+        </geometry>
+        <material
+          name="transparent">
+          <color
+            rgba="0 0 0 0" />
+        </material>
+      </visual>
+    </link>
+    <joint name="${side}_end_joint5" type="revolute">
+	<origin
+        xyz="0 -0.001 0.0725"
+        rpy="0 1.5708 0" />
+	<parent link="${side}_tool_end_Link"/>
+	<child link="${side}_end_Link5"/>
+        <axis
+            xyz="1 0 0" />
+        <limit
+            lower="0"
+	    upper="0"
+            effort="5"
+            velocity="5" />
+        <dynamics damping="0.0" friction="10"/>
+    </joint>
+
+    <xacro:suction_transmission side="${side}" />
+    <xacro:suction_gazebo side="${side}" />
+  </xacro:macro>
+</robot>

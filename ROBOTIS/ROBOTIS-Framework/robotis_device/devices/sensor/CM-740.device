@@ -1,0 +1,25 @@
+[device info]
+model_name  = CM-740
+device_type = sensor
+
+[control table]
+# addr | item name                | length | access | memory |   min value   |  max value  | signed
+   0   | model_number             | 2      | R      | EEPROM | 0             | 65535       | N
+   2   | version_of_firmware      | 1      | R      | EEPROM | 0             | 254         | N
+   3   | ID                       | 1      | RW     | EEPROM | 0             | 252         | N
+   4   | baudrate                 | 1      | RW     | EEPROM | 0             | 252         | N
+   5   | return_delay_time        | 1      | RW     | EEPROM | 0             | 254         | N
+   16  | status_return_level      | 1      | RW     | EEPROM | 0             | 2           | N
+   24  | torque_enable            | 1      | RW     | RAM    | 0             | 1           | N
+   25  | LED                      | 1      | RW     | RAM    | 0             | 7           | N
+   26  | LED_5                    | 2      | RW     | RAM    | 0             | 32767       | N
+   28  | LED_6                    | 2      | RW     | RAM    | 0             | 32767       | N
+   30  | button                   | 1      | RW     | RAM    | 0             | 3           | N
+   38  | gyro_z                   | 2      | R      | RAM    | 0             | 1023        | N
+   40  | gyro_y                   | 2      | R      | RAM    | 0             | 1023        | N
+   42  | gyro_x                   | 2      | R      | RAM    | 0             | 1023        | N
+   44  | acc_x                    | 2      | R      | RAM    | 0             | 1023        | N
+   46  | acc_y                    | 2      | R      | RAM    | 0             | 1023        | N
+   48  | acc_z                    | 2      | R      | RAM    | 0             | 1023        | N
+   50  | present_voltage          | 1      | R      | RAM    | 50            | 250         | N
+   

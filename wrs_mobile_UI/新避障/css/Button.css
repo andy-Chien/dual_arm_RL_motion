@@ -1,0 +1,89 @@
+#StartButton {
+    background-image: none;
+    /*background-color: #99CCFF;*/
+    font-size: 17px;
+    color: #663D00;
+}
+
+#StartButton.ui-state-hover {
+    background-image: none;
+    /*background-color: #99CCFF;*/
+    font-size: 17px;
+    background-color: #FFF;
+}
+
+#StartButton.ui-state-active {
+    background-color: #FFCC00;
+    font-size: 17px;
+    color: #1A1A65;
+}
+
+
+/*==========================================================*/
+
+#StopButton {
+    background-image: none;
+    /*background-color: #99CCFF;*/
+    font-size: 17px;
+    color: #663D00;
+}
+
+#StopButton.ui-state-hover {
+    background-image: none;
+    /*background-color: #99CCFF;*/
+    font-size: 17px;
+    background-color: #FFF;
+}
+
+#StopButton.ui-state-active {
+    background-color: #FFCC00;
+    font-size: 17px;
+    color: #1A1A65;
+}
+
+
+/*==========================================================*/
+
+#KeyboardControl {
+    background-image: none;
+    /*background-color: #99CCFF;*/
+    font-size: 17px;
+    color: #663D00;
+}
+
+#KeyboardControl.ui-state-hover {
+    background-image: none;
+    /*background-color: #99CCFF;*/
+    font-size: 17px;
+    background-color: #FFF;
+}
+
+#KeyboardControl.ui-state-active {
+    background-color: #FFCC00;
+    font-size: 17px;
+    color: #1A1A65;
+}
+
+
+/*==========================================================*/
+
+
+/*#SafeSwitch {
+    background-image: none;
+    background-color: #99CCFF;
+    font-size: 17px;
+    color: #663D00;
+}
+
+#SafeSwitch.ui-state-hover {
+    background-image: none;
+    background-color: #99CCFF;
+    font-size: 17px;
+    background-color: #FFF;
+}
+
+#SafeSwitch.ui-state-active {
+    background-color: #FFCC00;
+    font-size: 17px;
+    color: #1A1A65;
+}*/

@@ -1,0 +1,23 @@
+#d {
+  height: 255px;
+}
+#d:after{
+  content:'';
+  display: inline-block;
+  height:255px;
+  width:px;
+}
+
+#d div {
+  display: inline-block;
+  width: 2px;
+  background: #a00;
+  margin: 0 0 0 1px;
+  vertical-align: bottom;
+}
+ul { 
+  list-style: none; 
+}
+#recordingslist audio { 
+  display: block; margin-bottom: 10px; 
+}

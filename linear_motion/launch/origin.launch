@@ -1,0 +1,12 @@
+<?xml version="1.0" ?>
+<launch>      
+    <!-- Manipulator Manager -->
+    <node pkg="linear_motion" type="linear_z" name="right" output="screen">
+        <param name="port_name"       value="/dev/port1" />
+    </node>
+
+    <node pkg="linear_motion" type="linear_z" name="left" output="screen">
+        <param name="port_name"       value="/dev/port2" />
+    </node>
+
+</launch>

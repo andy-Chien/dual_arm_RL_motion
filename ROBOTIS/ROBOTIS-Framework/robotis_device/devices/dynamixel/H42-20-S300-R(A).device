@@ -1,0 +1,92 @@
+[device info]
+model_name  = H42-20-S300-R(A)
+device_type = dynamixel
+
+[type info]
+torque_to_current_value_ratio   = 109.3747778
+velocity_to_value_ratio         = 954.93
+value_of_0_radian_position      = 0
+value_of_min_radian_position    = -303750
+value_of_max_radian_position    =  303750
+min_radian                      = -3.14159265
+max_radian                      =  3.14159265
+
+torque_enable_item_name         = torque_enable
+present_position_item_name      = present_position
+present_velocity_item_name      = present_velocity
+present_current_item_name       = present_current
+goal_position_item_name         = goal_position
+goal_velocity_item_name         = goal_velocity
+goal_current_item_name          = goal_current
+position_d_gain_item_name       = position_d_gain
+position_i_gain_item_name       = position_i_gain
+position_p_gain_item_name       = position_p_gain
+velocity_d_gain_item_name       = 
+velocity_i_gain_item_name       = velocity_i_gain
+velocity_p_gain_item_name       = velocity_p_gain
+
+[control table]
+# addr | item name                | length | access | memory |   min value   |  max value  | signed
+   0   | model_number             | 2      | R      | EEPROM | 0             | 65535       | N
+   6   | version_of_firmware      | 1      | R      | EEPROM | 0             | 254         | N
+   7   | ID                       | 1      | RW     | EEPROM | 0             | 252         | N
+   8   | baudrate                 | 1      | RW     | EEPROM | 0             | 8           | N
+   9   | return_delay_time        | 1      | RW     | EEPROM | 0             | 254         | N
+   10  | drive_mode               | 1      | RW     | EEPROM | 0             | 3           | N
+   11  | operating_mode           | 1      | RW     | EEPROM | 0             | 4           | N
+   12  | secondary_id             | 1      | RW     | EEPROM | 0             | 255         | N
+   13  | protocol_version         | 1      | RW     | EEPROM | 1             | 2           | N
+   20  | homing_offset            | 4      | RW     | EEPROM | -2147483648   | 2147483647  | Y
+   24  | moving_threshold         | 4      | RW     | EEPROM | 0             | 2147483647  | N
+   31  | max_temperature_limit    | 1      | RW     | EEPROM | 0             | 100         | N
+   32  | max_voltage_limit        | 2      | RW     | EEPROM | 0             | 400         | N
+   34  | min_voltage_limit        | 2      | RW     | EEPROM | 0             | 400         | N
+   36  | pwm_limit                | 2      | RW     | EEPROM | 0             | 885         | N
+   38  | current_limit            | 2      | RW     | EEPROM | 0             | 32767       | N
+   40  | acceleration_limit       | 4      | RW     | EEPROM | 0             | 2147483647  | N
+   44  | velocity_limit           | 4      | RW     | EEPROM | 0             | 2147483647  | N
+   48  | max_position_limit       | 4      | RW     | EEPROM | -2147483648   | 2147483647  | Y
+   52  | min_position_limit       | 4      | RW     | EEPROM | -2147483648   | 2147483647  | Y
+   56  | external_port_mod_1      | 1      | RW     | EEPROM | 0             | 3           | N
+   57  | external_port_mod_2      | 1      | RW     | EEPROM | 0             | 3           | N
+   58  | external_port_mod_3      | 1      | RW     | EEPROM | 0             | 3           | N
+   59  | external_port_mod_4      | 1      | RW     | EEPROM | 0             | 3           | N
+   63  | shutdown                 | 1      | RW     | EEPROM | 0             | 255         | N
+   168 | indirect_address_1       | 2      | RW     | EEPROM | 0             | 65535       | N
+   512 | torque_enable            | 1      | RW     | RAM    | 0             | 1           | N
+   513 | LED_RED                  | 1      | RW     | RAM    | 0             | 255         | N
+   514 | LED_GREEN                | 1      | RW     | RAM    | 0             | 255         | N
+   515 | LED_BLUE                 | 1      | RW     | RAM    | 0             | 255         | N
+   516 | status_return_level      | 1      | RW     | RAM    | 0             | 2           | N
+   517 | registerd_instruction    | 1      | R      | RAM    | 0             | 1           | N
+   518 | hardware_error_status    | 1      | R      | RAM    | 0             | 31          | N
+   524 | velocity_i_gain          | 2      | RW     | RAM    | 0             | 2047        | N
+   526 | velocity_p_gain          | 2      | RW     | RAM    | 0             | 2047        | N
+   528 | position_d_gain          | 2      | RW     | RAM    | 0             | 2047        | N
+   530 | position_i_gain          | 2      | RW     | RAM    | 0             | 2047        | N
+   532 | position_p_gain          | 2      | RW     | RAM    | 0             | 2047        | N
+   536 | feedforward_2nd_gain     | 2      | RW     | RAM    | 0             | 32767       | N
+   538 | feedforward_1st_gain     | 2      | RW     | RAM    | 0             | 32767       | N
+   546 | bus_watchdog             | 1      | RW     | RAM    | -1            | 127         | Y
+   548 | goal_pwm                 | 2      | RW     | RAM    | -2100         | 2100        | Y
+   550 | goal_current             | 2      | RW     | RAM    | -32768        | 32767       | Y
+   552 | goal_velocity            | 4      | RW     | RAM    | -2147483648   | 2147483647  | Y
+   556 | profile_acceleration     | 4      | RW     | RAM    | 0             | 32767       | N
+   560 | profile_velocity         | 4      | RW     | RAM    | 0             | 1023        | N
+   564 | goal_position            | 4      | RW     | RAM    | -2147483648   | 2147483647  | Y
+   568 | realtime_tick            | 2      | R      | RAM    | 0             | 32767       | N
+   570 | moving                   | 1      | R      | RAM    | 0             | 1           | N
+   571 | moving_status            | 1      | R      | RAM    | 0             | 255         | N
+   572 | present_pwm              | 2      | R      | RAM    | -2100         | 2100        | Y
+   574 | present_current          | 2      | R      | RAM    | -32768        | 32767       | Y
+   576 | present_velocity         | 4      | R      | RAM    | -2147483648   | 2147483647  | Y
+   580 | present_position         | 4      | R      | RAM    | -2147483648   | 2147483647  | Y
+   584 | velocity_trajectory      | 4      | R      | RAM    | 0             | 1023        | N
+   588 | position_trajectory      | 4      | R      | RAM    | 0             | 4095        | N
+   592 | present_voltage          | 2      | R      | RAM    | 0             | 500         | N
+   594 | present_temperature      | 1      | R      | RAM    | 0             | 200         | N
+   600 | external_port_data_1     | 2      | RW     | RAM    | 0             | 4095        | N
+   602 | external_port_data_2     | 2      | RW     | RAM    | 0             | 4095        | N
+   604 | external_port_data_3     | 2      | RW     | RAM    | 0             | 4095        | N
+   606 | external_port_data_4     | 2      | RW     | RAM    | 0             | 4095        | N
+   634 | indirect_data_1          | 1      | RW     | RAM    | 0             | 255         | N

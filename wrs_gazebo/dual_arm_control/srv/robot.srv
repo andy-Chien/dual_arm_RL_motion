@@ -1,0 +1,20 @@
+float32 slide_R
+float32 joint1_R
+float32 joint2_R
+float32 joint3_R
+float32 joint4_R
+float32 joint5_R
+float32 joint6_R
+float32 joint7_R
+float32 gripper_R
+float32 slide_L
+float32 joint1_L
+float32 joint2_L
+float32 joint3_L
+float32 joint4_L
+float32 joint5_L
+float32 joint6_L
+float32 joint7_L
+float32 gripper_L
+---
+string state

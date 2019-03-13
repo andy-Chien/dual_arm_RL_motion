@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>AvoidanceChallenge UI</title>
+    <!-- style -->
+    <link rel="shortcut icon" href="img/champion.ico" />
+    <link rel="stylesheet" href="font-awesome-4.3.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/form.css">
+    <link rel="stylesheet" href="css/Button.css">
+    <link rel="stylesheet" href="css/GroundImage.css">
+    <link rel="stylesheet" href="css/wifi.css">
+    <!-- jQuery UI-->
+    <link rel="stylesheet" href="jquery-ui-1.11.4/jquery-ui.css">
+    <!-- Javascript -->
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="jquery-ui-1.11.4/jquery-ui.js"></script>
+    <script src="jquery-ui-1.11.4/jquery-ui.min.js"></script>
+    <script src="js/eventemitter2.min.js"></script>
+    <script src="js/roslib.js"></script>
+    <script src="js/CloseReverseOut.js"></script>
+    <script src="js/CloseCenterRightButton.js"></script>
+    <script type="text/javascript" src="js/fa-keyboard-button.js"></script>
+
+
+</head>
+
+<body onload="joystick_main();OldGameState();SimulatorFalse();onloadAvoidGO()">
+    <div class="modal-dialog modalBackground">
+        <div class="modal-content modalCotentStyle">
+            <div class="modal-body modalBodyStyle">
+                <div class="form-group" id="AvoidanceBAR">
+                    <h2>Avoidance Challenge UI</h2>
+                    <!--Wifi-->
+                    <div id="AvoidanceWifi">
+                        <span><img id="Setting_Wifi" src="img/wifi.png"  data-toggle="modal" data-target="#connect_Robot"></img></span>
+                    </div>
+                    <div id="WifiLight">
+                        <span><img id="Light" src="img/light2.png"></span>
+                    </div>
+                </div>
+                <div class="form-group" align="center" id="BallGround">
+                    <img src="img/AvGround.jpg" id="GroundImage"></img>
+                    <div id="SwitchButttonDiv">
+                        <table>
+                            <tr>
+                                <td>
+                                    <div>
+                                        <input id="StartButton" type="radio" name="SwitchButton" onclick="ParamAvoidGo(1)" />
+                                        <label id="StartButton" for="StartButton">Start</label>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>
+                                        <input id="StopButton" type="radio" checked="checked" name="SwitchButton" onclick="StrategyStop();ParamAvoidGo(0)" />
+                                        <label id="StopButton" for="StopButton">Stop</label>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div id="ControlBarDiv">
+                        <table>
+                            <tr>
+                                <td>
+                                    <div>
+                                        <div class="icon" id="KeyboardControl" value="0">
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div id="SafeSwitchDiv">
+                                        <i class="fa fa-lock fa-3x SafeIcon" aria-hidden="true" id="SafeSwitch" value="0"></i>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+
+                    </div>
+                </div>
+                <div class="form-group" align="center" id="ParameterDiv">
+                    <table>
+                        <tr>
+                            <td>VTMax</td>
+                            <td>
+                                <input type="text" name="ParameterElement" value="20" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>VTmin</td>
+                            <td>
+                                <input type="text" name="ParameterElement" value="15" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>close_dis</td>
+                            <td>
+                                <input type="text" name="ParameterElement" value="60" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>halfclose_dis</td>
+                            <td>
+                                <input type="text" name="ParameterElement" value="80" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>far_dis</td>
+                            <td>
+                                <input type="text" name="ParameterElement" value="250" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>gray_set</td>
+                            <td>
+                                <input type="text" name="ParameterElement" value="11" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <input type="Button" value="Sent" onclick="RosSaveParam()" />
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div id="Joystick" class="form-group">
+                    <canvas id="Joystick_Canvas">
+                        Your browser does not support the HTML5 canvas tag.
+                    </canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Wifi Setting-->
+    <div class="modal fade" id="connect_Robot" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-sm WifiDialog">
+            <div class="modal-content WifiContent">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="exampleModalLabel">Connect To Robot</h4>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="form-group">
+                            <select id="RobSelectNum" onclick="ChooseRobotNumber(0,this.value)">
+                                <option for="RobotIPDATA" class="control-label" value="0">Robot1_IP:</option>
+                                <option for="RobotIPDATA" class="control-label" value="1">Robot2_IP:</option>
+                                <option for="RobotIPDATA" class="control-label" value="2">Robot3_IP:</option>
+                            </select>
+                            <br>
+                            <input name="RobotIPDATA" type="text" class="form-control" id="RobotIP" value=IP.textContent>
+                        </div>
+                        <div class="form-group">
+                            <label for="RobotHostDATA" class="control-label">Robot1_Host:</label>
+                            <input name="RobotHostDATA" type="text" class="form-control" id="RobotHost" value=Host.textContent>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal" onclick="RobotCloseConnect();">Close</button>
+                    <button id="Robotwifi" type="button" class="btn btn-primary" id="send-message" onclick="RobotConnect();history.go(0);SetParamRobotNum();OldGameState()">Connect</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        $("#SwitchButttonDiv").buttonset();
+        $("#KeyboardControlDiv").buttonset();
+    </script>
+    <script src="js/GlobalVariable.js"></script>
+    <script src="js/RobotConnect.js"></script>
+    <script src="js/RosTopic.js"></script>
+    <script src="js/RosParam.js"></script>
+    <script src="js/KeyboardControl.js"></script>
+    <script src="js/SafeSwitch.js"></script>
+    <script src="js/Joystick.js"></script>
+</body>
+
+</html>

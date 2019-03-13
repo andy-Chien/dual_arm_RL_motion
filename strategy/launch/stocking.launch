@@ -1,0 +1,9 @@
+<?xml version="1.0" ?>
+
+<launch>
+    <!-- move object in gazebo  -->
+    <node pkg="strategy"    type="object_pos.py"       name="object_pos"/>
+    
+    <node pkg="arm_control" type="simple_collision.py" name="simple_collision" output="screen"/>
+    <node pkg="strategy"    type="stocking_task.py"    name="stocking_task"    output="screen"/>
+</launch>

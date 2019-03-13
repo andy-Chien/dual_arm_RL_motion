@@ -1,0 +1,67 @@
+#vision_table{
+    width: 100%;
+    height: 100%;
+    background-color: #67b2ef;
+}
+
+/* #Pbutton_tr{
+    width: 100%;
+    height: 20%;
+} */
+
+/*===========================================*/
+/* decide */
+#decide_display{
+    width: 100%;
+    height: 15%;
+    text-align: center;
+}
+
+#decide_window {
+    position: absolute;
+    top: 3%;
+    left: 22.8%;
+    height: 120px;
+    width: 640px;
+    background-color: rgba(0, 0, 0);
+}
+
+#decide_player {
+    height: 100%;
+    width: 100%;
+}
+
+/*===========================================*/
+/* image */
+#image_display{
+    width: 100%;
+    height: 70%;
+    text-align: center;
+}
+
+#image_window {
+    position: relative;
+    top: 0%;
+    left: 3.7%;
+    height: 480px;
+    width: 640px;
+    background-color: rgba(0, 0, 0);
+}
+
+#image_player {
+    height: 100%;
+    width: 100%;
+}
+
+/*===========================================*/
+/* state */
+#state_manager{
+    width: 100%;
+    height: 15%;
+    text-align: center;
+}
+
+#state_button_table{
+    width: 100%;
+    height: 100%;
+}

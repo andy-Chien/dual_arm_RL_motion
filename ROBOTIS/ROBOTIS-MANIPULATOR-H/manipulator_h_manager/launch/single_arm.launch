@@ -1,0 +1,67 @@
+<?xml version="1.0" ?>
+
+<launch>
+
+    <arg name="en_sim" default="false"  />
+    <arg name="side"   default="right" />
+	
+    <param name="gazebo"                   value="$(arg en_sim)"     type="bool" />
+    <param name="gazebo_robot_name"        value="mobile_dual_arm" />
+
+    <param name="offset_table"             value="$(find manipulator_h_manager)/config/offset.yaml" />
+    <param name="init_file_path"           value="$(find manipulator_h_manager)/config/dxl_init.yaml" />
+
+    <node name="manipulator_h_manager_$(arg side)" pkg="manipulator_h_manager" type="manipulator_h_manager"
+            output="screen" >
+        <param name="side"            value="$(arg side)" />
+        <param name="gazebo"          value="$(arg en_sim)" />
+        <param name="link_file_path"  value="$(find manipulator_h_kinematics_dynamics)/config/link_param_$(arg side).yaml" />
+        <param name="robot_file_path" value="$(find manipulator_h_manager)/config/ROBOTIS_$(arg side).robot" />
+
+        <remap from="/robotis/base/joint_pose_msg"  	  to="/$(arg side)_arm/joint_pose_msg"	    />
+        <remap from="/robotis/base/p2p_pose_msg"  	  to="/$(arg side)_arm/p2p_pose_msg"        />
+        <remap from="/robotis/base/ini_pose_msg"  	  to="/$(arg side)_arm/ini_pose_msg"        />
+        <remap from="/robotis/base/kinematics_pose_msg"   to="/$(arg side)_arm/kinematics_pose_msg" />
+        <remap from="/robotis/base/set_mode_msg" 	  to="/$(arg side)_arm/set_mode_msg"        />
+   
+        <remap from="/robotis/enable_ctrl_module" 	  to="/$(arg side)_arm/enable_ctrl_module"        />
+        <remap from="/robotis/goal_joint_states" 	  to="/$(arg side)_arm/goal_joint_states"         />
+        <remap from="/robotis/present_joint_ctrl_modules" to="/$(arg side)_arm/present_joint_ctrl_modules"/>
+        <remap from="/robotis/present_joint_states" 	  to="/$(arg side)_arm/present_joint_states"	  />
+        <remap from="/robotis/set_control_mode" 	  to="/$(arg side)_arm/set_control_mode"          />
+        <remap from="/robotis/set_joint_ctrl_modules" 	  to="/$(arg side)_arm/set_joint_ctrl_modules"    />
+        <remap from="/robotis/set_joint_states" 	  to="/$(arg side)_arm/set_joint_states"	  />
+        <remap from="/robotis/status" 			  to="/$(arg side)_arm/status"                    />
+        <remap from="/robotis/sync_write_item" 		  to="/$(arg side)_arm/sync_write_item"	          />
+
+        <remap from="/slide_feedback_msg"                 to="/$(arg side)_arm/slide_feedback_msg"        />
+        <remap from="/slide_command_msg"                  to="/$(arg side)_arm/slide_command_msg"         />
+        <remap from="/robot/wait"                         to="/$(arg side)_arm/wait"                      />
+	<remap from="/robot/clear_cmd"                    to="/$(arg side)_arm/clear_cmd"                 />
+
+        <!-- service -->
+        <remap from="/robotis/base/get_joint_pose" 	  to="/$(arg side)_arm/get_joint_pose"	          />
+        <remap from="/robotis/base/get_kinematics_pose"   to="/$(arg side)_arm/get_kinematics_pose"	  />
+
+    </node>
+
+    <node pkg="manipulator_h_gui" type="manipulator_h_gui" name="gui_$(arg side)" output="screen">
+        <remap from="/robotis/base/joint_pose_msg"  	  to="/$(arg side)_arm/joint_pose_msg"	    />
+        <remap from="/robotis/base/p2p_pose_msg"  	  to="/$(arg side)_arm/p2p_pose_msg"        />
+        <remap from="/robotis/base/ini_pose_msg"  	  to="/$(arg side)_arm/ini_pose_msg"        />
+        <remap from="/robotis/base/kinematics_pose_msg"   to="/$(arg side)_arm/kinematics_pose_msg" />
+        <remap from="/robotis/base/set_mode_msg" 	  to="/$(arg side)_arm/set_mode_msg"        />
+        <remap from="/robotis/status" 			  to="/$(arg side)_arm/status"                    />
+
+        <!-- service -->
+        <remap from="/robotis/base/get_joint_pose" 	  to="/$(arg side)_arm/get_joint_pose"	          />
+        <remap from="/robotis/base/get_kinematics_pose"   to="/$(arg side)_arm/get_kinematics_pose"	  />
+    </node>
+
+    <node pkg="linear_motion" type="linear_z" name="slide_$(arg side)" output="screen" unless="$(arg en_sim)">
+        <param name="side"               value="$(arg side)" />
+	<param name="gazebo"             value="$(arg en_sim)" />
+        <remap from="/slide_feedback_msg"       to="/$(arg side)_arm/slide_feedback_msg"       />
+        <remap from="/slide_command_msg" to="/$(arg side)_arm/slide_command_msg" />
+    </node>
+</launch>

@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+<launch> 
+    <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" />
+    <rosparam command="load" file="$(find mobile_platform)/config/stage_qr.yaml" ns="mobile_platform/strategy/"/>
+    <rosparam command="load" file="$(find mobile_platform)/config/vision.yaml" ns="mobile_platform/vision/"/>
+    
+    <node name="Mecanum_motion_node" pkg="motion" type="Mecanum_motion_node"/>
+    
+    <include file="$(find usb_cam)/launch/usb_cam-test.launch" />
+    <node name="detect_black2" pkg="mobile_platform" type="detect_black2"/>
+    <node name="qrcode" pkg="mobile_platform" type="qrcode.py"/>
+
+    <node name="serial_node" pkg="rosserial_python" type="serial_node.py" args="/dev/ttyACM0"/>
+</launch>

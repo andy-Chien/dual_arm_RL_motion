@@ -1,0 +1,3 @@
+{crossTime: 0.3, errorAng: 3.0, errorCorrectionDis: 600, errorMoibleAng: 3.0,
+  errorMoibledis: 1000, errorRotate0: 8.0, errorRotate90: 83.0, maxVel: 10.0, minVel: 25.0,
+  rotateSlowAng: 20, rotateYaw: 25, velYaw: 25.0}

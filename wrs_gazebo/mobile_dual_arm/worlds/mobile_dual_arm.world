@@ -1,0 +1,671 @@
+<?xml version="1.0" ?>
+<sdf version="1.4">
+  <!-- We use a custom world for the rrbot so that the camera angle is launched correctly -->
+
+  <world name="default">
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+
+    <!-- Global light source -->
+    <include>
+      <uri>model://sun</uri>
+    </include>
+
+    <physics type='ode'>
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>0.1</real_time_factor>
+      <real_time_update_rate>1000</real_time_update_rate>
+      <gravity>0 0 -9.8</gravity>
+    </physics>
+
+    <model name="shelf">
+      <pose>0.3 -0.4625 -0.05  0 0 0</pose>
+      <static>true</static>
+      <link name="shelf">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+               <scale>0.001 0.001 0.001</scale>
+               <uri>model://mobile_dual_arm/scene/meshes/shelf.STL</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name="collision">
+          <pose>0 0 0 0 0 0</pose>
+          <geometry>
+            <mesh>
+               <scale>0.001 0.001 0.001</scale>
+               <uri>model://mobile_dual_arm/scene/meshes/shelfForColison.STL</uri>
+            </mesh>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.5</mu>
+                <mu2>0.5</mu2>
+              </ode>
+            </friction>
+            <contact>
+            	<elastic_modulus>0.01</elastic_modulus>
+            </contact>
+          </surface>
+        </collision>
+      </link>
+    </model>
+
+    <model name="shelf1">
+      <pose>0.47 0.66 0  0 0 1.5708</pose>
+      <static>true</static>
+      <link name="shelf1">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+               <scale>0.001 0.001 0.001</scale>
+               <uri>model://mobile_dual_arm/scene/meshes/shelf_dis.STL</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name="collision">
+          <pose>0 0 0 0 0 0</pose>
+          <geometry>
+            <mesh>
+               <scale>0.001 0.001 0.001</scale>
+               <uri>model://mobile_dual_arm/scene/meshes/shelf_dis.STL</uri>
+            </mesh>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.5</mu>
+                <mu2>0.5</mu2>
+              </ode>
+            </friction>
+            <contact>
+            	<elastic_modulus>0.01</elastic_modulus>
+            </contact>
+          </surface>
+        </collision>
+      </link>
+    </model>
+
+    <model name="lunchbox1">
+      <pose>-0.5 -0.1625 10  0 0 0</pose>
+      <static>false</static>
+      <link name="lunchbox1">
+        <inertial>
+          <pose>8.6736E-18 0 -0.025 0 0 0</pose>
+          <mass>0.535</mass>
+          <inertia> <!-- inertias are tricky to compute -->
+            <!-- http://gazebosim.org/tutorials?tut=inertia&cat=build_robot -->
+            <ixx>0.00371</ixx>       <!-- for a box: ixx = 0.083 * mass * (y*y + z*z) -->
+            <ixy>0.0</ixy>         <!-- for a box: ixy = 0 -->
+            <ixz>0.0</ixz>         <!-- for a box: ixz = 0 -->
+            <iyy>0.0021609</iyy>       <!-- for a box: iyy = 0.083 * mass * (x*x + z*z) -->
+            <iyz>0.0</iyz>         <!-- for a box: iyz = 0 -->
+            <izz>0.0048427</izz>       <!-- for a box: izz = 0.083 * mass * (x*x + y*y) -->
+          </inertia>
+        </inertial>
+        <collision name="collision">
+          <pose>0 0 0 0 0 0</pose>
+          <geometry>
+            <mesh>
+               <uri>model://mobile_dual_arm/scene/meshes/lunchbox.STL</uri>
+            </mesh>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.5</mu>
+                <mu2>0.5</mu2>
+              </ode>
+            </friction>
+            <contact>
+            	<elastic_modulus>0.01</elastic_modulus>
+            </contact>
+          </surface>
+        </collision>
+        <visual name="visual">
+          <pose>0 0 0 0 0 0</pose>
+          <geometry>
+            <mesh>
+               <uri>model://mobile_dual_arm/scene/meshes/lunchbox.STL</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+
+    <model name="lunchbox2">
+      <pose>-0.5 -0.1625 11  0 0 0</pose>
+      <static>false</static>
+      <link name="lunchbox2">
+        <inertial>
+          <pose>8.6736E-18 0 -0.025 0 0 0</pose>
+          <mass>0.535</mass>
+          <inertia> <!-- inertias are tricky to compute -->
+            <!-- http://gazebosim.org/tutorials?tut=inertia&cat=build_robot -->
+            <ixx>0.00371</ixx>       <!-- for a box: ixx = 0.083 * mass * (y*y + z*z) -->
+            <ixy>0.0</ixy>         <!-- for a box: ixy = 0 -->
+            <ixz>0.0</ixz>         <!-- for a box: ixz = 0 -->
+            <iyy>0.0021609</iyy>       <!-- for a box: iyy = 0.083 * mass * (x*x + z*z) -->
+            <iyz>0.0</iyz>         <!-- for a box: iyz = 0 -->
+            <izz>0.0048427</izz>       <!-- for a box: izz = 0.083 * mass * (x*x + y*y) -->
+          </inertia>
+        </inertial>
+        <collision name="collision">
+          <pose>0 0 0 0 0 0</pose>
+          <geometry>
+            <mesh>
+               <uri>model://mobile_dual_arm/scene/meshes/lunchbox.STL</uri>
+            </mesh>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.5</mu>
+                <mu2>0.5</mu2>
+              </ode>
+            </friction>
+            <contact>
+            	<elastic_modulus>0.01</elastic_modulus>
+            </contact>
+          </surface>
+        </collision>
+        <visual name="visual">
+          <pose>0 0 0 0 0 0</pose>
+          <geometry>
+            <mesh>
+               <uri>model://mobile_dual_arm/scene/meshes/lunchbox.STL</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+
+    <model name="lunchbox3">
+      <pose>-0.5 -0.1625 12  0 0 0</pose>
+      <static>false</static>
+      <link name="lunchbox3">
+        <inertial>
+          <pose>8.6736E-18 0 -0.025 0 0 0</pose>
+          <mass>0.535</mass>
+          <inertia> <!-- inertias are tricky to compute -->
+            <!-- http://gazebosim.org/tutorials?tut=inertia&cat=build_robot -->
+            <ixx>0.00371</ixx>       <!-- for a box: ixx = 0.083 * mass * (y*y + z*z) -->
+            <ixy>0.0</ixy>         <!-- for a box: ixy = 0 -->
+            <ixz>0.0</ixz>         <!-- for a box: ixz = 0 -->
+            <iyy>0.0021609</iyy>       <!-- for a box: iyy = 0.083 * mass * (x*x + z*z) -->
+            <iyz>0.0</iyz>         <!-- for a box: iyz = 0 -->
+            <izz>0.0048427</izz>       <!-- for a box: izz = 0.083 * mass * (x*x + y*y) -->
+          </inertia>
+        </inertial>
+        <collision name="collision">
+          <pose>0 0 0 0 0 0</pose>
+          <geometry>
+            <mesh>
+               <uri>model://mobile_dual_arm/scene/meshes/lunchbox.STL</uri>
+            </mesh>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.5</mu>
+                <mu2>0.5</mu2>
+              </ode>
+            </friction>
+            <contact>
+            	<elastic_modulus>0.01</elastic_modulus>
+            </contact>
+          </surface>
+        </collision>
+        <visual name="visual">
+          <pose>0 0 0 0 0 0</pose>
+          <geometry>
+            <mesh>
+               <uri>model://mobile_dual_arm/scene/meshes/lunchbox.STL</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+
+    <model name="lunchbox4">
+      <pose>-0.5 -0.1625 13  0 0 0</pose>
+      <static>false</static>
+      <link name="lunchbox4">
+        <inertial>
+          <pose>8.6736E-18 0 -0.025 0 0 0</pose>
+          <mass>0.535</mass>
+          <inertia> <!-- inertias are tricky to compute -->
+            <!-- http://gazebosim.org/tutorials?tut=inertia&cat=build_robot -->
+            <ixx>0.00371</ixx>       <!-- for a box: ixx = 0.083 * mass * (y*y + z*z) -->
+            <ixy>0.0</ixy>         <!-- for a box: ixy = 0 -->
+            <ixz>0.0</ixz>         <!-- for a box: ixz = 0 -->
+            <iyy>0.0021609</iyy>       <!-- for a box: iyy = 0.083 * mass * (x*x + z*z) -->
+            <iyz>0.0</iyz>         <!-- for a box: iyz = 0 -->
+            <izz>0.0048427</izz>       <!-- for a box: izz = 0.083 * mass * (x*x + y*y) -->
+          </inertia>
+        </inertial>
+        <collision name="collision">
+          <pose>0 0 0 0 0 0</pose>
+          <geometry>
+            <mesh>
+               <uri>model://mobile_dual_arm/scene/meshes/lunchbox.STL</uri>
+            </mesh>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.5</mu>
+                <mu2>0.5</mu2>
+              </ode>
+            </friction>
+            <contact>
+            	<elastic_modulus>0.01</elastic_modulus>
+            </contact>
+          </surface>
+        </collision>
+        <visual name="visual">
+          <pose>0 0 0 0 0 0</pose>
+          <geometry>
+            <mesh>
+               <uri>model://mobile_dual_arm/scene/meshes/lunchbox.STL</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+
+
+
+    <model name="riceball1">
+      <pose>-0.5 0.0 10  0 0 0</pose>
+      <static>false</static>
+      <link name="riceball1">
+        <inertial>
+          <pose>0.0175 0 0.00014145 0 0 0</pose>
+          <mass>0.11</mass>
+          <inertia> <!-- inertias are tricky to compute -->
+            <!-- http://gazebosim.org/tutorials?tut=inertia&cat=build_robot -->
+            <ixx>7.011E-05</ixx>       <!-- for a box: ixx = 0.083 * mass * (y*y + z*z) -->
+            <ixy>0.0</ixy>         <!-- for a box: ixy = 0 -->
+            <ixz>2.7E-07</ixz>         <!-- for a box: ixz = 0 -->
+            <iyy>8.42E-05</iyy>       <!-- for a box: iyy = 0.083 * mass * (x*x + z*z) -->
+            <iyz>0.0</iyz>         <!-- for a box: iyz = 0 -->
+            <izz>7.871E-05</izz>       <!-- for a box: izz = 0.083 * mass * (x*x + y*y) -->
+          </inertia>
+        </inertial>
+        <collision name="collision">
+          <pose>0 0 0 0 0 0</pose>
+          <geometry>
+            <mesh>
+               <uri>model://mobile_dual_arm/scene/meshes/riceball.STL</uri>
+            </mesh>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.5</mu>
+                <mu2>0.5</mu2>
+              </ode>
+            </friction>
+            <contact>
+            	<elastic_modulus>0.01</elastic_modulus>
+            </contact>
+          </surface>
+        </collision>
+        <visual name="visual">
+          <pose>0 0 0 0 0 0</pose>
+          <geometry>
+            <mesh>
+               <uri>model://mobile_dual_arm/scene/meshes/riceball.STL</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+
+    <model name="riceball2">
+      <pose>-0.5 0.0 11  0 0 0</pose>
+      <static>false</static>
+      <link name="riceball2">
+        <inertial>
+          <pose>0.0175 0 0.00014145 0 0 0</pose>
+          <mass>0.11</mass>
+          <inertia> <!-- inertias are tricky to compute -->
+            <!-- http://gazebosim.org/tutorials?tut=inertia&cat=build_robot -->
+            <ixx>7.011E-05</ixx>       <!-- for a box: ixx = 0.083 * mass * (y*y + z*z) -->
+            <ixy>0.0</ixy>         <!-- for a box: ixy = 0 -->
+            <ixz>2.7E-07</ixz>         <!-- for a box: ixz = 0 -->
+            <iyy>8.42E-05</iyy>       <!-- for a box: iyy = 0.083 * mass * (x*x + z*z) -->
+            <iyz>0.0</iyz>         <!-- for a box: iyz = 0 -->
+            <izz>7.871E-05</izz>       <!-- for a box: izz = 0.083 * mass * (x*x + y*y) -->
+          </inertia>
+        </inertial>
+        <collision name="collision">
+          <pose>0 0 0 0 0 0</pose>
+          <geometry>
+            <mesh>
+               <uri>model://mobile_dual_arm/scene/meshes/riceball.STL</uri>
+            </mesh>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.5</mu>
+                <mu2>0.5</mu2>
+              </ode>
+            </friction>
+            <contact>
+            	<elastic_modulus>0.01</elastic_modulus>
+            </contact>
+          </surface>
+        </collision>
+        <visual name="visual">
+          <pose>0 0 0 0 0 0</pose>
+          <geometry>
+            <mesh>
+               <uri>model://mobile_dual_arm/scene/meshes/riceball.STL</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+
+    <model name="riceball3">
+      <pose>-0.5 0.0 12  0 0 0</pose>
+      <static>false</static>
+      <link name="riceball3">
+        <inertial>
+          <pose>0.0175 0 0.00014145 0 0 0</pose>
+          <mass>0.11</mass>
+          <inertia> <!-- inertias are tricky to compute -->
+            <!-- http://gazebosim.org/tutorials?tut=inertia&cat=build_robot -->
+            <ixx>7.011E-05</ixx>       <!-- for a box: ixx = 0.083 * mass * (y*y + z*z) -->
+            <ixy>0.0</ixy>         <!-- for a box: ixy = 0 -->
+            <ixz>2.7E-07</ixz>         <!-- for a box: ixz = 0 -->
+            <iyy>8.42E-05</iyy>       <!-- for a box: iyy = 0.083 * mass * (x*x + z*z) -->
+            <iyz>0.0</iyz>         <!-- for a box: iyz = 0 -->
+            <izz>7.871E-05</izz>       <!-- for a box: izz = 0.083 * mass * (x*x + y*y) -->
+          </inertia>
+        </inertial>
+        <collision name="collision">
+          <pose>0 0 0 0 0 0</pose>
+          <geometry>
+            <mesh>
+               <uri>model://mobile_dual_arm/scene/meshes/riceball.STL</uri>
+            </mesh>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.5</mu>
+                <mu2>0.5</mu2>
+              </ode>
+            </friction>
+            <contact>
+            	<elastic_modulus>0.01</elastic_modulus>
+            </contact>
+          </surface>
+        </collision>
+        <visual name="visual">
+          <pose>0 0 0 0 0 0</pose>
+          <geometry>
+            <mesh>
+               <uri>model://mobile_dual_arm/scene/meshes/riceball.STL</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+
+    <model name="riceball4">
+      <pose>-0.5 0.0 13  0 0 0</pose>
+      <static>false</static>
+      <link name="riceball4">
+        <inertial>
+          <pose>0.0175 0 0.00014145 0 0 0</pose>
+          <mass>0.11</mass>
+          <inertia> <!-- inertias are tricky to compute -->
+            <!-- http://gazebosim.org/tutorials?tut=inertia&cat=build_robot -->
+            <ixx>7.011E-05</ixx>       <!-- for a box: ixx = 0.083 * mass * (y*y + z*z) -->
+            <ixy>0.0</ixy>         <!-- for a box: ixy = 0 -->
+            <ixz>2.7E-07</ixz>         <!-- for a box: ixz = 0 -->
+            <iyy>8.42E-05</iyy>       <!-- for a box: iyy = 0.083 * mass * (x*x + z*z) -->
+            <iyz>0.0</iyz>         <!-- for a box: iyz = 0 -->
+            <izz>7.871E-05</izz>       <!-- for a box: izz = 0.083 * mass * (x*x + y*y) -->
+          </inertia>
+        </inertial>
+        <collision name="collision">
+          <pose>0 0 0 0 0 0</pose>
+          <geometry>
+            <mesh>
+               <uri>model://mobile_dual_arm/scene/meshes/riceball.STL</uri>
+            </mesh>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.5</mu>
+                <mu2>0.5</mu2>
+              </ode>
+            </friction>
+            <contact>
+            	<elastic_modulus>0.01</elastic_modulus>
+            </contact>
+          </surface>
+        </collision>
+        <visual name="visual">
+          <pose>0 0 0 0 0 0</pose>
+          <geometry>
+            <mesh>
+               <uri>model://mobile_dual_arm/scene/meshes/riceball.STL</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+
+    <model name="drink1">
+      <pose>-0.3 0.1 10  0 0 0</pose>
+      <static>false</static>
+      <link name="drink1">
+        <inertial>
+          <pose>0 -0.0019956 -0.050688 0 0 0</pose>
+          <mass>0.26</mass>
+          <inertia> <!-- inertias are tricky to compute -->
+            <!-- http://gazebosim.org/tutorials?tut=inertia&cat=build_robot -->
+            <ixx>0.00109</ixx>       <!-- for a box: ixx = 0.083 * mass * (y*y + z*z) -->
+            <ixy>0.0</ixy>         <!-- for a box: ixy = 0 -->
+            <ixz>0</ixz>         <!-- for a box: ixz = 0 -->
+            <iyy>0.0010888</iyy>       <!-- for a box: iyy = 0.083 * mass * (x*x + z*z) -->
+            <iyz>2.589E-05</iyz>         <!-- for a box: iyz = 0 -->
+            <izz>0.00027699</izz>       <!-- for a box: izz = 0.083 * mass * (x*x + y*y) -->
+          </inertia>
+        </inertial>
+        <collision name="collision">
+          <pose>0 0 0 0 0 0</pose>
+          <geometry>
+            <mesh>
+               <uri>model://mobile_dual_arm/scene/meshes/drink.STL</uri>
+            </mesh>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.5</mu>
+                <mu2>0.5</mu2>
+              </ode>
+            </friction>
+            <contact>
+            	<elastic_modulus>0.01</elastic_modulus>
+            </contact>
+          </surface>
+        </collision>
+        <visual name="visual">
+          <pose>0 0 0 0 0 0</pose>
+          <geometry>
+            <mesh>
+               <uri>model://mobile_dual_arm/scene/meshes/drink.STL</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+
+    <model name="drink2">
+      <pose>-0.3 0.1 11  0 0 0</pose>
+      <static>false</static>
+      <link name="drink2">
+        <inertial>
+          <pose>0 -0.0019956 -0.050688 0 0 0</pose>
+          <mass>0.26</mass>
+          <inertia> <!-- inertias are tricky to compute -->
+            <!-- http://gazebosim.org/tutorials?tut=inertia&cat=build_robot -->
+            <ixx>0.00109</ixx>       <!-- for a box: ixx = 0.083 * mass * (y*y + z*z) -->
+            <ixy>0.0</ixy>         <!-- for a box: ixy = 0 -->
+            <ixz>0</ixz>         <!-- for a box: ixz = 0 -->
+            <iyy>0.0010888</iyy>       <!-- for a box: iyy = 0.083 * mass * (x*x + z*z) -->
+            <iyz>2.589E-05</iyz>         <!-- for a box: iyz = 0 -->
+            <izz>0.00027699</izz>       <!-- for a box: izz = 0.083 * mass * (x*x + y*y) -->
+          </inertia>
+        </inertial>
+        <collision name="collision">
+          <pose>0 0 0 0 0 0</pose>
+          <geometry>
+            <mesh>
+               <uri>model://mobile_dual_arm/scene/meshes/drink.STL</uri>
+            </mesh>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.5</mu>
+                <mu2>0.5</mu2>
+              </ode>
+            </friction>
+            <contact>
+            	<elastic_modulus>0.01</elastic_modulus>
+            </contact>
+          </surface>
+        </collision>
+        <visual name="visual">
+          <pose>0 0 0 0 0 0</pose>
+          <geometry>
+            <mesh>
+               <uri>model://mobile_dual_arm/scene/meshes/drink.STL</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+
+    <model name="drink3">
+      <pose>-0.3 0.1 12  0 0 0</pose>
+      <static>false</static>
+      <link name="drink3">
+        <inertial>
+          <pose>0 -0.0019956 -0.050688 0 0 0</pose>
+          <mass>0.26</mass>
+          <inertia> <!-- inertias are tricky to compute -->
+            <!-- http://gazebosim.org/tutorials?tut=inertia&cat=build_robot -->
+            <ixx>0.00109</ixx>       <!-- for a box: ixx = 0.083 * mass * (y*y + z*z) -->
+            <ixy>0.0</ixy>         <!-- for a box: ixy = 0 -->
+            <ixz>0</ixz>         <!-- for a box: ixz = 0 -->
+            <iyy>0.0010888</iyy>       <!-- for a box: iyy = 0.083 * mass * (x*x + z*z) -->
+            <iyz>2.589E-05</iyz>         <!-- for a box: iyz = 0 -->
+            <izz>0.00027699</izz>       <!-- for a box: izz = 0.083 * mass * (x*x + y*y) -->
+          </inertia>
+        </inertial>
+        <collision name="collision">
+          <pose>0 0 0 0 0 0</pose>
+          <geometry>
+            <mesh>
+               <uri>model://mobile_dual_arm/scene/meshes/drink.STL</uri>
+            </mesh>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.5</mu>
+                <mu2>0.5</mu2>
+              </ode>
+            </friction>
+            <contact>
+            	<elastic_modulus>0.01</elastic_modulus>
+            </contact>
+          </surface>
+        </collision>
+        <visual name="visual">
+          <pose>0 0 0 0 0 0</pose>
+          <geometry>
+            <mesh>
+               <uri>model://mobile_dual_arm/scene/meshes/drink.STL</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+
+    <model name="drink4">
+      <pose>-0.3 0.1 13  0 0 0</pose>
+      <static>false</static>
+      <link name="drink4">
+        <inertial>
+          <pose>0 -0.0019956 -0.050688 0 0 0</pose>
+          <mass>0.26</mass>
+          <inertia> <!-- inertias are tricky to compute -->
+            <!-- http://gazebosim.org/tutorials?tut=inertia&cat=build_robot -->
+            <ixx>0.00109</ixx>       <!-- for a box: ixx = 0.083 * mass * (y*y + z*z) -->
+            <ixy>0.0</ixy>         <!-- for a box: ixy = 0 -->
+            <ixz>0</ixz>         <!-- for a box: ixz = 0 -->
+            <iyy>0.0010888</iyy>       <!-- for a box: iyy = 0.083 * mass * (x*x + z*z) -->
+            <iyz>2.589E-05</iyz>         <!-- for a box: iyz = 0 -->
+            <izz>0.00027699</izz>       <!-- for a box: izz = 0.083 * mass * (x*x + y*y) -->
+          </inertia>
+        </inertial>
+        <collision name="collision">
+          <pose>0 0 0 0 0 0</pose>
+          <geometry>
+            <mesh>
+               <uri>model://mobile_dual_arm/scene/meshes/drink.STL</uri>
+            </mesh>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.5</mu>
+                <mu2>0.5</mu2>
+              </ode>
+            </friction>
+            <contact>
+            	<elastic_modulus>0.01</elastic_modulus>
+            </contact>
+          </surface>
+        </collision>
+        <visual name="visual">
+          <pose>0 0 0 0 0 0</pose>
+          <geometry>
+            <mesh>
+               <uri>model://mobile_dual_arm/scene/meshes/drink.STL</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+
+
+
+
+
+    <!-- Focus camera on tall pendulum -->
+    <gui fullscreen='0'>
+      <camera name='user_camera'>
+        <pose>4.927360 -4.376610 3.740080 0.000000 0.275643 2.356190</pose>
+        <view_controller>orbit</view_controller>
+      </camera>
+    </gui>
+
+  </world>
+</sdf>

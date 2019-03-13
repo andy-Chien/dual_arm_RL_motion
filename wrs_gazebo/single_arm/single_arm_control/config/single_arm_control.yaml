@@ -1,0 +1,39 @@
+urdf_0129:
+  # Publish all joint states -----------------------------------
+  joint_state_controller:
+    type: joint_state_controller/JointStateController
+    publish_rate: 50  
+  
+  # Position Controllers ---------------------------------------
+  joint1_position_controller:
+    type: effort_controllers/JointPositionController
+    joint: joint_1
+    pid: {p: 950.0, i: 0, d: 3}
+  joint2_position_controller:
+    type: effort_controllers/JointPositionController
+    joint: joint_2
+    pid: {p: 950.0, i: 2, d: 2}
+  joint3_position_controller:
+    type: effort_controllers/JointPositionController
+    joint: joint_3
+    pid: {p: 320, i: 2, d: 0}
+  joint4_position_controller:
+    type: effort_controllers/JointPositionController
+    joint: joint_4
+    pid: {p: 300, i: 2, d: 0}
+  joint5_position_controller:
+    type: effort_controllers/JointPositionController
+    joint: joint_5
+    pid: {p: 60, i: 3, d: 0}
+  joint6_position_controller:
+    type: effort_controllers/JointPositionController
+    joint: joint_6
+    pid: {p: 60, i: 0.1, d: 0}
+  joint7_position_controller:
+    type: effort_controllers/JointPositionController
+    joint: joint_7
+    pid: {p: 100.0, i: 0, d: 0}
+  joint8_position_controller:
+    type: effort_controllers/JointPositionController
+    joint: joint_8
+    pid: {p: 0, i: 0, d: 0}

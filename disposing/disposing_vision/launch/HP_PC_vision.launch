@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+
+<launch>
+ <group ns="camera_cheast">
+  <include file="$(find zbar_ros)/launch/QR_deteced.launch">   </include>
+    <node name="image_view" pkg="image_view" type="image_view" respawn="false">
+      <remap from="image" to="/camera_cheast/image"/>
+      <param name="autosize" value="true" />
+    </node>
+ </group>
+
+ <node name="diposing" pkg="disposing_vision" type="node" respawn="true"> </node>
+ <include file="$(find realsense_camera)/launch/sr300_nodelet_rgbd.launch">
+   </include>
+ <node name="rviz" pkg="rviz" type="rviz" respawn="false"> </node>
+
+</launch>

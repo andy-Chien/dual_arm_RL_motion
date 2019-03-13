@@ -1,0 +1,255 @@
+<robot
+  name="mobile_table">
+  <link
+    name="mobile_base">
+    <inertial>
+      <origin
+        xyz="-0.371094390052816 -1.63091762317436E-13 -0.174671140424926"
+        rpy="0 0 0" />
+      <mass
+        value="13.363391022414" />
+      <inertia
+        ixx="0.761869319649775"
+        ixy="3.59142562326433E-07"
+        ixz="0.025155218029247"
+        iyy="1.39353540704072"
+        iyz="-4.9680225211457E-13"
+        izz="1.35003893995088" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://mobile_table/meshes/mobile_base.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.898039215686275 0.917647058823529 0.929411764705882 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://mobile_table/meshes/mobile_base.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="Link_LF">
+    <inertial>
+      <origin
+        xyz="-4.32951505480172E-07 -0.0500023835062627 4.94727951348695E-07"
+        rpy="0 0 0" />
+      <mass
+        value="1.81564328582061" />
+      <inertia
+        ixx="0.00992143041094966"
+        ixy="1.53566692471049E-08"
+        ixz="-1.94383173852468E-08"
+        iyy="0.0165532877838353"
+        iyz="1.21063941383094E-08"
+        izz="0.00992143577953462" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://mobile_table/meshes/Link_LF.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://mobile_table/meshes/Link_LF.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_LF"
+    type="continuous">
+    <origin
+      xyz="-0.1295 0.26 -0.427"
+      rpy="0 0 0" />
+    <parent
+      link="mobile_base" />
+    <child
+      link="Link_LF" />
+    <axis
+      xyz="0 1 0" />
+  </joint>
+  <link
+    name="Link_LR">
+    <inertial>
+      <origin
+        xyz="-1.03332086220931E-08 -0.0497638919022216 2.86188792074371E-08"
+        rpy="0 0 0" />
+      <mass
+        value="1.78678294449153" />
+      <inertia
+        ixx="0.00977206649678278"
+        ixy="-3.37433185139131E-08"
+        ixz="2.92861911515802E-08"
+        iyy="0.0163793618153137"
+        iyz="-1.265039739069E-08"
+        izz="0.00977199881676017" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://mobile_table/meshes/Link_LR.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://mobile_table/meshes/Link_LR.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_LR"
+    type="continuous">
+    <origin
+      xyz="-0.5905 0.26 -0.427"
+      rpy="0 0 0" />
+    <parent
+      link="mobile_base" />
+    <child
+      link="Link_LR" />
+    <axis
+      xyz="0 1 0" />
+  </joint>
+  <link
+    name="Link_RR">
+    <inertial>
+      <origin
+        xyz="4.94499633685308E-07 0.0500023830071637 4.36537898478723E-07"
+        rpy="0 0 0" />
+      <mass
+        value="1.81564328444565" />
+      <inertia
+        ixx="0.00992143529241466"
+        ixy="1.3366091147259E-08"
+        ixz="1.93197266089131E-08"
+        iyy="0.0165532876133226"
+        iyz="-1.41295789697231E-08"
+        izz="0.00992143066252636" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://mobile_table/meshes/Link_RR.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://mobile_table/meshes/Link_RR.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_RR"
+    type="continuous">
+    <origin
+      xyz="-0.5905 -0.26 -0.427"
+      rpy="1.5174E-32 1.5174E-32 1.2391E-16" />
+    <parent
+      link="mobile_base" />
+    <child
+      link="Link_RR" />
+    <axis
+      xyz="0 1 0" />
+  </joint>
+  <link
+    name="Link_RF">
+    <inertial>
+      <origin
+        xyz="2.24923252800657E-08 0.0497638925426117 2.09669078488073E-08"
+        rpy="0 0 0" />
+      <mass
+        value="1.78678295277665" />
+      <inertia
+        ixx="0.00977203231772132"
+        ixy="-2.5513309488964E-08"
+        ixz="-4.46702296495044E-08"
+        iyy="0.0163793619436232"
+        iyz="2.58413651724771E-08"
+        izz="0.00977203323393661" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://mobile_table/meshes/Link_RF.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://mobile_table/meshes/Link_RF.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_RF"
+    type="continuous">
+    <origin
+      xyz="-0.1295 -0.26 -0.427"
+      rpy="1.51744539447198E-32 1.51744539447198E-32 1.23908819712629E-16" />
+    <parent
+      link="mobile_base" />
+    <child
+      link="Link_RF" />
+    <axis
+      xyz="0 1 0" />
+  </joint>
+</robot>

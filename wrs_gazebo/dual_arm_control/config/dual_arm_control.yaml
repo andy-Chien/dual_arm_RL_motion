@@ -1,0 +1,87 @@
+mobile_dual_arm:
+  # Publish all joint states -----------------------------------
+  joint_state_controller:
+    type: joint_state_controller/JointStateController
+    publish_rate: 50  
+  
+  # Position Controllers ---------------------------------------
+  r_joint1_position:
+    type: position_controllers/JointPositionController
+    joint: r_joint_1
+    pid: {p: 950.0, i: 2, d: 3}
+  r_joint2_position:
+    type: position_controllers/JointPositionController
+    joint: r_joint_2
+    pid: {p: 950.0, i: 2, d: 2}
+  r_joint3_position:
+    type: position_controllers/JointPositionController
+    joint: r_joint_3
+    pid: {p: 320, i: 2, d: 0}
+  r_joint4_position:
+    type: position_controllers/JointPositionController
+    joint: r_joint_4
+    pid: {p: 300, i: 2, d: 0}
+  r_joint5_position:
+    type: position_controllers/JointPositionController
+    joint: r_joint_5
+    pid: {p: 60, i: 3, d: 0}
+  r_joint6_position:
+    type: position_controllers/JointPositionController
+    joint: r_joint_6
+    pid: {p: 60, i: 0.1, d: 0}
+  r_joint7_position:
+    type: position_controllers/JointPositionController
+    joint: r_joint_7
+    pid: {p: 100.0, i: 0, d: 0}
+  r_suction_joint_position:
+    type: position_controllers/JointPositionController
+    joint: r_tool_joint
+    pid: {p: 50, i: 0, d: 0}
+
+
+  l_joint1_position:
+    type: position_controllers/JointPositionController
+    joint: l_joint_1
+    pid: {p: 950.0, i: 2, d: 3}
+  l_joint2_position:
+    type: position_controllers/JointPositionController
+    joint: l_joint_2
+    pid: {p: 950.0, i: 2, d: 2}
+  l_joint3_position:
+    type: position_controllers/JointPositionController
+    joint: l_joint_3
+    pid: {p: 320, i: 2, d: 0}
+  l_joint4_position:
+    type: position_controllers/JointPositionController
+    joint: l_joint_4
+    pid: {p: 300, i: 2, d: 0}
+  l_joint5_position:
+    type: position_controllers/JointPositionController
+    joint: l_joint_5
+    pid: {p: 60, i: 3, d: 0}
+  l_joint6_position:
+    type: position_controllers/JointPositionController
+    joint: l_joint_6
+    pid: {p: 60, i: 0.1, d: 0}
+  l_joint7_position:
+    type: position_controllers/JointPositionController
+    joint: l_joint_7
+    pid: {p: 100.0, i: 0, d: 0}
+  l_suction_joint_position:
+    type: position_controllers/JointPositionController
+    joint: l_tool_joint
+    pid: {p: 50, i: 0, d: 0}
+
+
+  r_slide_position:
+    type: position_controllers/JointPositionController
+    joint: Slide_R
+    pid: {p: 800.0, i: 0.0, d: 0.0}
+  l_slide_position:
+    type: position_controllers/JointPositionController
+    joint: Slide_L
+    pid: {p: 800.0, i: 0.0, d: 0.0}
+
+
+
+

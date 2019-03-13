@@ -1,0 +1,195 @@
+body {
+    /*  margin: 0;
+    padding: 0;
+    /*-moz-background-size: cover;*/
+    /*    background-size: 40%;
+    height: 1080px;
+    width: auto;*/
+    overflow-y: hidden;
+    overflow-x: hidden;
+}
+
+.modalBackground {
+    background: url(../img/111.png) center center no-repeat;
+    background-size: cover;
+}
+
+.modal-dialog {
+    position: relative;
+    height: 800px;
+    width: 600px;
+    overflow-y: hidden;
+    overflow-x: hidden;
+}
+
+.modalstyle {
+    width: 1000px;
+    height: 900px;
+}
+
+.modalCotentStyle {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.modalBodyStyle {
+    height: 900px;
+}
+
+
+/*===========================================*/
+
+
+/*Bar*/
+
+#AvoidanceBAR {
+    position: relative;
+    top: 6%;
+    left: 8%;
+    width: 420px;
+}
+
+
+/*Wifi*/
+
+#AvoidanceWifi {
+    border: 0px solid #d3d3d3;
+}
+
+#AvoidanceWifi span {
+    cursor: pointer;
+    position: absolute;
+    top: -15%;
+    right: -5%;
+}
+
+#Setting_Wifi {
+    height: 100%;
+    width: 50px;
+}
+
+#WifiLight {
+    border: 0px solid #d3d3d3;
+}
+
+#WifiLight span {
+    position: absolute;
+    top: -20%;
+    right: -14%;
+}
+
+#Light {
+    height: 50px;
+    width: 32px;
+}
+
+
+/*===========================================*/
+
+
+/*BallGround Display*/
+
+#BallGround {
+    position: relative;
+    top: 7%;
+    left: 7%;
+    width: 490px;
+    height: 330px;
+    /*border: 1px solid rgb(255, 0, 0);*/
+    border-radius: 6px;
+}
+
+
+/*Switch*/
+
+#SwitchButttonDiv {
+    position: relative;
+    top: 5%;
+    left: -20%;
+    width: 200px;
+    text-align: center;
+}
+
+#SwitchButttonDiv table {
+    width: 100%;
+    height: 100%;
+}
+
+#SwitchButttonDiv td {
+    width: 50%;
+}
+
+
+/*Keyboard*/
+
+#ControlBarDiv {
+    position: relative;
+    top: -7%;
+    left: 28%;
+    width: 150px;
+    text-align: center;
+}
+
+#ControlBarDiv table {
+    width: 100%;
+    height: 100%;
+}
+
+#ControlBarDiv td {
+    width: 50%;
+}
+
+
+/*===========================================*/
+
+
+/*Parameter Table*/
+
+#ParameterDiv {
+    position: relative;
+    top: 5%;
+    left: 9%;
+    width: 245px;
+    height: 240px;
+    border: 1px solid rgb(0, 0, 0);
+    border-radius: 6px;
+    text-align: center;
+}
+
+#ParameterDiv table {
+    width: 100%;
+    height: 100%;
+}
+
+#ParameterDiv tr {
+    width: 100%;
+}
+
+#ParameterDiv td {
+    width: 50%;
+}
+
+#ParameterDiv input {
+    width: 80%;
+}
+
+
+/*===========================================*/
+
+#Joystick {
+    position: relative;
+    top: -23%;
+    left: 54%;
+    width: 210px;
+    height: 210px;
+    z-index: 1;
+    border-radius: 210px;
+    /*border-style: dashed;*/
+    border-color: rgba(255, 255, 255, 0.5);
+    background-color: rgb(255, 255, 255);
+    cursor: crosshair;
+}
+
+#Joystick_Canvas {
+    width: 100%;
+    height: 100%;
+}

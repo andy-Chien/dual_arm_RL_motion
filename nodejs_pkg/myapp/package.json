@@ -1,0 +1,18 @@
+{
+  "name": "myapp",
+  "version": "1.0.0",
+  "description": "TIMDA participate in WRS 2018 with IBM Watson Assistant",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "NEET",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.16.3",
+    "recorderjs": "^1.0.1",
+    "rosnodejs": "^3.0.0",
+    "socket.io": "^2.1.1",
+    "websocket": "^1.0.28"
+  }
+}

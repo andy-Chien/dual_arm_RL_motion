@@ -1,0 +1,157 @@
+<?xml version="1.0"?>
+<!-- Revolute-Revolute Manipulator -->
+<robot name="Slide_rail" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="-0.0851417739507414 -0.00235325608423029 0.461901876327646"
+        rpy="0 0 0" />
+      <mass
+        value="13.2157378026818" />
+      <inertia
+        ixx="1.5723643860749"
+        ixy="-0.0018400889955638"
+        ixz="-0.0259807481556023"
+        iyy="1.56653528372694"
+        iyz="-0.0123413171800455"
+        izz="0.0334677964955424" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Slide_rail/meshes/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Slide_rail/meshes/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="Arm_Base_R_Link">
+    <inertial>
+      <origin
+        xyz="1.57200647357136E-05 0.022625966524659 -2.45861738434883E-06"
+        rpy="0 0 0" />
+      <mass
+        value="0.0915148495066668" />
+      <inertia
+        ixx="8.99401518227245E-05"
+        ixy="6.65500499430702E-09"
+        ixz="-5.17853701338548E-09"
+        iyy="0.000123418097290043"
+        iyz="-1.04084246775258E-09"
+        izz="3.58919292165612E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Slide_rail/meshes/Arm_Base_R_Link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Slide_rail/meshes/Arm_Base_R_Link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Slide_R"
+    type="prismatic">
+    <origin
+      xyz="-0.08 -0.0925 0.88886"
+      rpy="-7.1169E-16 5.5825E-15 3.3307E-16" />
+    <parent
+      link="base_link" />
+    <child
+      link="Arm_Base_R_Link" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="Arm_Base_L_Link">
+    <inertial>
+      <origin
+        xyz="-1.57200647414868E-05 -0.022625966524659 -2.45861739034403E-06"
+        rpy="0 0 0" />
+      <mass
+        value="0.0915148495066669" />
+      <inertia
+        ixx="8.99401518227246E-05"
+        ixy="6.655004994278E-09"
+        ixz="5.1785370134074E-09"
+        iyy="0.000123418097290043"
+        iyz="1.04084246778742E-09"
+        izz="3.58919292165613E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Slide_rail/meshes/Arm_Base_L_Link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Slide_rail/meshes/Arm_Base_L_Link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Slide_L"
+    type="prismatic">
+    <origin
+      xyz="-0.08 0.0925 0.88886"
+      rpy="7.8352E-17 -1.301E-16 -3.8305E-16" />
+    <parent
+      link="base_link" />
+    <child
+      link="Arm_Base_L_Link" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      effort="0"
+      velocity="0" />
+  </joint>
+</robot>

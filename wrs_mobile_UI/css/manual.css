@@ -1,0 +1,71 @@
+/*===========================================*/
+/* main form */
+
+#manual_table{
+    width: 100%;
+    height: 100%;
+    background-color: #67efd8;
+}
+
+#Mdisplay_tr{
+    width: 100%;
+    height: 44%;
+    /* background-color: #67efd8; */
+}
+
+#Mbutton_tr{
+    width: 100%;
+    height: 10%;
+    /* background-color: #a267ef; */
+}
+
+#Mspeed_tr{
+    width: 100%;
+    height: 10%;
+    /* background-color: #e1ef67; */
+}
+
+#Mjoystick_tr{
+    width: 100%;
+    height: 36%;
+    /* background-color: #7067ef; */
+}
+
+/*===========================================*/
+/* state */
+#robot_state{
+
+}
+
+/*===========================================*/
+/* button */
+#Mbutton_table{
+    width: 100%;
+    height: 100%;
+}
+/*===========================================*/
+/* speed */
+#Mspeed_table{
+    width: 100%;
+    height: 100%;
+}
+/*===========================================*/
+/* joy stick */
+#Joystick {
+    position: relative;
+    bottom: 5%;
+    left: 12%;
+    width: 250px;
+    height: 250px;
+    z-index: 1;
+    border-radius: 250px;
+    /*border-style: dashed;*/
+    border-color: rgba(255, 255, 255, 0.5);
+    background-color: rgb(255, 255, 255);
+    cursor: crosshair;
+}
+
+#Joystick_Canvas {
+    width: 100%;
+    height: 100%;
+}

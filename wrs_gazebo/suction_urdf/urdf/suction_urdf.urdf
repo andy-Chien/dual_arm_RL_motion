@@ -1,0 +1,100 @@
+<?xml version="1.0"?>
+<robot
+  name="suction_urdf">
+  <link
+    name="tool_link">
+    <inertial>
+      <origin
+        xyz="-0.003041 0.0027723 0.043545"
+        rpy="0 0 0" />
+      <mass
+        value="0.11123" />
+      <inertia
+        ixx="8.4875E-05"
+        ixy="4.1003E-07"
+        ixz="4.0241E-06"
+        iyy="0.00010438"
+        iyz="6.5325E-07"
+        izz="4.7593E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://suction_urdf/meshes/tool_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://suction_urdf/meshes/tool_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="tool_end_Link">
+    <inertial>
+      <origin
+        xyz="9.909E-05 0.0039906 0.025651"
+        rpy="0 0 0" />
+      <mass
+        value="0.033438" />
+      <inertia
+        ixx="2.0813E-05"
+        ixy="1.7379E-08"
+        ixz="9.2823E-08"
+        iyy="1.8619E-05"
+        iyz="4.6462E-06"
+        izz="5.6779E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://suction_urdf/meshes/tool_end_Link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://suction_urdf/meshes/tool_end_Link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="tool_joint"
+    type="revolute">
+    <origin
+      xyz="0 0.002 0.1045"
+      rpy="-1.7985E-15 -2.9973E-16 1.1669E-16" />
+    <parent
+      link="tool_link" />
+    <child
+      link="tool_end_Link" />
+    <axis
+      xyz="0 1 0" />
+    <limit
+      effort="0"
+      velocity="0" />
+  </joint>
+</robot>

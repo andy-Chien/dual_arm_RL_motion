@@ -1,0 +1,1 @@
+- git: {local-name: robotis_controller_msgs, uri: 'https://github.com/ROBOTIS-GIT/ROBOTIS-Framework-msgs.git', version: master}

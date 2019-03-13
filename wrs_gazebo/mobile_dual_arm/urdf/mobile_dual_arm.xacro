@@ -1,0 +1,145 @@
+<?xml version="1.0"?>
+<robot name="mobile_dual_arm" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:include filename="$(find single_arm_description)/urdf/single_arm.xacro" />
+  <xacro:include filename="$(find Slide_rail)/urdf/Slide_rail.xacro" />
+  <xacro:include filename="$(find suction_urdf)/urdf/suction_urdf.xacro" />
+  <!--xacro:include filename="$(find single_arm_description)/urdf/materials.xacro" /-->
+  <xacro:include filename="$(find mobile_dual_arm)/urdf/mobile_dual_arm.gazebo" />
+  <xacro:include filename="$(find mobile_table)/urdf/mobile_table.xacro" />
+
+  <link name="world"/>
+
+  <!-- <joint name="fixed1" type="fixed">
+    <origin
+      xyz="0 0 0.562"
+      rpy="0 0 0" />
+    <parent link="world"/>
+    <child link="base_link"/>
+  </joint> -->
+  <joint name="fixed3" type="fixed">
+    <origin
+      xyz="0 0 0.562"
+      rpy="0 0 0" />
+    <parent link="world"/>
+    <child link="mobile_base"/>
+  </joint>
+       
+  <xacro:single_arm side="r"  parent="Arm_Base_R_Link" child="r_tool_link" toolrot="1.57">
+    <origin xyz="0 -0.016 0" rpy="1.57 1.57 0" />
+  </xacro:single_arm>
+
+  <xacro:suction side="r"  parent="r_Link_6">
+    <origin xyz="0 -0.016 0" rpy="0 0 -1.57" />
+  </xacro:suction>
+
+  <xacro:single_arm side="l"  parent="Arm_Base_L_Link" child="l_tool_link" toolrot="-1.57">
+    <origin xyz="0 0.016 0" rpy="-1.57 1.57 0" />
+  </xacro:single_arm>
+
+  <xacro:suction side="l"  parent="l_Link_6">
+    <origin xyz="0 0.016 0" rpy="0 0 1.57" />
+  </xacro:suction>
+
+
+
+  <!--joint name="fixed" type="fixed">
+    <origin
+      xyz="0 0.016 0"
+      rpy="-1.57 1.57 0" />
+    <parent link="Arm_Base_L_Link"/>
+    <child link="Base"/>
+  </joint-->
+
+  <joint name="fixed1" type="fixed">
+    <origin
+      xyz="0 0 0"
+      rpy="0 0 0" />
+    <parent link="mobile_base"/>
+    <child link="base_link"/>
+  </joint>
+
+  <!--joint name="fixed2" type="fixed">
+    <origin
+      xyz="0 -0.016 0"
+      rpy="1.57 1.57 0" />
+    <parent link="Arm_Base_R_Link"/>
+    <child link="Arm_Base_R"/>
+  </joint-->
+
+  <link name="Bin">
+    <inertial>
+      <origin
+	xyz="0 0 0"
+	rpy="0 0 0" />
+      <mass
+	value="0.823603974032196" />
+      <inertia
+	ixx="0"
+	ixy="0"
+	ixz="0"
+	iyy="0"
+	iyz="0"
+	izz="0" />
+    </inertial>
+    <visual>
+      <origin
+	xyz="0 0 0"
+	rpy="0 0 0" />
+      <geometry>
+	<mesh
+          scale="0.001 0.001 0.001"
+	  filename="package://mobile_dual_arm/scene/meshes/bin.STL" />
+      </geometry>
+      <material
+	name="blue_">
+	<color
+	  rgba="0.4 0.66 0.99 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+	xyz="0 0 0"
+	rpy="0 0 0" />
+      <geometry>
+	<mesh
+          scale="0.001 0.001 0.001"
+	  filename="package://mobile_dual_arm/scene/meshes/bin.STL" />
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="fixed4" type="fixed">
+    <origin
+      xyz="-0.175 -0.31 0.06"
+      rpy="0 0 1.5708" />
+    <parent link="mobile_base"/>
+    <child link="Bin"/>
+  </joint>
+
+
+  <transmission name="tran1_slide_R">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="Slide_R">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor1_slide_R">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="tran_slide_L">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="Slide_L">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor_slide_L">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+</robot>
+
+

@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" name="author" content="Minda">
+    <title>WRS_Mobile</title>
+
+    <!-- css lib -->
+    <link rel="stylesheet" href="font-awesome-4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="bootstrap-3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="jquery-ui-1.12.1/jquery-ui.css">
+    <!-- js lib -->
+    <script src="jquery-ui-1.12.1/external/jquery/jquery.js"></script>
+    <script src="jquery-ui-1.12.1/jquery-ui.min.js"></script>
+    <script src="bootstrap-3.3.7/js/bootstrap.min.js"></script>
+    <!-- Ros lib -->
+    <script src="js/ros/eventemitter2.min.js"></script>
+    <script src="js/ros/roslib.js"></script>
+
+    <!-- =========================== Custom ============================ -->
+    <!-- css lib -->
+    <link rel="stylesheet" href="css/RangeStyle.css">
+    <link rel="stylesheet" href="css/form.css">
+    <link rel="stylesheet" href="css/manual.css">
+    <link rel="stylesheet" href="css/param.css">
+    <link rel="stylesheet" href="css/vision.css">
+    <!-- js lib -->
+
+</head>
+
+<body class="Overflow" onload="Init()">
+    <div class="modal-dialog UI_Background UI_Size Overflow">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">WRS_Mobile (請確保網路順暢 要不然有機會暴衝)</h2>
+                <div id="WifiButton">
+                    <i class="fa fa-3x fa-wifi" id="WifiButton-style" aria-hidden="true" data-toggle="modal"
+                        data-target="#connect_Robot"></i>
+                </div>
+            </div>
+            <div class="modal-body UI_BodySize">
+                <table id="body_base">
+                    <tr>
+                        <td id="param_base">
+                            <table id="param_table">
+                                <tr id="Pbutton_tr">
+                                    <td>
+                                        <table id="Pbutton_table">
+                                            <tr>
+                                                <td>
+                                                    <div>
+                                                        <input type="radio" id="Scan" name="Pbutton" href="#scan_setting"
+                                                            tabindex="-1" />
+                                                        <label for="Scan">Scan</label>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div>
+                                                        <input type="radio" id="QRcode" name="Pbutton" href="#qrcode_setting"
+                                                            tabindex="-1" />
+                                                        <label for="QRcode">QRcode</label>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div>
+                                                        <input type="radio" id="Strategy" name="Pbutton" class="active"
+                                                            href="#strategy_setting" tabindex="-1" checked="checked" />
+                                                        <label for="Strategy">Strategy</label>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div id="param_setting" class="tab-content">
+                                            <div id="scan_setting" class="tab-pane fade">
+                                                <table class="param_table">
+                                                    <tr class="scan_param_tr">
+                                                        <td>
+                                                            <label>MiddleY</label>
+                                                        </td>
+                                                        <td>
+                                                            <input type="range" name="ScanElement" min="0" max="480"
+                                                                value="0" oninput="rangeValue(this.value,this.name,1);" />
+                                                        </td>
+                                                        <td>
+                                                            <input name="ScanElement" placeholder="Speed" value="0"
+                                                                type="number" min="0" max="480" oninput="rangeValue(this.value,this.name,0);" />
+                                                        </td>
+                                                    </tr>
+                                                    <tr class="scan_param_tr">
+                                                        <td>
+                                                            <label>Range</label>
+                                                        </td>
+                                                        <td>
+                                                            <input type="range" name="ScanElement" min="0" max="239"
+                                                                value="0" oninput="rangeValue(this.value,this.name,3);" />
+                                                        </td>
+                                                        <td>
+                                                            <input name="ScanElement" placeholder="Speed" value="0"
+                                                                type="number" min="0" max="239" oninput="rangeValue(this.value,this.name,2);" />
+                                                        </td>
+                                                    </tr>
+                                                    <tr class="scan_param_tr">
+                                                        <td>
+                                                            <label>Threshold</label>
+                                                        </td>
+                                                        <td>
+                                                            <input type="range" name="ScanElement" min="0" max="255"
+                                                                value="0" oninput="rangeValue(this.value,this.name,5);" />
+                                                        </td>
+                                                        <td>
+                                                            <input name="ScanElement" placeholder="Speed" value="0"
+                                                                type="number" min="0" max="255" oninput="rangeValue(this.value,this.name,4);" />
+                                                        </td>
+                                                    </tr>
+                                                    <tr class="scan_param_tr">
+                                                        <td>
+                                                            <label>Weight</label>
+                                                        </td>
+                                                        <td>
+                                                            <input type="range" name="ScanElement" min="0" max="100"
+                                                                value="0" oninput="rangeValue(this.value,this.name,7);" />
+                                                        </td>
+                                                        <td>
+                                                            <input name="ScanElement" placeholder="Speed" value="0"
+                                                                type="number" min="0" max="100" oninput="rangeValue(this.value,this.name,6);" />
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>
+                                                        </td>
+                                                        <td>
+                                                            <button id="scan_save" class="btn btn-primary" value="0">SAVE</button>
+                                                        </td>
+                                                        <td>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                            <div id="qrcode_setting" class="tab-pane fade">
+                                                <label>None</label>
+                                            </div>
+                                            <div id="strategy_setting" class="tab-pane fade in active">
+                                                <table class="param_table">
+                                                    <tr class="strategy_label_tr">
+                                                        <td colspan="3">
+                                                            <h2>Test</h2>
+                                                        </td>
+                                                        <td></td>
+                                                        <td></td>
+                                                    </tr>
+                                                    <tr class="strategy_button_tr">
+                                                        <td>
+                                                            <button name="strategy_button" class="btn btn-primary">Init</button>
+                                                        </td>
+                                                        <td>
+                                                            <button name="strategy_button" class="btn btn-primary">mobile</button>
+                                                        </td>
+                                                        <td>
+                                                            <button name="strategy_button" class="btn btn-primary">platform</button>
+                                                        </td>
+                                                    </tr>
+                                                    <tr class="strategy_button_tr">
+                                                        <td>
+                                                            <button name="strategy_button" class="btn btn-primary">next</button>
+                                                        </td>
+                                                        <td>
+                                                            <button name="strategy_button" class="btn btn-primary">delivery</button>
+                                                        </td>
+                                                        <td>
+                                                            <button name="strategy_button" class="btn btn-primary">order</button>
+                                                        </td>
+                                                    </tr>
+                                                    <tr class="strategy_button_tr">
+                                                        <td>
+                                                            <button name="strategy_button" class="btn btn-primary">home</button>
+                                                        </td>
+                                                        <td>
+                                                            <button name="strategy_button" class="btn btn-primary">manual</button>
+                                                        </td>
+                                                        <td>
+                                                            <button name="strategy_button" class="btn btn-primary">NULL</button>
+                                                        </td>
+                                                    </tr>
+                                                    <tr class="strategy_label_tr">
+                                                        <td colspan="3">
+                                                            <h2>Param</h2>
+                                                        </td>
+                                                        <td></td>
+                                                        <td></td>
+                                                    </tr>
+                                                    <tr class="strategy_param_tr">
+                                                        <td colspan="3">
+                                                            <div class="strategy_param_div">
+                                                                <table class="param_table">
+                                                                    <tr>
+                                                                        <td>
+                                                                            <label>minVel</label>
+                                                                        </td>
+                                                                        <td>
+                                                                            <input class="strategy_param_input" name="StrategyElement" value="0" />
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td>
+                                                                            <label>velYaw</label>
+                                                                        </td>
+                                                                        <td>
+                                                                            <input class="strategy_param_input" name="StrategyElement" value="0" />
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td>
+                                                                            <label>rotateYaw</label>
+                                                                        </td>
+                                                                        <td>
+                                                                            <input class="strategy_param_input" name="StrategyElement" value="0" />
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td>
+                                                                            <label>crossTime</label>
+                                                                        </td>
+                                                                        <td>
+                                                                            <input class="strategy_param_input" name="StrategyElement" value="0" />
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td>
+                                                                            <label>errorRotate0</label>
+                                                                        </td>
+                                                                        <td>
+                                                                            <input class="strategy_param_input" name="StrategyElement" value="0" />
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td>
+                                                                            <label>errorRotate90</label>
+                                                                        </td>
+                                                                        <td>
+                                                                            <input class="strategy_param_input" name="StrategyElement" value="0" />
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td>
+                                                                            <label>rotateSlowAng</label>
+                                                                        </td>
+                                                                        <td>
+                                                                            <input class="strategy_param_input" name="StrategyElement" value="0" />
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td>
+                                                                            <label>errorAng</label>
+                                                                        </td>
+                                                                        <td>
+                                                                            <input class="strategy_param_input" name="StrategyElement" value="0" />
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td>
+                                                                            <label>errorMoibledis</label>
+                                                                        </td>
+                                                                        <td>
+                                                                            <input class="strategy_param_input" name="StrategyElement" value="0" />
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td>
+                                                                            <label>errorMoibleAng</label>
+                                                                        </td>
+                                                                        <td>
+                                                                            <input class="strategy_param_input" name="StrategyElement" value="0" />
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td>
+                                                                            <label>errorCorrectionDis</label>
+                                                                        </td>
+                                                                        <td>
+                                                                            <input class="strategy_param_input" name="StrategyElement" value="0" />
+                                                                        </td>
+                                                                    </tr>
+                                                                </table>
+                                                            </div>
+                                                        </td>
+                                                        <td></td>
+                                                        <td></td>
+                                                    </tr>
+                                                    <tr class="strategy_button_tr">
+                                                        <td></td>
+                                                        <td><button id="strategy_save" class="btn btn-primary" value="0">SAVE</button></td>
+                                                        <td></td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                        <td id="vision_base">
+                            <table id="vision_table">
+                                <tr id="decide_display">
+                                    <td>
+                                        <div class="form-group" align="center" id="decide_window">
+                                            <img id="decide_player" src="img/offline.png">
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr id="image_display">
+                                    <td>
+                                        <div class="form-group" align="center" id="image_window">
+                                            <img id="image_player" src="img/offline.png">
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr id="state_manager">
+                                    <td>
+                                        <table id="state_button_table">
+                                            <tr>
+                                                <td>
+                                                    <button name="strategy_state" class="btn btn-primary btn-lg">start</button>
+                                                </td>
+                                                <td>
+                                                    <button name="strategy_state" class="btn btn-primary btn-lg">stop</button>
+                                                </td>
+                                                <td>
+                                                    <button class="btn btn-primary" value="0">view</button>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                        <td id="manual_base">
+                            <table id="manual_table">
+                                <tr id="Mdisplay_tr">
+                                    <td>
+                                        <div id="robot_state">
+
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr id="Mbutton_tr">
+                                    <td>
+                                        <table id="Mbutton_table">
+                                            <tr>
+                                                <td>
+                                                    <div>
+                                                        <label id="manual_button" class="fa-3x fa fa-gamepad"
+                                                            aria-hidden="true">
+                                                            <input id="manual_button_checked" type="checkbox" onclick="Manual_button()"
+                                                                style='display:none;' />
+                                                        </label>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div>
+                                                        <label id="manual_keyboard" class="fa-3x fa fa-keyboard-o"
+                                                            aria-hidden="true">
+                                                            <input id="manual_keyboard_checked" type="checkbox" checked="false"
+                                                                style='display:none;' />
+                                                        </label>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr id="Mspeed_tr">
+                                    <td>
+                                        <table id="Mspeed_table">
+                                            <tr>
+                                                <td colspan="2">
+                                                    <label>Speed</label>
+                                                </td>
+                                                <td>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <input type="range" name="SpeedElement" min="0" max="100" value="0"
+                                                        oninput="rangeValue(this.value,this.name,1);" />
+                                                </td>
+                                                <td>
+                                                    <input id="SpeedInput" name="SpeedElement" placeholder="Speed"
+                                                        value="0" type="number" min="0" max="100" oninput="rangeValue(this.value,this.name,0);" />
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr id="Mjoystick_tr">
+                                    <td>
+                                        <div id="Joystick" class="form-group">
+                                            <canvas id="Joystick_Canvas">
+                                                Your browser does not support the HTML5 canvas tag.
+                                            </canvas>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    <!-- Wifi Setting-->
+    <div class="modal fade UI_Background" id="connect_Robot" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-sm">
+            <div class="WifiContent-style">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title">Connect To Robot</h4>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="form-group">
+                            <label for="RobotIPDATA" class="control-label">Robot_IP:</label>
+                            <input name="RobotIPDATA" type="text" class="form-control" id="RobotIP" value=IP.textContent>
+                        </div>
+                        <div class="form-group">
+                            <label for="RobotHostDATA" class="control-label">Robot_Host:</label>
+                            <input name="RobotHostDATA" type="text" class="form-control" id="RobotHost" value=Host.textContent>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal" onclick="ros.close();">Close</button>
+                    <button type="button" class="btn btn-primary" id="send-message" onclick="RobotConnect();history.go(0);">Connect</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+<footer>
+    <!-- ros lib -->
+    <script src="js/ros/RobotConnect.js"></script>
+    <script src="js/ros/class.js"></script>
+    <script src="js/ros/variable.js"></script>
+    <script src="js/ros/rostopic.js"></script>
+    <script src="js/ros/rosparam.js"></script>
+    <!-- lib -->
+    <script src="js/lib/Joystick.js"></script>
+    <script src="js/lib/init.js"></script>
+    <script src="js/lib/KeyboardControl.js"></script>
+    <script src="js/slider/SliderControl.js"></script>
+    <script src="js/lib/CloseCenterRightButton.js"></script>
+    <script src="js/lib/CloseReverseOut.js"></script>
+    <script>
+        $("#Pbutton_table").buttonset();
+        $('input[name="Pbutton"]').click(function () {
+            $(this).tab('show');
+        });
+    </script>
+</footer>
+
+</html>

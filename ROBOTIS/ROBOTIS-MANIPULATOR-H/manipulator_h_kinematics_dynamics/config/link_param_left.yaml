@@ -1,0 +1,13 @@
+# dh links table [deg]
+dh_links:
+  0: {a: 0,    alpha: -90, d:      0, theta:   0}  # link 0
+  1: {a: 0,    alpha: -90, d: 0.2685, theta:  90}  # link 1
+  2: {a: 0,    alpha: -90, d:      0, theta: -90}  # link 2
+  3: {a: -0.03, alpha:  90, d:  0.29, theta:   0}  # link 3
+  4: {a: 0.03, alpha: -90, d:      0, theta:   0}  # link 4
+  5: {a: 0,    alpha:  90, d:  0.263, theta:   0}  # link 5, 0.260
+  6: {a: 0,    alpha: -90, d:      0, theta:   0}  # link 6
+  7: {a: 0,    alpha:   0, d:   0.24, theta:   90}  # link 7, 0.134
+
+# length from shoulder to lowwer joint [m]
+L_sl: 0.1973

@@ -1,0 +1,6 @@
+string    group_name
+---
+geometry_msgs/Pose group_pose
+float64[]          euler
+float64[]          orientation
+float64            phi

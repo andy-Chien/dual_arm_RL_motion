@@ -1,0 +1,96 @@
+/* TIMDA Color: #CBDAE6, #A0C7E5, #4885B3, #075B9B, #033860 #9fa7ad*/
+html {
+  height: 100%;
+  background: -webkit-linear-gradient(left top,#CBDAE6, #a0c7e5);
+  background: -o-linear-gradient(bottom right,#CBDAE6, #a0c7e5);
+}
+h1, h2 {
+  color: #033860;
+}
+.footer {
+  position: absolute;
+  left: 0;
+  bottom: 5%;
+  width: 100%;
+  height: 10em;
+  color: gray;
+  text-align: center;
+  overflow: auto;
+}
+.recording {
+  background-color: #4885B3;
+}
+.btn {
+  background-color: #CBDAF6;
+  color: #033860;
+  border: 3px solid #033860;
+}
+.btn:hover {
+  background-color: #4885B3;
+  cursor: pointer;
+  animation: bounce 0.5s;
+}
+button {
+  min-width: 80px;
+  max-width: 200px;
+  text-decoration: none;
+  display: inline-block;
+  outline: none;
+  cursor: pointer;
+  border-style: none;
+  border-radius: 100%;
+  overflow: none;
+  text-align: center;
+  padding:0;
+  font-weight: bold;
+  font-size: large;
+  color: white;
+  box-shadow:4px 4px 6px 1px #9fa7ad;
+}
+button:before {
+  content:'';
+  display:inline-block;;
+  vertical-align:middle;
+  padding-top:100%;
+}
+img{
+  width: 20%;
+}
+
+@keyframes bounce {
+  0%, 20%, 60%, 100% {
+    -webkit-transform: translateY(0);
+    transform: translateY(0);
+  }
+
+  40% {
+    -webkit-transform: translateY(-10px);
+    transform: translateY(-10px);
+  }
+
+  80% {
+    -webkit-transform: translateY(-3px);
+    transform: translateY(-3px);
+  }
+}
+@media screen and (max-width: 900px) {
+  * {
+    text-align: center;
+  }
+  .centered {
+    width: 100%;
+    position: fixed;
+    top: 15%;
+  }
+  .full-view {
+    display: none;
+  }
+  button {
+    width: 70%;
+    height: 70%;
+  }
+}
+@media screen and (min-width: 900px) {
+  ul { list-style: none; }
+  #recordingslist audio { display: block; margin-bottom: 10px; }
+}

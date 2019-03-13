@@ -1,0 +1,30 @@
+[device info]
+model_name  = OPEN-CR
+device_type = sensor
+
+[control table]
+# addr | item name                | length | access | memory |   min value   |  max value  | signed
+   0   | model_number             | 2      | R      | EEPROM | 0             | 65535       | N
+   2   | version_of_firmware      | 1      | R      | EEPROM | 0             | 254         | N
+   3   | ID                       | 1      | RW     | EEPROM | 0             | 252         | N
+   4   | baudrate                 | 1      | RW     | EEPROM | 0             | 252         | N
+   5   | return_delay_time        | 1      | RW     | EEPROM | 0             | 254         | N
+   16  | status_return_level      | 1      | RW     | EEPROM | 0             | 2           | N
+   24  | dynamixel_power          | 1      | RW     | RAM    | 0             | 1           | N
+   25  | LED                      | 1      | RW     | RAM    | 0             | 7           | N
+   26  | LED_RGB                  | 2      | RW     | RAM    | 0             | 32767       | N
+   28  | buzzer                   | 2      | RW     | RAM    | 0             | 65535       | N
+   30  | button                   | 1      | R      | RAM    | 0             | 15          | N
+   31  | present_voltage          | 1      | R      | RAM    | 50            | 250         | N
+   32  | gyro_x                   | 2      | R      | RAM    | -32800        | 32800       | Y
+   34  | gyro_y                   | 2      | R      | RAM    | -32800        | 32800       | Y
+   36  | gyro_z                   | 2      | R      | RAM    | -32800        | 32800       | Y
+   38  | acc_x                    | 2      | R      | RAM    | -32768        | 32768       | Y
+   40  | acc_y                    | 2      | R      | RAM    | -32768        | 32768       | Y
+   42  | acc_z                    | 2      | R      | RAM    | -32768        | 32768       | Y
+   44  | roll                     | 2      | R      | RAM    | 0             | 4096        | N
+   46  | pitch                    | 2      | R      | RAM    | 0             | 4096        | N
+   48  | yaw                      | 2      | R      | RAM    | 0             | 4096        | N
+   50  | imu_control              | 1      | RW     | RAM    | 0             | 255         | N
+   
+   

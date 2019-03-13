@@ -1,0 +1,532 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+
+  <xacro:include filename="$(find single_arm_description)/urdf/single_arm.transmission.xacro" />
+  <xacro:include filename="$(find single_arm_description)/urdf/single_arm.gazebo.xacro" />
+  <xacro:include filename="$(find single_arm_description)/urdf/materials.xacro" />
+  <!-- Constants for robot dimensions -->
+
+
+  <xacro:macro name="single_arm" params="side parent child toolrot *origin">
+  
+	  <link
+	    name="${side}_Base">
+	    <inertial>
+	      <origin
+		xyz="4.11470055452497E-06 -0.000230371464482181 0.0621924893349088"
+		rpy="0 0 0" />
+	      <mass
+		value="1.323603974032196" />
+	      <inertia
+		ixx="0.001455064048603135"
+		ixy="-3.55501513691674E-10"
+		ixz="7.08270540818938E-08"
+		iyy="0.001455465136904512"
+		iyz="-4.18207256663005E-06"
+		izz="0.001143220234175012" />
+	    </inertial>
+	    <visual>
+	      <origin
+		xyz="0 0 0"
+		rpy="0 0 0" />
+	      <geometry>
+		<mesh
+		  filename="package://single_arm_description/meshes/Base.STL" />
+	      </geometry>
+	      <material
+		name="">
+		<color
+		  rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+	      </material>
+	    </visual>
+	    <collision>
+	      <origin
+		xyz="0 0 0"
+		rpy="0 0 0" />
+	      <geometry>
+		<mesh
+		  filename="package://single_arm_description/meshes/Base.STL" />
+	      </geometry>
+	    </collision>
+	  </link>
+
+	  <joint name="${side}_fixed" type="fixed">
+	    <xacro:insert_block name="origin" />
+	    <parent link="${parent}"/>
+	    <child link="${side}_Base"/>
+	  </joint>
+
+	  <link
+	    name="${side}_Link_1">
+	    <inertial>
+	      <origin
+		xyz="0.000398625697734733 -3.44839622274201E-06 0.157268979305323"
+		rpy="0 0 0" />
+	      <mass
+		value="1.386131223153925" />
+	      <inertia
+		ixx="0.001200765323548107"
+		ixy="6.33822973856499E-08"
+		ixz="3.37474284646834E-06"
+		iyy="0.001623834801578886"
+		iyz="3.68525728102142E-09"
+		izz="0.001612483984092004" />
+	    </inertial>
+	    <visual>
+	      <origin
+		xyz="0 0 0"
+		rpy="0 0 0" />
+	      <geometry>
+		<mesh
+		  filename="package://single_arm_description/meshes/Link_1.STL" />
+	      </geometry>
+	      <material
+		name="">
+		<color
+		  rgba="0.898039215686275 0.917647058823529 0.929411764705882 1" />
+	      </material>
+	    </visual>
+	    <collision>
+	      <origin
+		xyz="0 0 0"
+		rpy="0 0 0" />
+	      <geometry>
+		<mesh
+		  filename="package://single_arm_description/meshes/Link_1.STL" />
+	      </geometry>
+	    </collision>
+	  </link>
+	  <joint
+	    name="${side}_joint_1"
+	    type="revolute">
+	    <origin
+	      xyz="0 0 0"
+	      rpy="0 0 -1.5708" />
+	    <parent
+	      link="${side}_Base" />
+	    <child
+	      link="${side}_Link_1" />
+	    <axis
+	      xyz="0 0 1" />
+	    <limit
+	      lower="-3.14"
+	      upper="3.14"
+	      effort="75"
+	      velocity="65" />
+	  </joint>
+	  <link
+	    name="${side}_Link_2">
+	    <inertial>
+	      <origin
+		xyz="0.0872199190349209 -2.17078867403853E-06 -0.00123755630277769"
+		rpy="0 0 0" />
+	      <mass
+		value="1.479430893999342" />
+	      <inertia
+		ixx="0.002887413979825882"
+		ixy="1.36773393697294E-07"
+		ixz="-4.84905913809873E-05"
+		iyy="0.00222472742020732"
+		iyz="1.07962478497798E-09"
+		izz="0.00177858011962364" />
+	    </inertial>
+	    <visual>
+	      <origin
+		xyz="0 0 0"
+		rpy="0 0 0" />
+	      <geometry>
+		<mesh
+		  filename="package://single_arm_description/meshes/Link_2.STL" />
+	      </geometry>
+	      <material
+		name="">
+		<color
+		  rgba="0.898039215686275 0.917647058823529 0.929411764705882 1" />
+	      </material>
+	    </visual>
+	    <collision>
+	      <origin
+		xyz="0 0 0"
+		rpy="0 0 0" />
+	      <geometry>
+		<mesh
+		  filename="package://single_arm_description/meshes/Link_2.STL" />
+	      </geometry>
+	    </collision>
+	  </link>
+	  <joint
+	    name="${side}_joint_2"
+	    type="revolute">
+	    <origin
+	      xyz="0 0 0.16"
+	      rpy="1.5708 0 1.5708" />
+	    <parent
+	      link="${side}_Link_1" />
+	    <child
+	      link="${side}_Link_2" />
+	    <axis
+	      xyz="0 0 -1" />
+	    <limit
+	      lower="-3.14"
+	      upper="3.14"
+	      effort="75"
+	      velocity="65" />
+	  </joint>
+	  <link
+	    name="${side}_Link_3">
+	    <inertial>
+	      <origin
+		xyz="-0.0149070189110112 5.93125910155643E-05 0.262650975551228"
+		rpy="0 0 0" />
+	      <mass
+		value="1.568306813792926" />
+	      <inertia
+		ixx="0.000977671503849515"
+		ixy="-1.85851004793169E-06"
+		ixz="0.000224814563369834"
+		iyy="0.000907409589152346"
+		iyz="1.44538660942772E-06"
+		izz="0.000609688957329931" />
+	    </inertial>
+	    <visual>
+	      <origin
+		xyz="0 0 0"
+		rpy="0 0 0" />
+	      <geometry>
+		<mesh
+		  filename="package://single_arm_description/meshes/Link_3.STL" />
+	      </geometry>
+	      <material
+		name="">
+		<color
+		  rgba="0.898039215686275 0.917647058823529 0.929411764705882 1" />
+	      </material>
+	    </visual>
+	    <collision>
+	      <origin
+		xyz="0 0 0"
+		rpy="0 0 0" />
+	      <geometry>
+		<mesh
+		  filename="package://single_arm_description/meshes/Link_3.STL" />
+	      </geometry>
+	    </collision>
+	  </link>
+	  <joint
+	    name="${side}_joint_3"
+	    type="revolute">
+	    <origin
+	      xyz="0 0 0"
+	      rpy="1.5708 0 1.5708" />
+	    <parent
+	      link="${side}_Link_2" />
+	    <child
+	      link="${side}_Link_3" />
+	    <axis
+	      xyz="0 0 1" />
+	    <limit
+	      lower="-3.14"
+	      upper="3.14"
+	      effort="65"
+	      velocity="65" />
+	  </joint>
+	  <link
+	    name="${side}_Link_4">
+	    <inertial>
+	      <origin
+		xyz="-0.0294457805062883 -0.0888739607940883 8.91006395364796E-05"
+		rpy="0 0 0" />
+	      <mass
+		value="1.457613402476782" />
+	      <inertia
+		ixx="0.00203111007559186"
+		ixy="-3.51922856144699E-05"
+		ixz="1.00599592333376E-06"
+		iyy="0.000727015941977056"
+		iyz="-1.55525051076035E-07"
+		izz="0.0017620916887768" />
+	    </inertial>
+	    <visual>
+	      <origin
+		xyz="0 0 0"
+		rpy="0 0 0" />
+	      <geometry>
+		<mesh
+		  filename="package://single_arm_description/meshes/Link_4.STL" />
+	      </geometry>
+	      <material
+		name="">
+		<color
+		  rgba="0.898039215686275 0.917647058823529 0.929411764705882 1" />
+	      </material>
+	    </visual>
+	    <collision>
+	      <origin
+		xyz="0 0 0"
+		rpy="0 0 0" />
+	      <geometry>
+		<mesh
+		  filename="package://single_arm_description/meshes/Link_4.STL" />
+	      </geometry>
+	    </collision>
+	  </link>
+	  <joint
+	    name="${side}_joint_4"
+	    type="revolute">
+	    <origin
+	      xyz="-0.03 0 0.29"
+	      rpy="-1.5708 0 -3.1416" />
+	    <parent
+	      link="${side}_Link_3" />
+	    <child
+	      link="${side}_Link_4" />
+	    <axis
+	      xyz="0 0 1" />
+	    <limit
+	      lower="-3.14"
+	      upper="3.14"
+	      effort="65"
+	      velocity="65" />
+	  </joint>
+	  <link
+	    name="${side}_Link_5">
+	    <inertial>
+	      <origin
+		xyz="1.27279603523434E-10 5.99983513058479E-05 0.247701821537204"
+		rpy="0 0 0" />
+	      <mass
+		value="1.448277275798768" />
+	      <inertia
+		ixx="0.000586042802462016"
+		ixy="-2.61241091872441E-21"
+		ixz="-5.7648171774193E-14"
+		iyy="0.000388281045248129"
+		iyz="-4.62027057882325E-06"
+		izz="0.000403574311308375" />
+	    </inertial>
+	    <visual>
+	      <origin
+		xyz="0 0 0"
+		rpy="0 0 0" />
+	      <geometry>
+		<mesh
+		  filename="package://single_arm_description/meshes/Link_5.STL" />
+	      </geometry>
+	      <material
+		name="">
+		<color
+		  rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+	      </material>
+	    </visual>
+	    <collision>
+	      <origin
+		xyz="0 0 0"
+		rpy="0 0 0" />
+	      <geometry>
+		<mesh
+		  filename="package://single_arm_description/meshes/Link_5.STL" />
+	      </geometry>
+	    </collision>
+	  </link>
+	  <joint
+	    name="${side}_joint_5"
+	    type="revolute">
+	    <origin
+	      xyz="-0.03 0 0"
+	      rpy="-1.5708 -6.5485E-17 -3.1416" />
+	    <parent
+	      link="${side}_Link_4" />
+	    <child
+	      link="${side}_Link_5" />
+	    <axis
+	      xyz="0 0 1" />
+	    <limit
+	      lower="-3.14"
+	      upper="3.14"
+	      effort="65"
+	      velocity="65" />
+	  </joint>
+	  <link
+	    name="${side}_Link_6">
+	    <inertial>
+	      <origin
+		xyz="1.27298144247945E-10 -0.0744505668165777 -7.66617635603494E-05"
+		rpy="0 0 0" />
+	      <mass
+		value="1.205818407044008" />
+	      <inertia
+		ixx="0.000271432188933754"
+		ixy="4.42123628038152E-18"
+		ixz="1.44977628429904E-16"
+		iyy="0.000143902079306418"
+		iyz="2.7663385335139E-07"
+		izz="0.000196835999327886" />
+	    </inertial>
+	    <visual>
+	      <origin
+		xyz="0 0 0"
+		rpy="0 0 0" />
+	      <geometry>
+		<mesh
+		  filename="package://single_arm_description/meshes/Link_6.STL" />
+	      </geometry>
+	      <material
+		name="">
+		<color
+		  rgba="0.898039215686275 0.917647058823529 0.929411764705882 1" />
+	      </material>
+	    </visual>
+	    <collision>
+	      <origin
+		xyz="0 0 0"
+		rpy="0 0 0" />
+	      <geometry>
+		<mesh
+		  filename="package://single_arm_description/meshes/Link_6.STL" />
+	      </geometry>
+	    </collision>
+	  </link>
+	  <joint
+	    name="${side}_joint_6"
+	    type="revolute">
+	    <origin
+	      xyz="0 0 0.263"
+	      rpy="-1.5708 0 4.5659E-16" />
+	    <parent
+	      link="${side}_Link_5" />
+	    <child
+	      link="${side}_Link_6" />
+	    <axis
+	      xyz="0 0 -1" />
+	    <limit
+	      lower="-3.14"
+	      upper="3.14"
+	      effort="65"
+	      velocity="65" />
+	  </joint>
+	  <!-- <link
+	    name="${side}_Link_7">
+	    <inertial>
+	      <origin
+		xyz="-0.00300603996967419 -5.54762008899146E-05 0.256296304324454"
+		rpy="0 0 0" />
+	      <mass
+		value="0.0968605125725848" />
+	      <inertia
+		ixx="0.000598660550174727"
+		ixy="1.6879862442818E-08"
+		ixz="-2.31313376077572E-05"
+		iyy="0.000605976408521062"
+		iyz="1.75519608508907E-07"
+		izz="2.73730335090959E-05" />
+	    </inertial>
+	    <visual>
+	      <origin
+		xyz="0 0 0"
+		rpy="0 0 0" />
+	      <geometry>
+		<mesh
+		  filename="package://single_arm_description/meshes/Link_7.STL" />
+	      </geometry>
+	      <material
+		name="">
+		<color
+		  rgba="1 1 1 1" />
+	      </material>
+	    </visual>
+	    <collision>
+	      <origin
+		xyz="0 0 0"
+		rpy="0 0 0" />
+	      <geometry>
+		<mesh
+		  filename="package://single_arm_description/meshes/Link_7.STL" />
+	      </geometry>
+	    </collision>
+	  </link> -->
+		<joint
+			name="${side}_joint_7"
+			type="revolute">
+			<origin
+				xyz="0 -0.1345 0"
+				rpy="1.5708 ${toolrot} 0" />
+			<parent
+				link="${side}_Link_6" />
+			<child
+				link="${child}" />
+			<axis 
+				xyz="0 0 1" />
+			<limit
+				lower="-3.14"
+				upper="3.14"
+				effort="22"
+				velocity="65" />
+		</joint>
+		
+          <!--
+	  <link
+	    name="${side}_Link_8">
+	    <inertial>
+	      <origin
+		xyz="9.57945038487507E-05 -0.00931752529150576 -0.00542544640949998"
+		rpy="0 0 0" />
+	      <mass
+		value="0.0130047980464835" />
+	      <inertia
+		ixx="2.46491406196035E-06"
+		ixy="2.73921418079654E-09"
+		ixz="-1.30294079932031E-08"
+		iyy="1.47440149396087E-06"
+		iyz="6.68439506061302E-07"
+		izz="2.1558209563788E-06" />
+	    </inertial>
+	    <visual>
+	      <origin
+		xyz="0 0 0"
+		rpy="0 0 0" />
+	      <geometry>
+		<mesh
+		  filename="package://single_arm_description/meshes/Link_8.STL" />
+	      </geometry>
+	      <material
+		name="">
+		<color
+		  rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+	      </material>
+	    </visual>
+	    <collision>
+	      <origin
+		xyz="0 0 0"
+		rpy="0 0 0" />
+	      <geometry>
+		<mesh
+		  filename="package://single_arm_description/meshes/Link_8.STL" />
+	      </geometry>
+	    </collision>
+	  </link>
+	  <joint
+	    name="${side}_joint_8"
+	    type="revolute">
+	    <origin
+	      xyz="0 0 0.3985"
+	      rpy="-1.5708 0 0" />
+	    <parent
+	      link="${side}_Link_7" />
+	    <child
+	      link="${side}_Link_8" />
+	    <axis
+	      xyz="0 0 -1" />
+	    <limit
+	      lower="-3.14"
+	      upper="3.14"
+	      effort="2"
+	      velocity="2" />
+	  </joint>
+	-->
+	  
+	  <xacro:single_arm_transmission side="${side}" />
+	  <xacro:single_arm_gazebo side="${side}" />
+	  
+  </xacro:macro>
+</robot>
