@@ -27,7 +27,7 @@ import time
 # from arm_env import ArmEnv
 import gym
 from env import Test 
-env = Test()
+env = Test(0)
 # env = gym.make('Acrobot-v2')
 print(env.__str__())
 
@@ -141,7 +141,7 @@ class Worker(object):
         self.wid = wid
         # self.env = ArmEnv(mode=MODE[n_model])
         # self.env = gym.make('Acrobot-v2')
-        self.env = Test()
+        self.env = Test(0)
         self.ppo = GLOBAL_PPO
 
     def work(self):

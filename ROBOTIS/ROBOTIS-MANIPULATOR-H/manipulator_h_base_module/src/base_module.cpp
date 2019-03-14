@@ -162,18 +162,22 @@ void BaseModule::queueThread()
 bool BaseModule::env_reset_callback(train::environment::Request &req,
                                    train::environment::Response &res)
 {
-  double dis, mu;
-  for (int i=0; i<=MAX_JOINT_ID; i++)
+  if(req.action.size() > 1)
   {
-    dis = manipulator_->manipulator_link_data_[i]->joint_limit_max_ - manipulator_->manipulator_link_data_[i]->joint_limit_min_;
-    req.action[i] = req.action[i] * fabs(dis) + manipulator_->manipulator_link_data_[i]->joint_limit_min_;
-  }
+    double dis;
+    for (int i=0; i<=MAX_JOINT_ID; i++)
+    {
+      dis = manipulator_->manipulator_link_data_[i]->joint_limit_max_ - manipulator_->manipulator_link_data_[i]->joint_limit_min_;
+      req.action[i] = req.action[i] * fabs(dis) + manipulator_->manipulator_link_data_[i]->joint_limit_min_;
+    }
 
-  manipulator_->manipulator_link_data_[0]->slide_position_ = req.action[0];
-  for (int i=1; i<=MAX_JOINT_ID; i++)
-    manipulator_->manipulator_link_data_[i]->joint_angle_ = req.action[i];
+    manipulator_->manipulator_link_data_[0]->slide_position_ = req.action[0];
+    for (int i=1; i<=MAX_JOINT_ID; i++)
+      manipulator_->manipulator_link_data_[i]->joint_angle_ = req.action[i];
 
   manipulator_->forwardKinematics(7);
+  }
+
   Eigen::Quaterniond quaternion = robotis_framework::convertRotationToQuaternion(manipulator_->manipulator_link_data_[END_LINK]->orientation_);
   res.state.resize(8);
   res.joint_pos.resize(12);
@@ -205,42 +209,44 @@ bool BaseModule::env_reset_callback(train::environment::Request &req,
 bool BaseModule::training_callback(train::environment::Request &req,
                                    train::environment::Response &res)
 {
-  // if (enable_ == false)
-  //   return false;
-
-  // robotis_->p2p_pose_msg_ = *msg;
-  robotis_->ik_id_start_ = 0;
-  robotis_->ik_id_end_   = END_LINK;
+  bool slide_success = false;
+  bool ik_success = false;
   
-  Eigen::Vector3d p2p_positoin;
-  Eigen::Matrix3d p2p_rotation;
+  if(req.action.size() > 1)
+  {
+    robotis_->ik_id_start_ = 0;
+    robotis_->ik_id_end_   = END_LINK;
+    
+    Eigen::Vector3d p2p_positoin;
+    Eigen::Matrix3d p2p_rotation;
 
-  int     max_iter    = 30;
-  double  ik_tol      = 1e-3;
+    int     max_iter    = 30;
+    double  ik_tol      = 1e-3;
 
-  p2p_positoin << req.action[0], 
-                  req.action[1], 
-                  req.action[2];
+    p2p_positoin << req.action[0], 
+                    req.action[1], 
+                    req.action[2];
 
-  Eigen::Quaterniond p2p_quaterniond(req.action[3],
-                                     req.action[4],
-                                     req.action[5],
-                                     req.action[6]);
+    Eigen::Quaterniond p2p_quaterniond(req.action[3],
+                                      req.action[4],
+                                      req.action[5],
+                                      req.action[6]);
 
-  double p2p_phi = req.action[7];
-  p2p_rotation = robotis_framework::convertQuaternionToRotation(p2p_quaterniond);
-  manipulator_->forwardKinematics(7);
-  // std::cout<<"p2p_positoinp2p_positoin"<<std::endl<<p2p_positoin<<std::endl;
-  // std::cout<<"p2p_rotationp2p_rotation"<<std::endl<<p2p_rotation<<std::endl;
+    double p2p_phi = req.action[7];
+    p2p_rotation = robotis_framework::convertQuaternionToRotation(p2p_quaterniond);
+    manipulator_->forwardKinematics(7);
+    // std::cout<<"p2p_positoinp2p_positoin"<<std::endl<<p2p_positoin<<std::endl;
+    // std::cout<<"p2p_rotationp2p_rotation"<<std::endl<<p2p_rotation<<std::endl;
 
-  robotis_->is_ik = true;
-  bool    slide_success = manipulator_->slideInverseKinematics(p2p_positoin, p2p_rotation, 
-                                                            slide_->slide_pos, slide_->goal_slide_pos);
-  // std::cout<<"<<<<<<<<<<<<<<<<<<<slide_->goal_slide_pos<<<<<<<<<<<<<<<<<"<<std::endl<<slide_->goal_slide_pos<<std::endl;
-  bool    ik_success = manipulator_->inverseKinematics(robotis_->ik_id_end_,
-                                                            p2p_positoin, p2p_rotation, p2p_phi, slide_->goal_slide_pos, true);
-  robotis_->is_ik = false;
-  if (ik_success == true && slide_success == true)
+    robotis_->is_ik = true;
+    slide_success = manipulator_->slideInverseKinematics(p2p_positoin, p2p_rotation, 
+                                                              slide_->slide_pos, slide_->goal_slide_pos);
+    // std::cout<<"<<<<<<<<<<<<<<<<<<<slide_->goal_slide_pos<<<<<<<<<<<<<<<<<"<<std::endl<<slide_->goal_slide_pos<<std::endl;
+    ik_success = manipulator_->inverseKinematics(robotis_->ik_id_end_,
+                                                              p2p_positoin, p2p_rotation, p2p_phi, slide_->goal_slide_pos, true);
+    robotis_->is_ik = false;
+  }
+  if ((ik_success == true && slide_success == true) || req.action.size() < 2)
   {
     // manipulator_->forwardKinematics_train(7);
     Eigen::Quaterniond quaternion = robotis_framework::convertRotationToQuaternion(manipulator_->manipulator_link_data_[END_LINK]->orientation_);

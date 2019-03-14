@@ -37,11 +37,13 @@
         <remap from="/slide_feedback_msg"                 to="/$(arg side)_arm/slide_feedback_msg"        />
         <remap from="/slide_command_msg"                  to="/$(arg side)_arm/slide_command_msg"         />
         <remap from="/robot/wait"                         to="/$(arg side)_arm/wait"                      />
-	<remap from="/robot/clear_cmd"                    to="/$(arg side)_arm/clear_cmd"                 />
+	    <remap from="/robot/clear_cmd"                    to="/$(arg side)_arm/clear_cmd"                 />
 
         <!-- service -->
         <remap from="/robotis/base/get_joint_pose" 	  to="/$(arg side)_arm/get_joint_pose"	          />
         <remap from="/robotis/base/get_kinematics_pose"   to="/$(arg side)_arm/get_kinematics_pose"	  />
+        <remap from="/train_env"  to="/$(arg side)_arm/train_env"/>
+        <remap from="/env_reset"  to="/$(arg side)_arm/env_reset"/>
 
     </node>
 

@@ -6,9 +6,10 @@ from numpy import sin, cos, pi
 from gym import core, spaces
 from gym.utils import seeding
 import rospy
+import math
 from train.srv import environment
+from CheckCollision import CheckCollision
 # from vacuum_cmd_msg.srv import VacuumCmd
-
 class Test(core.Env):
 
     dt = .2
@@ -30,6 +31,7 @@ class Test(core.Env):
     ACTION_PHI_TRANS = 1/36
 
     AVAIL_TORQUE = [-1., 0., +1]
+    NAME = ['/right_arm', '/left_arm', '/right_arm']
 
     torque_noise_max = 0.
 
@@ -39,11 +41,14 @@ class Test(core.Env):
     domain_fig = None
     actions_num = 8
 
-    def __init__(self):
+    def __init__(self, name):
         rospy.init_node('envtest')
+        self.__name = self.NAME[name%2]
+        self.__obname = self.NAME[name%2 + 1]
         self.viewer = None
         high = np.array([1.,1.,1.,1.,1.,1.,1.,1.,
                          1.,1.,1.,1.,1.,1.,1.,1.,
+                         0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,
                          0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.])
         low = -high # gx,gy,gz,ga,gb,gc,gd,gf,
                     #ox,oy,oz,oa,ob,oc,od,of,
@@ -62,15 +67,17 @@ class Test(core.Env):
         self.old_quat = []
         self.old_phi = 0
         self.joint_pos = []
+        self.cc = CheckCollision()
+        self.collision = False
         self.seed()
         
-    def get_state_client(self, cmd):
-        ik_service = '/train_env'
+    def get_state_client(self, cmd, name):
+        ik_service = name+'/train_env'
         try:
             rospy.wait_for_service(ik_service, timeout=1.)
         except rospy.ROSException as e:
             rospy.logwarn('wait_for_service timeout')
-            self.get_state_client(cmd)
+            self.get_state_client(cmd, name)
             
         client = rospy.ServiceProxy(
             ik_service,
@@ -80,13 +87,13 @@ class Test(core.Env):
         res = client.call(cmd)
         return res
 
-    def env_reset_client(self, cmd):
-        reset_service = '/env_reset'
+    def env_reset_client(self, cmd, name):
+        reset_service = name+'/env_reset'
         try:
             rospy.wait_for_service(reset_service, timeout=1.)
         except rospy.ROSException as e:
             rospy.logwarn('wait_for_service timeout')
-            self.env_reset_client(cmd)
+            self.env_reset_client(cmd, name)
             
         client = rospy.ServiceProxy(
             reset_service,
@@ -102,42 +109,26 @@ class Test(core.Env):
 
     def reset(self):
         self.goal = self.set_goal()
-        self.old, self.joint_pos = self.set_old()
+        self.old, self.joint_pos[:12], self.joint_pos[12:24] = self.set_old()
         self.state = np.append(self.goal, self.old)
-        self.state = np.append(self.state, self.joint_pos)#.tolist()
+        self.state = np.append(self.state, self.joint_pos)
+        self.collision = False
         return self.state
 
     def set_goal(self):
-        # self.goal_pos = self.np_random.uniform(low=-1., high=1., size=(3,))
-        # self.goal_quat = self.np_random.uniform(low=-1., high=1., size=(4,))
-        # self.goal_phi = self.np_random.uniform(low=-1., high=1., size=(1,))
-        # self.goal_quat /= np.linalg.norm(self.goal_quat)
-        # self.goal = np.append(self.goal_pos, self.goal_quat)
-        # self.goal = np.append(self.goal, self.goal_phi)#.tolist()
-        # self.goal.append(self.goal_pos)
-        # self.goal.append(self.goal_quat)
-        # self.goal.append(self.goal_phi)
         self.goal = self.np_random.uniform(low=0., high=1., size=(8,))
-        res = self.env_reset_client(self.goal)
+        res = self.env_reset_client(self.goal, self.__name)
         if res.success:
             return res.state
         else:
             return self.set_goal()
 
     def set_old(self):
-        # self.old_pos = self.np_random.uniform(low=-1., high=1., size=(3,))
-        # self.old_quat = self.np_random.uniform(low=-1., high=1., size=(4,))
-        # self.old_phi = self.np_random.uniform(low=-1., high=1., size=(1,))
-        # self.old_quat /= np.linalg.norm(self.old_quat)
-        # self.old = np.append(self.old_pos, self.old_quat)
-        # self.old = np.append(self.old, self.old_phi)#.tolist()
-        # self.old.append(self.old_pos))
-        # self.old.append(self.old_quat)
-        # self.old.append(self.old_phi)
         self.old = self.np_random.uniform(low=0., high=1., size=(8,))
-        res = self.env_reset_client(self.old)
+        res = self.env_reset_client(self.old, self.__name)
+        res_ = self.env_reset_client([0], self.__obname)
         if res.success:
-            return res.state, res.joint_pos
+            return res.state, res.joint_pos, res_.joint_pos
         else:
             return self.set_old()
 
@@ -147,21 +138,17 @@ class Test(core.Env):
         action_ori = (a[3:7]/np.linalg.norm(a[3:7]))*self.ACTION_ORI_TRANS
         action_phi = a[7]*np.pi*self.ACTION_PHI_TRANS
         self.action = np.append(action_vec, action_ori)
-        self.action = np.append(self.action, action_phi)#.tolist()
-        # self.action.append(action_vec)
-        # self.action.append(action_ori)
-        # self.action.append(action_phi)
+        self.action = np.append(self.action, action_phi)
         self.action = np.add(s[8:16], self.action)
         self.action[3:7] /= np.linalg.norm(self.action[3:7])
-        res = self.get_state_client(self.action)
+        res = self.get_state_client(self.action, self.__name)
+        res_ = self.get_state_client([0], self.__obname)
         if res.success:
-            self.old, self.joint_pos = res.state, res.joint_pos
+            self.old, self.joint_pos[:12] = res.state, res.joint_pos
+            self.joint_pos[12:24] = res_.joint_pos
             s = np.append(self.goal, self.old)
-            s = np.append(s, self.joint_pos)#.tolist()
-            # s.append(self.goal)
-            # s.append(self.old)
-            # s.append(self.joint_pos)
-        
+            s = np.append(s, self.joint_pos)
+   
         terminal = self._terminal(s, res.success)
         reward = self.get_reward(s, res.success, terminal)
         self.state = s
@@ -169,10 +156,21 @@ class Test(core.Env):
 
     def _terminal(self, s, ik_success):
         if ik_success:
+            linkPosL = np.array(self.joint_pos[0:12])
+            linkPosR = np.array(self.joint_pos[12:24])
+            linkPosL = linkPosL.reshape(4,3)
+            linkPosR = linkPosR.reshape(4,3)
+            alarm = self.cc.checkCollision(linkPosL, linkPosR)
+            alarm_cnt = 0
+            for i in alarm:
+                alarm_cnt += i
+            if alarm_cnt>0:
+                self.collision = True
+
             dis_pos = np.linalg.norm(self.goal[:3] - s[8:11])
             dis_ori = np.linalg.norm(self.goal[3:7] - s[3:7])
-            dis_phi = np.fabs(self.goal[7] - s[7])
-            if dis_pos < 0.01 and dis_ori < 0.1 and dis_phi < 0.1:
+            dis_phi = math.fabs(self.goal[7] - s[7])
+            if (dis_pos < 0.01 and dis_ori < 0.1 and dis_phi < 0.1) or self.collision:
                 return True
             else:
                 return False
@@ -193,7 +191,7 @@ class Test(core.Env):
 
         reward = 0
         if terminal:
-            if ik_success:
+            if ik_success and not self.collision:
                 reward += 500
             else:
                 reward += -2000
