@@ -27,8 +27,8 @@ class Test(core.Env):
     MAX_VEL_3 = 2.
 
     ACTION_VEC_TRANS = 1/1000
-    ACTION_ORI_TRANS = 1/300
-    ACTION_PHI_TRANS = 1/36
+    ACTION_ORI_TRANS = 1/200
+    ACTION_PHI_TRANS = 1/100
 
     AVAIL_TORQUE = [-1., 0., +1]
     NAME = ['/right_arm', '/left_arm', '/right_arm']
@@ -109,7 +109,6 @@ class Test(core.Env):
         return [seed]
 
     def reset(self):
-        self.range_cnt = self.range_cnt + 0.001 if self.range_cnt < 0.9 else 0.9
         self.goal = self.set_goal()
         self.old, self.joint_pos[:12], self.joint_pos[12:24] = self.set_old()
         self.state = np.append(self.goal, self.old)
@@ -171,10 +170,12 @@ class Test(core.Env):
             if alarm_cnt>0:
                 self.collision = True
 
-            dis_pos = np.linalg.norm(self.goal[:3] - s[8:11])
-            dis_ori = np.linalg.norm(self.goal[3:7] - s[3:7])
-            dis_phi = math.fabs(self.goal[7] - s[7])
-            if (dis_pos < 0.01 and dis_ori < 0.1 and dis_phi < 0.1) or self.collision:
+            self.dis_pos = np.linalg.norm(self.goal[:3] - s[8:11])
+            self.dis_ori = np.linalg.norm(self.goal[3:7] - s[3:7])
+            self.dis_phi = math.fabs(self.goal[7] - s[7])
+            if (self.dis_pos < 0.03 and self.dis_ori < 0.1 and self.dis_phi < 0.1) or self.collision:
+                if not self.collision:
+                    self.range_cnt = self.range_cnt + 0.001 if self.range_cnt < 0.9 else 0.9
                 return True
             else:
                 return False
@@ -196,7 +197,7 @@ class Test(core.Env):
         reward = 0
         if terminal:
             if ik_success and not self.collision:
-                reward += 500
+                reward += 1000
             else:
                 reward += -2000
             return reward
@@ -214,6 +215,8 @@ class Test(core.Env):
         #     reward += -1
         if goal_phi*self.action[7] > 0:
             reward += 0.5
+        if self.dis_pos < 0.03 or self.dis_ori < 0.1 or self.dis_phi < 0.1:
+            reward += 20
         return reward/5
 
     def _get_ob(self):
