@@ -61,9 +61,9 @@ class PPO(object):
         # critic
         l1 = tf.layers.dense(self.tfs, 300, tf.nn.relu)
         l1 = tf.layers.dense(l1, 300, tf.nn.relu)
-        l1 = tf.layers.dense(l1, 300, tf.nn.relu)
-        l1 = tf.layers.dense(l1, 300, tf.nn.relu)
-        l1 = tf.layers.dense(l1, 300, tf.nn.relu)
+        # l1 = tf.layers.dense(l1, 300, tf.nn.relu)
+        # l1 = tf.layers.dense(l1, 300, tf.nn.relu)
+        # l1 = tf.layers.dense(l1, 300, tf.nn.relu)
         self.v = tf.layers.dense(l1, 1)
         self.tfdc_r = tf.placeholder(tf.float32, [None, 1], 'discounted_r')
         self.advantage = self.tfdc_r - self.v
@@ -115,9 +115,9 @@ class PPO(object):
         with tf.variable_scope(name):
             l1 = tf.layers.dense(self.tfs, 300, tf.nn.relu, trainable=trainable)
             l1 = tf.layers.dense(l1, 300, tf.nn.relu, trainable=trainable)
-            l1 = tf.layers.dense(l1, 300, tf.nn.relu6, trainable=trainable)
-            l1 = tf.layers.dense(l1, 300, tf.nn.relu6, trainable=trainable)
-            l1 = tf.layers.dense(l1, 300, tf.nn.relu6, trainable=trainable)
+            # l1 = tf.layers.dense(l1, 300, tf.nn.relu6, trainable=trainable)
+            # l1 = tf.layers.dense(l1, 300, tf.nn.relu6, trainable=trainable)
+            # l1 = tf.layers.dense(l1, 300, tf.nn.relu6, trainable=trainable)
             mu = tf.layers.dense(l1, A_DIM, tf.nn.tanh, trainable=trainable)
             sigma = tf.layers.dense(l1, A_DIM, tf.nn.softplus, trainable=trainable)
             # sigma = [0.01,0.01,0.01]

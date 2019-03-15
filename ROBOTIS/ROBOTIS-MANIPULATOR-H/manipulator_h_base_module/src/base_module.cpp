@@ -164,11 +164,12 @@ bool BaseModule::env_reset_callback(train::environment::Request &req,
 {
   if(req.action.size() > 1)
   {
-    double dis;
+    double dis, mu;
     for (int i=0; i<=MAX_JOINT_ID; i++)
     {
       dis = manipulator_->manipulator_link_data_[i]->joint_limit_max_ - manipulator_->manipulator_link_data_[i]->joint_limit_min_;
-      req.action[i] = req.action[i] * fabs(dis) + manipulator_->manipulator_link_data_[i]->joint_limit_min_;
+      mu = (manipulator_->manipulator_link_data_[i]->joint_limit_max_ + manipulator_->manipulator_link_data_[i]->joint_limit_min_)/2;
+      req.action[i] = req.action[i] * fabs(dis) + (mu - req.action[8]*fabs(dis)/2);
     }
 
     manipulator_->manipulator_link_data_[0]->slide_position_ = req.action[0];
@@ -203,6 +204,10 @@ bool BaseModule::env_reset_callback(train::environment::Request &req,
   res.joint_pos[10] = manipulator_->manipulator_link_data_[6]->position_(1);
   res.joint_pos[11] = manipulator_->manipulator_link_data_[6]->position_(2);
   res.success = true;
+  std::cout<<"reset = ";
+    for(int i=0; i<8; i++)
+      std::cout<<res.state[i];
+    std::cout<<std::endl;
   return true;
 }
 
@@ -211,6 +216,7 @@ bool BaseModule::training_callback(train::environment::Request &req,
 {
   bool slide_success = false;
   bool ik_success = false;
+  Eigen::Matrix3d p2p_rotation;
   
   if(req.action.size() > 1)
   {
@@ -218,7 +224,6 @@ bool BaseModule::training_callback(train::environment::Request &req,
     robotis_->ik_id_end_   = END_LINK;
     
     Eigen::Vector3d p2p_positoin;
-    Eigen::Matrix3d p2p_rotation;
 
     int     max_iter    = 30;
     double  ik_tol      = 1e-3;
@@ -228,21 +233,20 @@ bool BaseModule::training_callback(train::environment::Request &req,
                     req.action[2];
 
     Eigen::Quaterniond p2p_quaterniond(req.action[3],
-                                      req.action[4],
-                                      req.action[5],
-                                      req.action[6]);
+                                       req.action[4],
+                                       req.action[5],
+                                       req.action[6]);
 
     double p2p_phi = req.action[7];
     p2p_rotation = robotis_framework::convertQuaternionToRotation(p2p_quaterniond);
     manipulator_->forwardKinematics(7);
-    // std::cout<<"p2p_positoinp2p_positoin"<<std::endl<<p2p_positoin<<std::endl;
-    // std::cout<<"p2p_rotationp2p_rotation"<<std::endl<<p2p_rotation<<std::endl;
 
     robotis_->is_ik = true;
     slide_success = manipulator_->slideInverseKinematics(p2p_positoin, p2p_rotation, 
                                                               slide_->slide_pos, slide_->goal_slide_pos);
     // std::cout<<"<<<<<<<<<<<<<<<<<<<slide_->goal_slide_pos<<<<<<<<<<<<<<<<<"<<std::endl<<slide_->goal_slide_pos<<std::endl;
-    ik_success = manipulator_->inverseKinematics(robotis_->ik_id_end_,
+    if(slide_success)
+      ik_success = manipulator_->inverseKinematics(robotis_->ik_id_end_,
                                                               p2p_positoin, p2p_rotation, p2p_phi, slide_->goal_slide_pos, true);
     robotis_->is_ik = false;
   }
@@ -276,6 +280,24 @@ bool BaseModule::training_callback(train::environment::Request &req,
   }
   else
   {
+    Eigen::Quaterniond quaternion = robotis_framework::convertRotationToQuaternion(manipulator_->manipulator_link_data_[END_LINK]->orientation_);
+    res.state.resize(8);
+    res.state[0]= manipulator_->manipulator_link_data_[8]->position_(0);
+    res.state[1]= manipulator_->manipulator_link_data_[8]->position_(1);
+    res.state[2]= manipulator_->manipulator_link_data_[8]->position_(2);
+    res.state[3]= quaternion.w();
+    res.state[4]= quaternion.x();
+    res.state[5]= quaternion.y();
+    res.state[6]= quaternion.z();
+    res.state[7]= manipulator_->manipulator_link_data_[END_LINK]->phi_;
+    std::cout<<"input = ";
+    for(int i=0; i<8; i++)
+      std::cout<<req.action[i];
+    std::cout<<std::endl;
+    std::cout<<"output = ";
+    for(int i=0; i<8; i++)
+      std::cout<<res.state[i];
+    std::cout<<std::endl;    
     ROS_INFO("[end] send trajectory (ik failed)");
     publishStatusMsg(robotis_controller_msgs::StatusMsg::STATUS_INFO, "End Trajectory (p2p IK Failed)");
     res.success = false;

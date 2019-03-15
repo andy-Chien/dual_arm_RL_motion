@@ -42,7 +42,6 @@ class Test(core.Env):
     actions_num = 8
 
     def __init__(self, name):
-        rospy.init_node('envtest')
         self.__name = self.NAME[name%2]
         self.__obname = self.NAME[name%2 + 1]
         self.viewer = None
@@ -69,7 +68,9 @@ class Test(core.Env):
         self.joint_pos = []
         self.cc = CheckCollision()
         self.collision = False
+        self.range_cnt = 0.2
         self.seed()
+        self.reset()
         
     def get_state_client(self, cmd, name):
         ik_service = name+'/train_env'
@@ -108,6 +109,7 @@ class Test(core.Env):
         return [seed]
 
     def reset(self):
+        self.range_cnt = self.range_cnt + 0.001 if self.range_cnt < 0.9 else 0.9
         self.goal = self.set_goal()
         self.old, self.joint_pos[:12], self.joint_pos[12:24] = self.set_old()
         self.state = np.append(self.goal, self.old)
@@ -116,7 +118,8 @@ class Test(core.Env):
         return self.state
 
     def set_goal(self):
-        self.goal = self.np_random.uniform(low=0., high=1., size=(8,))
+        self.goal = self.np_random.uniform(low=0., high=self.range_cnt, size=(8,))
+        self.goal = np.append(self.goal, self.range_cnt)
         res = self.env_reset_client(self.goal, self.__name)
         if res.success:
             return res.state
@@ -124,7 +127,8 @@ class Test(core.Env):
             return self.set_goal()
 
     def set_old(self):
-        self.old = self.np_random.uniform(low=0., high=1., size=(8,))
+        self.old = self.np_random.uniform(low=0., high=self.range_cnt, size=(8,))
+        self.old = np.append(self.old, self.range_cnt)
         res = self.env_reset_client(self.old, self.__name)
         res_ = self.env_reset_client([0], self.__obname)
         if res.success:

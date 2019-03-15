@@ -14,7 +14,7 @@ class CheckCollision():
             for cnt_M in range(LinkNum):
                 Slave2Master_Dist[cnt_S-1, cnt_M] = self.calculateDistance( RobotLinkPos_Slave[cnt_S, :], RobotLinkPos_Slave[cnt_S+1, :],
                                                                         RobotLinkPos_Master[cnt_M, :], RobotLinkPos_Master[cnt_M+1, :])                                                    
-                if Slave2Master_Dist[cnt_S-1, cnt_M] < 16:
+                if Slave2Master_Dist[cnt_S-1, cnt_M] < 0.016:
                     Alarm[cnt_S] = 1
         return Alarm
 
@@ -43,7 +43,7 @@ class CheckCollision():
             elif (0 <= s) and (s <= 1) and (t < 0): # CA + sAB
                 distance = np.linalg.norm(vCA + s*vAB)
             elif (0 <= s) and (s <= 1) and (0 <= t) and (t <= 1):
-                distance = math.sqrt(a*s^2 + 2*b*s*t + c*t^2 + 2*d*s + 2*e*t + f)
+                distance = math.sqrt(a*s**2 + 2*b*s*t + c*t**2 + 2*d*s + 2*e*t + f)
             elif (0 <= s) and (s <= 1) and (1 < t): # DA + sAB
                 distance = np.linalg.norm(pA-pD + s*vAB)           
             elif (1 < s) and (t < 0):  # BC
