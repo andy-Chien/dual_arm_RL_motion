@@ -162,9 +162,9 @@ void BaseModule::queueThread()
 bool BaseModule::env_reset_callback(train::environment::Request &req,
                                    train::environment::Response &res)
 {
+  double dis, mu;
   if(req.action.size() > 1)
   {
-    double dis, mu;
     for (int i=0; i<=MAX_JOINT_ID; i++)
     {
       dis = manipulator_->manipulator_link_data_[i]->joint_limit_max_ - manipulator_->manipulator_link_data_[i]->joint_limit_min_;
@@ -182,7 +182,7 @@ bool BaseModule::env_reset_callback(train::environment::Request &req,
   Eigen::Quaterniond quaternion = robotis_framework::convertRotationToQuaternion(manipulator_->manipulator_link_data_[END_LINK]->orientation_);
   res.state.resize(8);
   res.joint_pos.resize(12);
-
+  res.joint_angle.resize(8);
   res.state[0]= manipulator_->manipulator_link_data_[8]->position_(0);
   res.state[1]= manipulator_->manipulator_link_data_[8]->position_(1);
   res.state[2]= manipulator_->manipulator_link_data_[8]->position_(2);
@@ -203,11 +203,13 @@ bool BaseModule::env_reset_callback(train::environment::Request &req,
   res.joint_pos[9]  = manipulator_->manipulator_link_data_[6]->position_(0);
   res.joint_pos[10] = manipulator_->manipulator_link_data_[6]->position_(1);
   res.joint_pos[11] = manipulator_->manipulator_link_data_[6]->position_(2);
+  res.joint_angle[0] = manipulator_->manipulator_link_data_[0]->slide_position_;
+  for (int i=1; i<=MAX_JOINT_ID; i++)
+  {
+    dis = manipulator_->manipulator_link_data_[i]->joint_limit_max_ - manipulator_->manipulator_link_data_[i]->joint_limit_min_;
+    res.joint_angle[i] = (manipulator_->manipulator_link_data_[i]->joint_angle_ - manipulator_->manipulator_link_data_[i]->joint_limit_min_)/fabs(dis);
+  }
   res.success = true;
-  std::cout<<"reset = ";
-    for(int i=0; i<8; i++)
-      std::cout<<res.state[i];
-    std::cout<<std::endl;
   return true;
 }
 
@@ -253,9 +255,11 @@ bool BaseModule::training_callback(train::environment::Request &req,
   if ((ik_success == true && slide_success == true) || req.action.size() < 2)
   {
     // manipulator_->forwardKinematics_train(7);
+    double dis;
     Eigen::Quaterniond quaternion = robotis_framework::convertRotationToQuaternion(manipulator_->manipulator_link_data_[END_LINK]->orientation_);
     res.state.resize(8);
     res.joint_pos.resize(12);
+    res.joint_angle.resize(8);
     res.state[0]= manipulator_->manipulator_link_data_[8]->position_(0);
     res.state[1]= manipulator_->manipulator_link_data_[8]->position_(1);
     res.state[2]= manipulator_->manipulator_link_data_[8]->position_(2);
@@ -276,6 +280,12 @@ bool BaseModule::training_callback(train::environment::Request &req,
     res.joint_pos[9]  = manipulator_->manipulator_link_data_[6]->position_(0);
     res.joint_pos[10] = manipulator_->manipulator_link_data_[6]->position_(1);
     res.joint_pos[11] = manipulator_->manipulator_link_data_[6]->position_(2);
+    res.joint_angle[0] = manipulator_->manipulator_link_data_[0]->slide_position_;
+    for (int i=1; i<=MAX_JOINT_ID; i++)
+    {
+      dis = manipulator_->manipulator_link_data_[i]->joint_limit_max_ - manipulator_->manipulator_link_data_[i]->joint_limit_min_;
+      res.joint_angle[i] = (manipulator_->manipulator_link_data_[i]->joint_angle_ - manipulator_->manipulator_link_data_[i]->joint_limit_min_)/fabs(dis);
+    }
     res.success = true;
   }
   else
@@ -290,14 +300,6 @@ bool BaseModule::training_callback(train::environment::Request &req,
     res.state[5]= quaternion.y();
     res.state[6]= quaternion.z();
     res.state[7]= manipulator_->manipulator_link_data_[END_LINK]->phi_;
-    std::cout<<"input = ";
-    for(int i=0; i<8; i++)
-      std::cout<<req.action[i];
-    std::cout<<std::endl;
-    std::cout<<"output = ";
-    for(int i=0; i<8; i++)
-      std::cout<<res.state[i];
-    std::cout<<std::endl;    
     ROS_INFO("[end] send trajectory (ik failed)");
     publishStatusMsg(robotis_controller_msgs::StatusMsg::STATUS_INFO, "End Trajectory (p2p IK Failed)");
     res.success = false;

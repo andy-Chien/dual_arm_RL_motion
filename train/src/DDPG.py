@@ -23,6 +23,8 @@ import time
 from env import Test 
 import threading, queue
 import rospy
+import os
+import shutil
 
 
 #####################  hyper parameters  ####################
@@ -31,11 +33,14 @@ MAX_EPISODES = 100000
 MAX_EP_STEPS = 3000
 LR_A = 0.0005    # learning rate for actor
 LR_C = 0.001    # learning rate for critic
-GAMMA = 0.9     # reward discount
+GAMMA = 0.95     # reward discount
 TAU = 0.01      # soft replacement
-MEMORY_CAPACITY = 10000
-BATCH_SIZE = 64
+MEMORY_CAPACITY = 300000
+BATCH_SIZE = 512
 SIDE = ['right_arm', 'left_arm']
+GOAL_REWARD = 1500
+NAME = 'DDPG_v1'
+LOAD = False
 
 
 ###############################  DDPG  ####################################
@@ -76,6 +81,13 @@ class DDPG(object):
 
         self.sess.run(tf.global_variables_initializer())
 
+        self.saver = tf.train.Saver()
+        self.path = './'+ NAME + self.name
+        if LOAD:
+            self.saver.restore(self.sess, tf.train.latest_checkpoint(self.path))
+        else:
+            self.sess.run(tf.global_variables_initializer())
+
     def choose_action(self, s):
         return self.sess.run(self.a, {self.S: s[np.newaxis, :]})[0]
 
@@ -99,27 +111,30 @@ class DDPG(object):
     def _build_a(self, s, reuse=None, custom_getter=None):
         trainable = True if reuse is None else False
         with tf.variable_scope('Actor'+self.name, reuse=reuse, custom_getter=custom_getter):
-            net = tf.layers.dense(s, 100, activation=tf.nn.relu, name='l1', trainable=trainable)
-            net = tf.layers.dense(net, 100, activation=tf.nn.relu, name='l2', trainable=trainable)
-            net = tf.layers.dense(net, 100, activation=tf.nn.relu, name='l3', trainable=trainable)
+            net = tf.layers.dense(s, 300, activation=tf.nn.relu, name='l1', trainable=trainable)
+            net = tf.layers.dense(net, 300, activation=tf.nn.relu, name='l2', trainable=trainable)
+            net = tf.layers.dense(net, 300, activation=tf.nn.relu, name='l3', trainable=trainable)
             a = tf.layers.dense(net, self.a_dim, activation=tf.nn.tanh, name='a', trainable=trainable)
             return tf.multiply(a, self.a_bound, name='scaled_a')
 
     def _build_c(self, s, a, reuse=None, custom_getter=None):
         trainable = True if reuse is None else False
         with tf.variable_scope('Critic'+self.name, reuse=reuse, custom_getter=custom_getter):
-            n_l1 = 100
+            n_l1 = 300
             w1_s = tf.get_variable('w1_s', [self.s_dim, n_l1], trainable=trainable)
             w1_a = tf.get_variable('w1_a', [self.a_dim, n_l1], trainable=trainable)
             b1 = tf.get_variable('b1', [1, n_l1], trainable=trainable)
             net = tf.nn.relu(tf.matmul(s, w1_s) + tf.matmul(a, w1_a) + b1)
-            net = tf.layers.dense(net, 100, activation=tf.nn.relu, name='l2', trainable=trainable)
-            net = tf.layers.dense(net, 100, activation=tf.nn.relu, name='l3', trainable=trainable)
+            net = tf.layers.dense(net, 300, activation=tf.nn.relu, name='l2', trainable=trainable)
+            net = tf.layers.dense(net, 300, activation=tf.nn.relu, name='l3', trainable=trainable)
             return tf.layers.dense(net, 1, trainable=trainable)  # Q(s,a)
 
 
 ###############################  training  ####################################
 def train(nameIndx):
+    T_REWARD = []
+    MU_REWARD = 0
+    BEST_R = 0
     env = Test(nameIndx) #0 = right
     s_dim = env.observation_space.shape[0]
     a_dim = 8#env.action_space.shape[0]
@@ -127,7 +142,7 @@ def train(nameIndx):
 
     ddpg = DDPG(a_dim, s_dim, a_bound, SIDE[nameIndx])
 
-    var = 3  # control exploration
+    var = 2  # control exploration
     
     t1 = time.time()
     for i in range(MAX_EPISODES):
@@ -142,14 +157,30 @@ def train(nameIndx):
             ddpg.store_transition(s, a, r / 10, s_)
             cnt += info
             if ddpg.pointer > MEMORY_CAPACITY:
-                var *= .9995    # decay the action randomness
+                var *= .9999999    # decay the action randomness
                 ddpg.learn()
 
             s = s_
             ep_reward += r
             if j == MAX_EP_STEPS-1 or done:
-                print('Episode:', i, ' Reward: %i' % int(ep_reward), 'Explore: %.2f' % var, 'cnt = ',cnt)
+                if len(T_REWARD) >= 100:
+                    T_REWARD.pop(0)
+                T_REWARD.append(ep_reward)
+                r_sum = 0
+                for k in T_REWARD:
+                    r_sum += k
+                MU_REWARD = r_sum/100
+                BEST_R = MU_REWARD if MU_REWARD>BEST_R else BEST_R
+                print('Episode:', i, ' Reward: %i' % int(ep_reward), 'MU_REWARD: ', MU_REWARD,'BEST_R: ', BEST_R, 'cnt = ',cnt)
                 break
+        if MU_REWARD > GOAL_REWARD:
+            break
+    if os.path.isdir(ddpg.path): shutil.rmtree(ddpg.path)
+    os.mkdir(ddpg.path)
+    ckpt_path = os.path.join('./'+NAME+ddpg.name, 'DDPG.ckpt')
+    save_path = ddpg.saver.save(ddpg.sess, ckpt_path, write_meta_graph=False)
+    print("\nSave Model %s\n" % save_path)
+
 
     print('Running time: ', time.time() - t1)
 
