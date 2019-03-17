@@ -49,11 +49,11 @@ class Test(core.Env):
                          1.,1.,1.,1.,1.,1.,1.,1.,
                          0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,
                          0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,
-                         0.,0.,0.,0.,0.,0.,0.,0.])
+                         0.,0.,0.,0.,0.,0.,0.,0.,0.,0.])
         low = -high # gx,gy,gz,ga,gb,gc,gd,gf,
                     #ox,oy,oz,oa,ob,oc,od,of,
                     # 1xyz,2xyz,4xyz,6xyz,
-                    # joint_angle
+                    # joint_angle, limit
         self.observation_space = spaces.Box(low=low, high=high, dtype=np.float32)
         self.action_space = spaces.Discrete(8)
         self.state = []
@@ -69,6 +69,7 @@ class Test(core.Env):
         self.old_phi = 0
         self.joint_pos = []
         self.joint_angle = []
+        self.limit = []
         self.cc = CheckCollision()
         self.collision = False
         self.range_cnt = 0.05
@@ -114,10 +115,11 @@ class Test(core.Env):
 
     def reset(self):
         self.goal = self.set_goal()
-        self.old, self.joint_pos[:12], self.joint_pos[12:24], self.joint_angle = self.set_old()
+        self.old, self.joint_pos[:12], self.joint_pos[12:24], self.joint_angle, self.limit = self.set_old()
         self.state = np.append(self.goal, self.old)
         self.state = np.append(self.state, self.joint_pos)
         self.state = np.append(self.state, self.joint_angle)
+        self.state = np.append(self.state, self.limit)
         self.collision = False
         return self.state
 
@@ -135,8 +137,10 @@ class Test(core.Env):
         self.old = np.append(self.old, self.range_cnt)
         res = self.env_reset_client(self.old, self.__name)
         res_ = self.env_reset_client([0], self.__obname)
-        if res.success:
-            return res.state, res.joint_pos, res_.joint_pos, res.joint_angle
+        old_pos = []
+        old_pos = np.append(old_pos, res.state)
+        if np.linalg.norm(old_pos[:3] - self.goal[:3]) > 0.06:
+            return res.state, res.joint_pos, res_.joint_pos, res.joint_angle, res.limit
         else:
             return self.set_old()
 
@@ -157,6 +161,7 @@ class Test(core.Env):
             s = np.append(self.goal, self.old)
             s = np.append(s, self.joint_pos)
             s = np.append(s, self.joint_angle)
+            s = np.append(s, self.limit)
    
         terminal = self._terminal(s, res.success)
         reward = self.get_reward(s, res.success, terminal)
@@ -205,9 +210,9 @@ class Test(core.Env):
         reward = 0
         if terminal:
             if ik_success and not self.collision:
-                reward += 500
+                reward += 1000
             else:
-                reward += -2000
+                reward += -10000
             return reward
         if a_leng<0.2 or a_leng>2:
             reward += -2

@@ -31,8 +31,8 @@ import shutil
 
 MAX_EPISODES = 100000
 MAX_EP_STEPS = 3000
-LR_A = 0.0005    # learning rate for actor
-LR_C = 0.001    # learning rate for critic
+LR_A = 0.001    # learning rate for actor
+LR_C = 0.002    # learning rate for critic
 GAMMA = 0.95     # reward discount
 TAU = 0.01      # soft replacement
 MEMORY_CAPACITY = 300000
@@ -111,22 +111,22 @@ class DDPG(object):
     def _build_a(self, s, reuse=None, custom_getter=None):
         trainable = True if reuse is None else False
         with tf.variable_scope('Actor'+self.name, reuse=reuse, custom_getter=custom_getter):
-            net = tf.layers.dense(s, 300, activation=tf.nn.relu, name='l1', trainable=trainable)
-            net = tf.layers.dense(net, 300, activation=tf.nn.relu, name='l2', trainable=trainable)
-            net = tf.layers.dense(net, 300, activation=tf.nn.relu, name='l3', trainable=trainable)
+            net = tf.layers.dense(s, 3000, activation=tf.nn.relu, name='l1', trainable=trainable)
+            net = tf.layers.dense(net, 3000, activation=tf.nn.relu, name='l2', trainable=trainable)
+            net = tf.layers.dense(net, 1000, activation=tf.nn.relu, name='l3', trainable=trainable)
             a = tf.layers.dense(net, self.a_dim, activation=tf.nn.tanh, name='a', trainable=trainable)
-            return tf.multiply(a, self.a_bound, name='scaled_a')
+            return a#tf.multiply(a, self.a_bound, name='scaled_a')
 
     def _build_c(self, s, a, reuse=None, custom_getter=None):
         trainable = True if reuse is None else False
         with tf.variable_scope('Critic'+self.name, reuse=reuse, custom_getter=custom_getter):
-            n_l1 = 300
+            n_l1 = 3000
             w1_s = tf.get_variable('w1_s', [self.s_dim, n_l1], trainable=trainable)
             w1_a = tf.get_variable('w1_a', [self.a_dim, n_l1], trainable=trainable)
             b1 = tf.get_variable('b1', [1, n_l1], trainable=trainable)
             net = tf.nn.relu(tf.matmul(s, w1_s) + tf.matmul(a, w1_a) + b1)
-            net = tf.layers.dense(net, 300, activation=tf.nn.relu, name='l2', trainable=trainable)
-            net = tf.layers.dense(net, 300, activation=tf.nn.relu, name='l3', trainable=trainable)
+            net = tf.layers.dense(net, 3000, activation=tf.nn.relu, name='l2', trainable=trainable)
+            net = tf.layers.dense(net, 1000, activation=tf.nn.relu, name='l3', trainable=trainable)
             return tf.layers.dense(net, 1, trainable=trainable)  # Q(s,a)
 
 

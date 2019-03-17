@@ -1,0 +1,11 @@
+.vscode
+
+*.swp
+*.pyc
+*.pcd
+*weights
+*.h5
+
+CATKIN_IGNORE
+.vscode/settings.json
+train/src/__pycache__/env.cpython-35.pyc

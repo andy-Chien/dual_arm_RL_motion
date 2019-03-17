@@ -4,4 +4,5 @@ float64[] action
 float64[] joint_pos
 float64[] state
 float64[] joint_angle
+float64[] limit
 bool      success
