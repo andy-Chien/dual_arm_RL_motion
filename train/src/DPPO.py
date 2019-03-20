@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """
 A simple version of OpenAI's Proximal Policy Optimization (PPO). [https://arxiv.org/abs/1707.06347]
 
