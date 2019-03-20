@@ -1,0 +1,40 @@
+<?xml version="1.0" ?>
+   
+<launch>
+
+    <arg name="en_sim" default="true"/>
+    
+    <include file="$(find manipulator_h_manager)/launch/train_single_arm.launch">
+        <arg name="side"   value="right"/>
+        <arg name="en_sim" value="$(arg en_sim)"/>
+	<arg name="ID"     value="0"/>
+    </include>
+
+    <include file="$(find manipulator_h_manager)/launch/train_single_arm.launch">
+        <arg name="side"   value="left"/>
+        <arg name="en_sim" value="$(arg en_sim)"/>
+	<arg name="ID"     value="0"/>
+    </include>
+
+    <include file="$(find manipulator_h_manager)/launch/train_single_arm.launch">
+        <arg name="side"   value="right"/>
+        <arg name="en_sim" value="$(arg en_sim)"/>
+	<arg name="ID"     value="1"/>
+    </include>
+
+    <include file="$(find manipulator_h_manager)/launch/train_single_arm.launch">
+        <arg name="side"   value="left"/>
+        <arg name="en_sim" value="$(arg en_sim)"/>
+	<arg name="ID"     value="1"/>
+    </include>
+
+    
+
+    <!--<include file="$(find mobile_dual_arm)/launch/mobile_dual_arm.launch" if="$(arg en_sim)">
+        <arg name="paused" default="false"/>
+	<arg name="use_sim_time" default="true"/>
+	<arg name="gui" default="true"/>
+	<arg name="headless" default="false"/>
+	<arg name="debug" default="false"/>
+    </include>-->
+</launch>

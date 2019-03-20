@@ -47,6 +47,7 @@ class Test(core.Env):
         self.viewer = None
         high = np.array([1.,1.,1.,1.,1.,1.,1.,1.,
                          1.,1.,1.,1.,1.,1.,1.,1.,
+                         1.,1.,1.,1.,1.,1.,1.,1.,
                          0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,
                          0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,
                          0.,0.,0.,0.,0.,0.,0.,0.,0.,0.])
@@ -117,6 +118,7 @@ class Test(core.Env):
         self.goal = self.set_goal()
         self.old, self.joint_pos[:12], self.joint_pos[12:24], self.joint_angle, self.limit = self.set_old()
         self.state = np.append(self.goal, self.old)
+        self.state = np.append(self.state, np.subtract(self.goal, self.old))
         self.state = np.append(self.state, self.joint_pos)
         self.state = np.append(self.state, self.joint_angle)
         self.state = np.append(self.state, self.limit)
@@ -125,6 +127,7 @@ class Test(core.Env):
 
     def set_goal(self):
         self.goal = self.np_random.uniform(low=0., high=self.range_cnt, size=(8,))
+        # print('self.goal = ', self.goal)
         self.goal = np.append(self.goal, self.range_cnt)
         res = self.env_reset_client(self.goal, self.__name)
         if res.success:
@@ -134,12 +137,13 @@ class Test(core.Env):
 
     def set_old(self):
         self.old = self.np_random.uniform(low=0., high=self.range_cnt, size=(8,))
+        # print('self.old = ', self.old)
         self.old = np.append(self.old, self.range_cnt)
         res = self.env_reset_client(self.old, self.__name)
         res_ = self.env_reset_client([0], self.__obname)
         old_pos = []
         old_pos = np.append(old_pos, res.state)
-        if np.linalg.norm(old_pos[:3] - self.goal[:3]) > 0.06:
+        if np.linalg.norm(old_pos[:3] - self.goal[:3]) > 0.1:
             return res.state, res.joint_pos, res_.joint_pos, res.joint_angle, res.limit
         else:
             return self.set_old()
@@ -159,14 +163,15 @@ class Test(core.Env):
             self.old, self.joint_pos[:12], self.joint_angle = res.state, res.joint_pos, res.joint_angle
             self.joint_pos[12:24] = res_.joint_pos
             s = np.append(self.goal, self.old)
+            s = np.append(s, np.subtract(self.goal, self.old))
             s = np.append(s, self.joint_pos)
             s = np.append(s, self.joint_angle)
             s = np.append(s, self.limit)
    
         terminal = self._terminal(s, res.success)
-        reward = self.get_reward(s, res.success, terminal)
+        reward = self.get_reward(s, res.success, terminal)    
         self.state = s
-        return self.state, reward, terminal, -1
+        return self.state, reward, terminal, 1
 
     def _terminal(self, s, ik_success):
         if ik_success:
@@ -184,7 +189,7 @@ class Test(core.Env):
             self.dis_pos = np.linalg.norm(self.goal[:3] - s[8:11])
             self.dis_ori = np.linalg.norm(self.goal[3:7] - s[3:7])
             self.dis_phi = math.fabs(self.goal[7] - s[7])
-            if (self.dis_pos < 0.05 and self.dis_ori < 0.15 and self.dis_phi < 0.15) or self.collision:
+            if (self.dis_pos < 0.015 and self.dis_ori < 0.1 and self.dis_phi < 0.1) or self.collision:
                 if not self.collision:
                     self.s_cnt += 1
                     self.range_cnt = self.range_cnt + 0.001 if self.range_cnt < 0.9 else 0.9
@@ -193,7 +198,7 @@ class Test(core.Env):
             else:
                 return False
         else:
-            return True
+            return False
         
 
     def get_reward(self, s, ik_success, terminal):
@@ -209,25 +214,33 @@ class Test(core.Env):
 
         reward = 0
         if terminal:
-            if ik_success and not self.collision:
+            if not self.collision:
                 reward += 1000
             else:
                 reward += -10000
             return reward
+        if not ik_success:
+            return -10
         if a_leng<0.2 or a_leng>2:
             reward += -2
+        
         if cos_vec > np.math.cos(30*np.pi/180):
             r = (cos_vec*cos_vec*cos_vec)/(goal_dis**0.5)
             reward += 10 if r > 10 else r
-        if cos_vec < np.math.cos(60*np.pi/180):
+        elif self.dis_pos > 0.05:
             r = -goal_dis/(cos_vec+1)
             reward += -2 if r<-2 else r
+       
         if cos_ori > np.math.cos(30*np.pi/180):
             reward += 3
+        elif self.dis_ori > 0.15:
+            reward += -2
         # if cos_ori < np.math.cos(60*np.pi/180):
         #     reward += -1
         if goal_phi*self.action[7] > 0:
             reward += 2
+        elif self.dis_phi > 0.15:
+            reward += -1
         if self.dis_pos < 0.05 or self.dis_ori < 0.15 or self.dis_phi < 0.15:
             reward += 5
         return reward/5
