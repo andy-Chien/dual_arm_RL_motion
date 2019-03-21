@@ -44,8 +44,7 @@ class PPO(object):
         self.tfs = tf.placeholder(tf.float32, [None, S_DIM], 'state')
 
         # critic
-        l1 = tf.layers.dense(self.tfs, 3000, tf.nn.relu)
-        l1 = tf.layers.dense(self.tfs, 3000, tf.nn.relu)
+        l1 = tf.layers.dense(self.tfs, 100, tf.nn.relu)
         self.v = tf.layers.dense(l1, 1)
         self.tfdc_r = tf.placeholder(tf.float32, [None, 1], 'discounted_r')
         self.advantage = self.tfdc_r - self.v
@@ -90,8 +89,7 @@ class PPO(object):
 
     def _build_anet(self, name, trainable):
         with tf.variable_scope(name):
-            l1 = tf.layers.dense(self.tfs, 3000, tf.nn.relu, trainable=trainable)
-            l1 = tf.layers.dense(self.tfs, 3000, tf.nn.relu, trainable=trainable)
+            l1 = tf.layers.dense(self.tfs, 200, tf.nn.relu, trainable=trainable)
             mu = 2 * tf.layers.dense(l1, A_DIM, tf.nn.tanh, trainable=trainable)
             sigma = tf.layers.dense(l1, A_DIM, tf.nn.softplus, trainable=trainable)
             norm_dist = tf.distributions.Normal(loc=mu, scale=sigma)
@@ -121,7 +119,7 @@ class Worker(object):
             s = self.env.reset()
             ep_r = 0
             buffer_s, buffer_a, buffer_r = [], [], []
-            rar = 0
+            rar = 0.3
             for t in range(EP_LEN):
                 if not ROLLING_EVENT.is_set():                  # while global PPO is updating
                     ROLLING_EVENT.wait()                        # wait until PPO is updated
@@ -152,7 +150,7 @@ class Worker(object):
                     if GLOBAL_UPDATE_COUNTER >= MIN_BATCH_SIZE:
                         ROLLING_EVENT.clear()       # stop collecting data
                         UPDATE_EVENT.set()          # globalPPO update
-
+                    
                     if ep_r < -5000 or done:
                         break
 
@@ -178,7 +176,7 @@ if __name__ == '__main__':
     UPDATE_EVENT, ROLLING_EVENT = threading.Event(), threading.Event()
     UPDATE_EVENT.clear()            # not update now
     ROLLING_EVENT.set()             # start to roll out
-    workers = [Worker(wid=i, name=0) for i in range(N_WORKER)]
+    workers = [Worker(wid=i, name=1) for i in range(N_WORKER)]
     
     GLOBAL_UPDATE_COUNTER, GLOBAL_EP = 0, 0
     GLOBAL_RUNNING_R = []
