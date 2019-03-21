@@ -84,7 +84,8 @@ public:
                             double slide_position, Eigen::VectorXd Old_JointAngle, bool is_p2p);
   bool slideInverseKinematics(Eigen::Vector3d goal_position, Eigen::Matrix3d rotation, 
                                                             double slide_pos, double& goal_slide_pos);
-  static Eigen::MatrixXd rotation2rpy( Eigen::MatrixXd rotation );
+  static Eigen::MatrixXd rotation2rpy(Eigen::MatrixXd rotation);
+  bool limit_check(Eigen::Vector3d goal_position, Eigen::Matrix3d rotation);
   void load_LinkParam();
   void getPhiAngle();
 };

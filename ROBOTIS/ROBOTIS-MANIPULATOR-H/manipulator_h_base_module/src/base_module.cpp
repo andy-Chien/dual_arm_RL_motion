@@ -165,7 +165,7 @@ bool BaseModule::env_reset_callback(train::environment::Request &req,
   double dis, mu;
   if(req.action.size() > 1)
   {
-    for (int i=0; i<=MAX_JOINT_ID; i++)
+    for (int i=1; i<=MAX_JOINT_ID; i++)
     {
       dis = manipulator_->manipulator_link_data_[i]->joint_limit_max_ - manipulator_->manipulator_link_data_[i]->joint_limit_min_;
       mu = (manipulator_->manipulator_link_data_[i]->joint_limit_max_ + manipulator_->manipulator_link_data_[i]->joint_limit_min_)/2;
@@ -225,7 +225,7 @@ bool BaseModule::env_reset_callback(train::environment::Request &req,
 bool BaseModule::training_callback(train::environment::Request &req,
                                    train::environment::Response &res)
 {
-  bool slide_success = false;
+  bool limit_success = false;
   bool ik_success = false;
   Eigen::Matrix3d p2p_rotation;
   
@@ -253,15 +253,16 @@ bool BaseModule::training_callback(train::environment::Request &req,
     manipulator_->forwardKinematics(7);
 
     robotis_->is_ik = true;
-    slide_success = manipulator_->slideInverseKinematics(p2p_positoin, p2p_rotation, 
-                                                              slide_->slide_pos, slide_->goal_slide_pos);
+    // slide_success = manipulator_->slideInverseKinematics(p2p_positoin, p2p_rotation, 
+    //                                                           slide_->slide_pos, slide_->goal_slide_pos);
     // std::cout<<"<<<<<<<<<<<<<<<<<<<slide_->goal_slide_pos<<<<<<<<<<<<<<<<<"<<std::endl<<slide_->goal_slide_pos<<std::endl;
-    if(slide_success)
+    limit_success = manipulator_->limit_check(p2p_positoin, p2p_rotation);
+    if(limit_success)
       ik_success = manipulator_->inverseKinematics(robotis_->ik_id_end_,
                                                               p2p_positoin, p2p_rotation, p2p_phi, slide_->goal_slide_pos, true);
     robotis_->is_ik = false;
   }
-  if ((ik_success == true && slide_success == true) || req.action.size() < 2)
+  if ((ik_success == true && limit_success == true) || req.action.size() < 2)
   {
     res.success = true;
   }

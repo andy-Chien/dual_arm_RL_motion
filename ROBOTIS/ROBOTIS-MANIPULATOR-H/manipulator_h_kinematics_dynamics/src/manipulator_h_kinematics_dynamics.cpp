@@ -1048,4 +1048,26 @@ Eigen::MatrixXd ManipulatorKinematicsDynamics::rotation2rpy( Eigen::MatrixXd rot
 
   return _rpy;
 }
+
+bool ManipulatorKinematicsDynamics::limit_check(Eigen::Vector3d goal_position, Eigen::Matrix3d rotation)
+{
+  double slide_position;
+  double Lsw;
+  Eigen::Vector3d Oc;
+  Eigen::Vector3d test_pos;
+ 
+  Oc << goal_position(0)-d4*rotation(0,2), goal_position(1)-d4*rotation(1,2), goal_position(2)-d4*rotation(2,2);
+  
+  test_pos = Oc;
+  test_pos(1) = test_pos(1) - (d1*RL_prm);
+  Lsw = test_pos.norm();
+
+  if(test_pos.norm() < (d2+d3) && test_pos.norm() > 0.1)
+    return true;
+  else
+    std::cout<<"Out of range !!!"<<std::endl;
+  return false;
+  
+}
+
 }

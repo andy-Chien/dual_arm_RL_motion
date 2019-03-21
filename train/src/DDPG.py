@@ -31,7 +31,7 @@ import math
 #####################  hyper parameters  ####################
 
 MAX_EPISODES = 100000
-MAX_EP_STEPS = 2000
+MAX_EP_STEPS = 1000
 LR_A = 0.0001    # learning rate for actor
 LR_C = 0.0005    # learning rate for critic
 GAMMA = 0.95     # reward discount
@@ -171,8 +171,6 @@ def train(nameIndx):
                 a = action_sample(s)
                 rar *= .9999999
             s_, r, done, info = env.step(a)
-            if r < -5000:
-                r /= math.sqrt(j+1)
             if r > 0 or ddpg.r_flag:
                 ddpg.r_flag = not ddpg.r_flag
                 ddpg.store_transition(s, a, r, s_)
@@ -183,7 +181,7 @@ def train(nameIndx):
 
             s = s_
             ep_reward += r
-            if j == MAX_EP_STEPS-1 or done or ep_reward < -10000:
+            if j == MAX_EP_STEPS-1 or done or ep_reward < -5000:
                 # print('state = ', s)
                 if len(T_REWARD) >= 100:
                     T_REWARD.pop(0)

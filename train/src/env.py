@@ -27,10 +27,9 @@ class Test(core.Env):
     MAX_VEL_3 = 2.
 
     ACTION_VEC_TRANS = 1/300
-    ACTION_ORI_TRANS = 1/100
+    ACTION_ORI_TRANS = 1/50
     ACTION_PHI_TRANS = 1/50
 
-    AVAIL_TORQUE = [-1., 0., +1]
     NAME = ['/right_arm', '/left_arm', '/right_arm']
 
     torque_noise_max = 0.
@@ -128,6 +127,7 @@ class Test(core.Env):
     def set_goal(self):
         self.goal = self.np_random.uniform(low=0., high=self.range_cnt, size=(8,))
         # print('self.goal = ', self.goal)
+        self.goal[0] = 0
         self.goal = np.append(self.goal, self.range_cnt)
         res = self.env_reset_client(self.goal, self.__name)
         if res.success:
@@ -138,6 +138,7 @@ class Test(core.Env):
     def set_old(self):
         self.old = self.np_random.uniform(low=0., high=self.range_cnt, size=(8,))
         # print('self.old = ', self.old)
+        self.old[0] = 0
         self.old = np.append(self.old, self.range_cnt)
         res = self.env_reset_client(self.old, self.__name)
         res_ = self.env_reset_client([0], self.__obname)
