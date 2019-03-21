@@ -39,7 +39,7 @@ TAU = 0.001      # soft replacement
 MEMORY_CAPACITY = 10000
 BATCH_SIZE = 128
 SIDE = ['right_arm', 'left_arm']
-GOAL_REWARD = 1500
+GOAL_REWARD = 1250
 NAME = 'DDPG_v1'
 LOAD = False
 
@@ -114,8 +114,8 @@ class DDPG(object):
     def _build_a(self, s, reuse=None, custom_getter=None):
         trainable = True if reuse is None else False
         with tf.variable_scope('Actor'+self.name, reuse=reuse, custom_getter=custom_getter):
-            net = tf.layers.dense(s, 3000, activation=tf.nn.relu, name='l1', trainable=trainable)
-            net = tf.layers.dense(net, 3000, activation=tf.nn.relu, name='l2', trainable=trainable)
+            net = tf.layers.dense(s, 3000, activation=tf.nn.leaky_relu, name='l1', trainable=trainable)
+            net = tf.layers.dense(net, 3000, activation=tf.nn.leaky_relu, name='l2', trainable=trainable)
             # net = tf.layers.dense(net, 1000, activation=tf.nn.relu, name='l3', trainable=trainable)
             # t1 = tf.layers.dense(net, 300, activation=tf.nn.tanh, name='t1', trainable=trainable)
             # t2 = tf.layers.dense(net, 400, activation=tf.nn.tanh, name='t2', trainable=trainable)
@@ -137,8 +137,8 @@ class DDPG(object):
             w1_s = tf.get_variable('w1_s', [self.s_dim, n_l1], trainable=trainable)
             w1_a = tf.get_variable('w1_a', [self.a_dim, n_l1], trainable=trainable)
             b1 = tf.get_variable('b1', [1, n_l1], trainable=trainable)
-            net = tf.nn.relu(tf.matmul(s, w1_s) + tf.matmul(a, w1_a) + b1)
-            net = tf.layers.dense(net, 3000, activation=tf.nn.relu, name='l2', trainable=trainable)
+            net = tf.nn.leaky_relu(tf.matmul(s, w1_s) + tf.matmul(a, w1_a) + b1)
+            net = tf.layers.dense(net, 3000, activation=tf.nn.leaky_relu, name='l2', trainable=trainable)
             # net = tf.layers.dense(net, 1000, activation=tf.nn.relu, name='l3', trainable=trainable)
             return tf.layers.dense(net, 1, trainable=trainable)  # Q(s,a)
 
@@ -169,14 +169,14 @@ def train(nameIndx):
             a = np.clip(np.random.normal(a, var), -1, 1)    # add randomness to action selection for exploration
             if (np.random.rand(1) < 50/(i+1) or np.random.rand(1) < rar) and i > 50:
                 a = action_sample(s)
-                rar *= .9999999
+                rar *= .9999995
             s_, r, done, info = env.step(a)
             if r > 0 or ddpg.r_flag:
                 ddpg.r_flag = not ddpg.r_flag
                 ddpg.store_transition(s, a, r, s_)
             cnt += info
             if ddpg.pointer > MEMORY_CAPACITY:
-                var *= .9999999    # decay the action randomness
+                var *= .999999    # decay the action randomness
                 ddpg.learn()
 
             s = s_
