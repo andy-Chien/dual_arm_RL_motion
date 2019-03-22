@@ -114,8 +114,11 @@ class DDPG(object):
     def _build_a(self, s, reuse=None, custom_getter=None):
         trainable = True if reuse is None else False
         with tf.variable_scope('Actor'+self.name, reuse=reuse, custom_getter=custom_getter):
-            net = tf.layers.dense(s, 3000, activation=tf.nn.leaky_relu, name='l1', trainable=trainable)
-            net = tf.layers.dense(net, 3000, activation=tf.nn.leaky_relu, name='l2', trainable=trainable)
+            net = tf.layers.dense(s, 100, activation=tf.nn.leaky_relu, name='l1', trainable=trainable)
+            net = tf.layers.dense(net, 100, activation=tf.nn.leaky_relu, name='l2', trainable=trainable)
+            net = tf.layers.dense(net, 100, activation=tf.nn.leaky_relu, name='l3', trainable=trainable)
+            net = tf.layers.dense(net, 100, activation=tf.nn.leaky_relu, name='l4', trainable=trainable)
+            net = tf.layers.dense(net, 100, activation=tf.nn.leaky_relu, name='l5', trainable=trainable) 
             # net = tf.layers.dense(net, 1000, activation=tf.nn.relu, name='l3', trainable=trainable)
             # t1 = tf.layers.dense(net, 300, activation=tf.nn.tanh, name='t1', trainable=trainable)
             # t2 = tf.layers.dense(net, 400, activation=tf.nn.tanh, name='t2', trainable=trainable)
@@ -133,12 +136,14 @@ class DDPG(object):
     def _build_c(self, s, a, reuse=None, custom_getter=None):
         trainable = True if reuse is None else False
         with tf.variable_scope('Critic'+self.name, reuse=reuse, custom_getter=custom_getter):
-            n_l1 = 3000
+            n_l1 = 100
             w1_s = tf.get_variable('w1_s', [self.s_dim, n_l1], trainable=trainable)
             w1_a = tf.get_variable('w1_a', [self.a_dim, n_l1], trainable=trainable)
             b1 = tf.get_variable('b1', [1, n_l1], trainable=trainable)
             net = tf.nn.leaky_relu(tf.matmul(s, w1_s) + tf.matmul(a, w1_a) + b1)
-            net = tf.layers.dense(net, 3000, activation=tf.nn.leaky_relu, name='l2', trainable=trainable)
+            net = tf.layers.dense(net, 100, activation=tf.nn.leaky_relu, name='l2', trainable=trainable)
+            net = tf.layers.dense(net, 100, activation=tf.nn.leaky_relu, name='l3', trainable=trainable)
+            net = tf.layers.dense(net, 100, activation=tf.nn.leaky_relu, name='l4', trainable=trainable)
             # net = tf.layers.dense(net, 1000, activation=tf.nn.relu, name='l3', trainable=trainable)
             return tf.layers.dense(net, 1, trainable=trainable)  # Q(s,a)
 
@@ -205,8 +210,11 @@ def train(nameIndx):
 def action_sample(s):
     a = s[:8] - s[8:16]
     a[:3] /= np.linalg.norm(a[:3])
-    a[3:7] /= np.linalg.norm(a[3:7])
-    a[7] /= math.fabs(a[7])
+    a[3:7]/= np.linalg.norm(a[3:7])
+    a[7]  /= math.fabs(a[7])
+    a[:3] *= s[58]
+    a[3:7]*= s[59]
+    a[7]  *= s[60]
     return a
 
 if __name__ == '__main__':

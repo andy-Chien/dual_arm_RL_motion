@@ -191,7 +191,7 @@ bool BaseModule::env_reset_callback(train::environment::Request &req,
   res.state[4]= quaternion.x();
   res.state[5]= quaternion.y();
   res.state[6]= quaternion.z();
-  res.state[7]= manipulator_->manipulator_link_data_[END_LINK]->phi_;
+  res.state[7]= manipulator_->manipulator_link_data_[END_LINK]->phi_ / M_PI;
   res.joint_pos[0]  = manipulator_->manipulator_link_data_[1]->position_(0);
   res.joint_pos[1]  = manipulator_->manipulator_link_data_[1]->position_(1);
   res.joint_pos[2]  = manipulator_->manipulator_link_data_[1]->position_(2);
@@ -285,7 +285,7 @@ bool BaseModule::training_callback(train::environment::Request &req,
   res.state[4]= quaternion.x();
   res.state[5]= quaternion.y();
   res.state[6]= quaternion.z();
-  res.state[7]= manipulator_->manipulator_link_data_[END_LINK]->phi_;
+  res.state[7]= manipulator_->manipulator_link_data_[END_LINK]->phi_ / M_PI;
   res.joint_pos[0]  = manipulator_->manipulator_link_data_[1]->position_(0);
   res.joint_pos[1]  = manipulator_->manipulator_link_data_[1]->position_(1);
   res.joint_pos[2]  = manipulator_->manipulator_link_data_[1]->position_(2);

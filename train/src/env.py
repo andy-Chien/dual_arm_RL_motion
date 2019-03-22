@@ -49,7 +49,7 @@ class Test(core.Env):
                          1.,1.,1.,1.,1.,1.,1.,1.,
                          0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,
                          0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,
-                         0.,0.,0.,0.,0.,0.,0.,0.,0.,0.])
+                         0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.])
         low = -high # gx,gy,gz,ga,gb,gc,gd,gf,
                     #ox,oy,oz,oa,ob,oc,od,of,
                     # 1xyz,2xyz,4xyz,6xyz,
@@ -70,6 +70,7 @@ class Test(core.Env):
         self.joint_pos = []
         self.joint_angle = []
         self.limit = []
+        # self.dis_pos
         self.cc = CheckCollision()
         self.collision = False
         self.range_cnt = 0.05
@@ -121,6 +122,14 @@ class Test(core.Env):
         self.state = np.append(self.state, self.joint_pos)
         self.state = np.append(self.state, self.joint_angle)
         self.state = np.append(self.state, self.limit)
+        self.dis_pos = np.linalg.norm(self.goal[:3] - self.old[8:11])
+        self.dis_ori = np.linalg.norm(self.goal[3:7] - self.old[3:7])
+        self.dis_phi = math.fabs(self.goal[7] - self.old[7])
+        r_ori = (self.dis_ori/self.dis_pos)/6
+        r_phi = (self.dis_phi/self.dis_pos)/6
+        r_pos = 1 if self.dis_pos > 0.05 else self.dis_pos*20
+        move_rate = [r_pos, r_ori, r_phi]
+        self.state = np.append(self.state, move_rate)
         self.collision = False
         return self.state
 
@@ -152,7 +161,7 @@ class Test(core.Env):
     def step(self, a):
         s = self.state
         action_vec = a[:3]*self.ACTION_VEC_TRANS
-        action_ori = (a[3:7]/np.linalg.norm(a[3:7]))*self.ACTION_ORI_TRANS
+        action_ori = a[3:7]*self.ACTION_ORI_TRANS
         action_phi = a[7]*np.pi*self.ACTION_PHI_TRANS
         self.action = np.append(action_vec, action_ori)
         self.action = np.append(self.action, action_phi)
@@ -168,6 +177,14 @@ class Test(core.Env):
             s = np.append(s, self.joint_pos)
             s = np.append(s, self.joint_angle)
             s = np.append(s, self.limit)
+            self.dis_pos = np.linalg.norm(self.goal[:3] - s[8:11])
+            self.dis_ori = np.linalg.norm(self.goal[3:7] - s[11:15])
+            self.dis_phi = math.fabs(self.goal[7] - s[15])
+            r_ori = (self.dis_ori/self.dis_pos)/6
+            r_phi = (self.dis_phi/self.dis_pos)/6
+            r_pos = 1 if self.dis_pos > 0.05 else self.dis_pos*20
+            move_rate = [r_pos, r_ori, r_phi]
+            s = np.append(s, move_rate)
    
         terminal = self._terminal(s, res.success)
         reward = self.get_reward(s, res.success, terminal)    
@@ -187,9 +204,6 @@ class Test(core.Env):
             if alarm_cnt>0:
                 self.collision = True
 
-            self.dis_pos = np.linalg.norm(self.goal[:3] - s[8:11])
-            self.dis_ori = np.linalg.norm(self.goal[3:7] - s[3:7])
-            self.dis_phi = math.fabs(self.goal[7] - s[7])
             if (self.dis_pos < 0.015 and self.dis_ori < 0.1 and self.dis_phi < 0.1) or self.collision:
                 if not self.collision:
                     self.s_cnt += 1
