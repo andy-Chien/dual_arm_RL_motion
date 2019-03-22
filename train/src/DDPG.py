@@ -181,7 +181,7 @@ def train(nameIndx):
                 ddpg.store_transition(s, a, r, s_)
             cnt += info
             if ddpg.pointer > MEMORY_CAPACITY:
-                var *= .999999    # decay the action randomness
+                var *= .999995    # decay the action randomness
                 ddpg.learn()
 
             s = s_

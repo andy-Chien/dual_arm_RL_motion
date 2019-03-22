@@ -122,8 +122,8 @@ class Test(core.Env):
         self.state = np.append(self.state, self.joint_pos)
         self.state = np.append(self.state, self.joint_angle)
         self.state = np.append(self.state, self.limit)
-        self.dis_pos = np.linalg.norm(self.goal[:3] - self.old[8:11])
-        self.dis_ori = np.linalg.norm(self.goal[3:7] - self.old[3:7])
+        self.dis_pos = np.linalg.norm(np.subtract(self.goal[:3], self.old[:3]))
+        self.dis_ori = np.linalg.norm(np.subtract(self.goal[3:7], self.old[3:7]))
         self.dis_phi = math.fabs(self.goal[7] - self.old[7])
         r_ori = (self.dis_ori/self.dis_pos)/6
         r_phi = (self.dis_phi/self.dis_pos)/6
@@ -207,7 +207,7 @@ class Test(core.Env):
             if (self.dis_pos < 0.015 and self.dis_ori < 0.1 and self.dis_phi < 0.1) or self.collision:
                 if not self.collision:
                     self.s_cnt += 1
-                    self.range_cnt = self.range_cnt + 0.001 if self.range_cnt < 0.9 else 0.9
+                    self.range_cnt = self.range_cnt + 0.003 if self.range_cnt < 0.9 else 0.9
                     print('ssssssuuuuuuccccccccceeeeeeeesssssssssss' , self.s_cnt)
                 return True
             else:
