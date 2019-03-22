@@ -161,7 +161,7 @@ def train(nameIndx):
     ddpg = DDPG(a_dim, s_dim, a_bound, SIDE[nameIndx])
 
     var = 0.8  # control exploration
-    rar = 0.2
+    rar = 0.3
     
     t1 = time.time()
     for i in range(MAX_EPISODES):
@@ -172,7 +172,7 @@ def train(nameIndx):
             # Add exploration noise
             a = ddpg.choose_action(s)
             a = np.clip(np.random.normal(a, var), -1, 1)    # add randomness to action selection for exploration
-            if (np.random.rand(1) < 50/(i+1) or np.random.rand(1) < rar) and i > 50:
+            if (np.random.rand(1) < 50/(i+1) or np.random.rand(1) < rar) and i > 60:
                 a = action_sample(s)
                 rar *= .9999995
             s_, r, done, info = env.step(a)

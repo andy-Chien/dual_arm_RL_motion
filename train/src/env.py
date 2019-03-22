@@ -207,7 +207,7 @@ class Test(core.Env):
             if (self.dis_pos < 0.015 and self.dis_ori < 0.1 and self.dis_phi < 0.1) or self.collision:
                 if not self.collision:
                     self.s_cnt += 1
-                    self.range_cnt = self.range_cnt + 0.003 if self.range_cnt < 0.9 else 0.9
+                    self.range_cnt = self.range_cnt + 0.002 if self.range_cnt < 0.9 else 0.9
                     print('ssssssuuuuuuccccccccceeeeeeeesssssssssss' , self.s_cnt)
                 return True
             else:
