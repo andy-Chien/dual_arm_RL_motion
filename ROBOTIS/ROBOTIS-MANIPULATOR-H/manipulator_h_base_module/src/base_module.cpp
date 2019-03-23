@@ -177,6 +177,16 @@ bool BaseModule::env_reset_callback(train::environment::Request &req,
       manipulator_->manipulator_link_data_[i]->joint_angle_ = req.action[i];
 
     manipulator_->forwardKinematics(7);
+    robotis_->all_time_steps_ = 1;
+    robotis_->calc_joint_tra_.resize(robotis_->all_time_steps_, MAX_JOINT_ID + 1);
+    for (int id = 1; id <= MAX_JOINT_ID; id++)
+    {
+      robotis_->calc_joint_tra_(0, id) = manipulator_->manipulator_link_data_[id]->joint_angle_;
+    }
+    slide_->goal_slide_pos = 0;
+    robotis_->calc_slide_tra_(0, 0) = 0;
+    robotis_->cnt_ = 0;
+    robotis_->is_moving_ = true;
   }
 
   Eigen::Quaterniond quaternion = robotis_framework::convertRotationToQuaternion(manipulator_->manipulator_link_data_[END_LINK]->orientation_);
@@ -250,9 +260,8 @@ bool BaseModule::training_callback(train::environment::Request &req,
 
     double p2p_phi = req.action[7];
     p2p_rotation = robotis_framework::convertQuaternionToRotation(p2p_quaterniond);
-    manipulator_->forwardKinematics(7);
-
     robotis_->is_ik = true;
+    manipulator_->forwardKinematics(7);
     // slide_success = manipulator_->slideInverseKinematics(p2p_positoin, p2p_rotation, 
     //                                                           slide_->slide_pos, slide_->goal_slide_pos);
     // std::cout<<"<<<<<<<<<<<<<<<<<<<slide_->goal_slide_pos<<<<<<<<<<<<<<<<<"<<std::endl<<slide_->goal_slide_pos<<std::endl;
@@ -265,11 +274,19 @@ bool BaseModule::training_callback(train::environment::Request &req,
   if ((ik_success == true && limit_success == true) || req.action.size() < 2)
   {
     res.success = true;
+    robotis_->all_time_steps_ = 1;
+    robotis_->calc_joint_tra_.resize(robotis_->all_time_steps_, MAX_JOINT_ID + 1);
+    for (int id = 1; id <= MAX_JOINT_ID; id++)
+    {
+      robotis_->calc_joint_tra_(0, id) = manipulator_->manipulator_link_data_[id]->joint_angle_;
+    }
+    slide_->goal_slide_pos = 0;
+    robotis_->calc_slide_tra_(0, 0) = 0;
+    robotis_->cnt_ = 0;
+    robotis_->is_moving_ = true;
   }
   else
   {
-    ROS_INFO("[end] send trajectory (ik failed)");
-    publishStatusMsg(robotis_controller_msgs::StatusMsg::STATUS_INFO, "End Trajectory (p2p IK Failed)");
     res.success = false;
   }
   double dis;
@@ -783,9 +800,9 @@ void BaseModule::process(std::map<std::string, robotis_framework::Dynamixel *> d
     manipulator_->manipulator_link_data_[0]->slide_position_ = slide_->slide_pos;
     for (int id = 1; id <= MAX_JOINT_ID; id++)
       manipulator_->manipulator_link_data_[id]->joint_angle_ = joint_state_->goal_joint_state_[id].position_;
+    
+    manipulator_->forwardKinematics(7);  // 0 chang to 7 : how many joint
   }
-
-  manipulator_->forwardKinematics(7);  // 0 chang to 7 : how many joint
 
   //slide_->slide_pos = manipulator_->manipulator_link_data_[0]->slide_position_;
   /* ----- send trajectory ----- */
@@ -843,6 +860,7 @@ void BaseModule::process(std::map<std::string, robotis_framework::Dynamixel *> d
     {
       for (int id = 1; id <= MAX_JOINT_ID; id++)
         joint_state_->goal_joint_state_[id].position_ = robotis_->calc_joint_tra_(robotis_->cnt_, id);
+
       slide_->goal_slide_pos = robotis_->calc_slide_tra_(robotis_->cnt_, 0);
       slide_->result_slide_pos = robotis_->calc_slide_tra_(robotis_->cnt_, 0);
     }
