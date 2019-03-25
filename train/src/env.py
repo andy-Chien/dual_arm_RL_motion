@@ -26,9 +26,9 @@ class Test(core.Env):
     MAX_VEL_2 = 2.
     MAX_VEL_3 = 2.
 
-    ACTION_VEC_TRANS = 1/300
-    ACTION_ORI_TRANS = 1/50
-    ACTION_PHI_TRANS = 1/50
+    ACTION_VEC_TRANS = 1/180
+    ACTION_ORI_TRANS = 1/30
+    ACTION_PHI_TRANS = 1/30
 
     NAME = ['/right_arm', '/left_arm', '/right_arm']
 
@@ -47,9 +47,9 @@ class Test(core.Env):
         high = np.array([1.,1.,1.,1.,1.,1.,1.,1.,
                          1.,1.,1.,1.,1.,1.,1.,1.,
                          1.,1.,1.,1.,1.,1.,1.,1.,
+                         0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,
                          0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,
-                         0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,
-                         0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.])
+                         0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.])
         low = -high # gx,gy,gz,ga,gb,gc,gd,gf,
                     #ox,oy,oz,oa,ob,oc,od,of,
                     # 1xyz,2xyz,4xyz,6xyz,
@@ -73,7 +73,7 @@ class Test(core.Env):
         # self.dis_pos
         self.cc = CheckCollision()
         self.collision = False
-        self.range_cnt = 0.05
+        self.range_cnt = 0.2
         self.s_cnt = 0
         self.seed()
         self.reset()
@@ -116,7 +116,7 @@ class Test(core.Env):
 
     def reset(self):
         self.goal = self.set_goal()
-        self.old, self.joint_pos[:12], self.joint_pos[12:24], self.joint_angle, self.limit = self.set_old()
+        self.old, self.joint_pos[:12], self.joint_pos[12:24], self.joint_pos[24:27],self.joint_angle, self.limit = self.set_old()
         self.state = np.append(self.goal, self.old)
         self.state = np.append(self.state, np.subtract(self.goal, self.old))
         self.state = np.append(self.state, self.joint_pos)
@@ -154,7 +154,7 @@ class Test(core.Env):
         old_pos = []
         old_pos = np.append(old_pos, res.state)
         if np.linalg.norm(old_pos[:3] - self.goal[:3]) > 0.1:
-            return res.state, res.joint_pos, res_.joint_pos, res.joint_angle, res.limit
+            return res.state, res.joint_pos, res_.joint_pos,[res_.state[0], res_.state[1], res_.state[2]], res.joint_angle, res.limit
         else:
             return self.set_old()
 
@@ -172,6 +172,7 @@ class Test(core.Env):
         if res.success:
             self.old, self.joint_pos[:12], self.joint_angle = res.state, res.joint_pos, res.joint_angle
             self.joint_pos[12:24] = res_.joint_pos
+            self.joint_pos[24:27] = [res_.state[0], res_.state[1], res_.state[2]]
             s = np.append(self.goal, self.old)
             s = np.append(s, np.subtract(self.goal, self.old))
             s = np.append(s, self.joint_pos)
@@ -193,11 +194,14 @@ class Test(core.Env):
 
     def _terminal(self, s, ik_success):
         if ik_success:
-            linkPosL = np.array(self.joint_pos[0:12])
-            linkPosR = np.array(self.joint_pos[12:24])
-            linkPosL = linkPosL.reshape(4,3)
-            linkPosR = linkPosR.reshape(4,3)
-            alarm = self.cc.checkCollision(linkPosL, linkPosR)
+            linkPosM = np.array(self.joint_pos[0:12])
+            linkPosS = np.array(self.joint_pos[12:27])
+            linkPosM = np.append(linkPosM, s[:3])
+            linkPosM = np.append([0.,0.,-0.8], linkPosM)
+            linkPosS = np.append([0.,0.,-0.8], linkPosS)
+            linkPosM = linkPosM.reshape(6,3)
+            linkPosS = linkPosS.reshape(6,3)
+            alarm = self.cc.checkCollision(linkPosM, linkPosS)
             alarm_cnt = 0
             for i in alarm:
                 alarm_cnt += i
@@ -207,7 +211,7 @@ class Test(core.Env):
             if (self.dis_pos < 0.015 and self.dis_ori < 0.1 and self.dis_phi < 0.1) or self.collision:
                 if not self.collision:
                     self.s_cnt += 1
-                    self.range_cnt = self.range_cnt + 0.002 if self.range_cnt < 0.9 else 0.9
+                    self.range_cnt = self.range_cnt + 0.003 if self.range_cnt < 0.9 else 0.9
                     print('ssssssuuuuuuccccccccceeeeeeeesssssssssss' , self.s_cnt)
                 return True
             else:

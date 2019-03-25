@@ -731,21 +731,29 @@ bool ManipulatorKinematicsDynamics::InverseKinematics_7( Eigen::VectorXd goal_po
 
   for ( int i = 1; i>=-1; i-=2 ) 
   {
-    // if( -R47(0,2)*i>=0 )
-    //     JointAngle(5) = theta_5;
-    // else if( -R47(0,2)*i<0 && theta_5>=0 )  
-    //     JointAngle(5) = theta_5 - pi;
-    // else
-    //     JointAngle(5) = pi + theta_5; 
-    std::cout<<"R47 = "<<R47(0,3)<<" "<<R47(1,3)<<" "<<R47(2,3)<<std::endl;
-    JointAngle(5) = theta_5;
-    if(R47(1,3)*JointAngle(5)>0 && fabs(R47(1,3)*JointAngle(5))>0.0001)
-    {
-      if(JointAngle(5)<0)
-        JointAngle(5) += pi;
-      else
-        JointAngle(5) -= pi;
-    }
+    if( -R47(0,2)*i>=0 )
+        JointAngle(5) = theta_5;
+    else if( -R47(0,2)*i<0 && theta_5>=0 )  
+        JointAngle(5) = theta_5 - pi;
+    else
+        JointAngle(5) = pi + theta_5; 
+  
+    // JointAngle(5) = theta_5;
+    // if(R47(1,3)*JointAngle(5)>0 || fabs(R47(1,3))<0.0001)
+    // {
+    //   if(fabs(R47(1,3))<0.0001){
+    //     if (R47(0,3)*cos(JointAngle(5)) > 0){
+    //       if(JointAngle(5)<0)
+    //         JointAngle(5) += pi;
+    //       else
+    //         JointAngle(5) -= pi;
+    //     }
+    //   }
+    //   else if(JointAngle(5)<0)
+    //     JointAngle(5) += pi;
+    //   else
+    //     JointAngle(5) -= pi;
+    // }
     
     if (i == 1)
         JointAngle(6) = theta_6;
