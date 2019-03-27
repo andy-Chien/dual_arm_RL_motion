@@ -9,17 +9,6 @@ class CheckCollision():
         Alarm = np.zeros(LinkNum)
         
         Slave2Master_Dist = np.ones((LinkNum, LinkNum-2), dtype=np.float32)*999
-
-        # for cnt_M in range(2,LinkNum):
-        #     Slave2Master_Dist[0, cnt_M] = self.calculateDistance( RobotLinkPos_Slave[0, :], RobotLinkPos_Slave[1, :],
-        #                                                             RobotLinkPos_Master[cnt_M, :], RobotLinkPos_Master[cnt_M+1, :])
-        #     if Slave2Master_Dist[0, cnt_M] < 0.16:
-        #             Alarm[0] = 1
-        # for cnt_S in range(2,LinkNum):
-        #     Slave2Master_Dist[1, cnt_S] = self.calculateDistance( RobotLinkPos_Slave[cnt_S, :], RobotLinkPos_Slave[cnt_S+1, :],
-        #                                                             RobotLinkPos_Master[0, :], RobotLinkPos_Master[1, :])
-        #     if Slave2Master_Dist[1, cnt_M] < 0.16:
-        #             Alarm[1] = 1
         for cnt_S in range(0,LinkNum):
             for cnt_M in range(2,LinkNum):
                 Slave2Master_Dist[cnt_S, cnt_M-2] = self.calculateDistance( RobotLinkPos_Slave[cnt_S, :], RobotLinkPos_Slave[cnt_S+1, :],
