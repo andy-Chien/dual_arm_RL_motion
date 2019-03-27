@@ -226,7 +226,7 @@ bool BaseModule::env_reset_callback(train::environment::Request &req,
     dis = manipulator_->manipulator_link_data_[i]->joint_limit_max_ - manipulator_->manipulator_link_data_[i]->joint_limit_min_;
     res.joint_angle[i-1] = pow((2*(manipulator_->manipulator_link_data_[i]->joint_angle_ - manipulator_->manipulator_link_data_[i]->joint_limit_min_)/fabs(dis))-1, 3);
   }
-  Eigen::Vector3d limit_vec = manipulator_->manipulator_link_data_[6]->position_ - manipulator_->manipulator_link_data_[1]->position_;
+  Eigen::Vector3d limit_vec = manipulator_->manipulator_link_data_[6]->position_ - manipulator_->manipulator_link_data_[2]->position_;
   Eigen::Vector3d vecO;
   vecO << res.joint_pos[9], res.joint_pos[10], 0;
   double limit_dis = limit_vec.norm();

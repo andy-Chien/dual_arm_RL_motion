@@ -212,7 +212,7 @@ def train(nameIndx):
     print('Running time: ', time.time() - t1)
 
 def action_sample(s):
-    a = s[:8] - s[8:16]
+    a = s[8:16]
     a[:3] /= np.linalg.norm(a[:3])
     a[3:7]/= np.linalg.norm(a[3:7])
     a[7]  /= math.fabs(a[7])

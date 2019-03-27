@@ -129,12 +129,11 @@ class Test(core.Env):
     def reset(self):
         self.goal = self.set_goal()
         self.old, self.joint_pos[:12], self.joint_pos[12:24], self.joint_pos[24:27],self.joint_angle, self.limit = self.set_old()
-        self.state = self.old
-        self.state = np.append(self.state, np.subtract(self.goal, self.old))
+        self.state = np.append(self.old, np.subtract(self.goal, self.old))
         self.get_state_jointpos()
         self.state = np.append(self.state, self.s_jointpos)
         self.state = np.append(self.state, self.joint_angle)
-        self.state = np.append(self.state, self.limit)
+        self.state = np.append(self.state, self.limit[0])
         self.dis_pos = np.linalg.norm(np.subtract(self.goal[:3], self.old[:3]))
         self.dis_ori = np.linalg.norm(np.subtract(self.goal[3:7], self.old[3:7]))
         self.dis_phi = math.fabs(self.goal[7] - self.old[7])
@@ -191,7 +190,7 @@ class Test(core.Env):
             s = np.append(s, np.subtract(self.goal, self.old))
             s = np.append(s, self.s_jointpos)
             s = np.append(s, self.joint_angle)
-            s = np.append(s, self.limit)
+            s = np.append(s, self.limit[0])
             self.dis_pos = np.linalg.norm(self.goal[:3] - s[:3])
             self.dis_ori = np.linalg.norm(self.goal[3:7] - s[3:7])
             self.dis_phi = math.fabs(self.goal[7] - s[7])
