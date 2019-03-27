@@ -170,8 +170,8 @@ bool BaseModule::env_reset_callback(train::environment::Request &req,
     robotis_->is_ik = true;
     for (int i=1; i<=MAX_JOINT_ID; i++)
     {
-      dis = manipulator_->manipulator_link_data_[i]->joint_limit_max_ - manipulator_->manipulator_link_data_[i]->joint_limit_min_;
-      mu = (manipulator_->manipulator_link_data_[i]->joint_limit_max_ + manipulator_->manipulator_link_data_[i]->joint_limit_min_)/2;
+      dis = manipulator_->manipulator_link_data_[i]->train_limit_max_ - manipulator_->manipulator_link_data_[i]->train_limit_min_;
+      mu = (manipulator_->manipulator_link_data_[i]->train_limit_max_ + manipulator_->manipulator_link_data_[i]->train_limit_min_)/2;
       req.action[i] = req.action[i] * fabs(dis) + (mu - req.action[8]*fabs(dis)/2);
     }
 

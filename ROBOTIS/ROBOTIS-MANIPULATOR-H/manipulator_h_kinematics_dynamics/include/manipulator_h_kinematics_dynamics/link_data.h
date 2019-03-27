@@ -44,6 +44,8 @@ public:
 
   double joint_limit_max_;
   double joint_limit_min_;
+  double train_limit_max_;
+  double train_limit_min_;
 
   double joint_angle_;
   double joint_velocity_;
