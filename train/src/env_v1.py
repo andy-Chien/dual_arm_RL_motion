@@ -46,20 +46,16 @@ class Test(core.Env):
         self.__obname = self.NAME[name%2 + 1]
         self.viewer = None
 
-        high = np.array([1.,1.,1.,1.,1.,1.,1.,1.,   #8
-                         1.,1.,1.,1.,1.,1.,1.,1.,   #8
-                         0.,0.,0.,0.,0.,0.,         #6
-                         0.,0.,0.,0.,0.,0.,0.,0.,0.,#9
-                         0.,0.,0.,0.,0.,0.,0.,      #7
-                         0.,0.,0.,0.])              #4
-                                                    #42
-        low = -high 
-                    # ox,oy,oz,oa,ob,oc,od,of,
-                    # vx,vy,vz,va,vb,vc,vd,vf
-                    # 4xyz,6xyz,
-                    # 4xyz,6xyz,8xyz,
-                    # joint_angle(7), 
-                    # limit(1), rate(3)
+        high = np.array([1.,1.,1.,1.,1.,1.,1.,1.,
+                         1.,1.,1.,1.,1.,1.,1.,1.,
+                         1.,1.,1.,1.,1.,1.,1.,1.,
+                         0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,
+                         0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,
+                         0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.])
+        low = -high # gx,gy,gz,ga,gb,gc,gd,gf,
+                    #ox,oy,oz,oa,ob,oc,od,of,
+                    # 1xyz,2xyz,4xyz,6xyz,
+                    # joint_angle, limit
         self.observation_space = spaces.Box(low=low, high=high, dtype=np.float32)
         self.action_space = spaces.Discrete(8)
         self.state = []
@@ -77,7 +73,6 @@ class Test(core.Env):
         self.joint_pos = []
         self.joint_angle = []
         self.limit = []
-        self.s_jointpos = []
         # self.dis_pos
         self.cc = CheckCollision()
         self.collision = False
@@ -122,17 +117,12 @@ class Test(core.Env):
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
 
-    def get_state_jointpos(self):
-        self.s_jointpos = []
-        self.s_jointpos = np.append(self.joint_pos[6:12], self.joint_pos[18:27])
-
     def reset(self):
         self.goal = self.set_goal()
         self.old, self.joint_pos[:12], self.joint_pos[12:24], self.joint_pos[24:27],self.joint_angle, self.limit = self.set_old()
-        self.state = self.old
+        self.state = np.append(self.goal, self.old)
         self.state = np.append(self.state, np.subtract(self.goal, self.old))
-        self.get_state_jointpos()
-        self.state = np.append(self.state, self.s_jointpos)
+        self.state = np.append(self.state, self.joint_pos)
         self.state = np.append(self.state, self.joint_angle)
         self.state = np.append(self.state, self.limit)
         self.dis_pos = np.linalg.norm(np.subtract(self.goal[:3], self.old[:3]))
@@ -178,7 +168,7 @@ class Test(core.Env):
         action_phi = a[7]*np.pi*self.ACTION_PHI_TRANS
         self.action = np.append(action_vec, action_ori)
         self.action = np.append(self.action, action_phi)
-        self.cmd = np.add(s[:8], self.action)
+        self.cmd = np.add(s[8:16], self.action)
         self.cmd[3:7] /= np.linalg.norm(self.cmd[3:7])
         res = self.get_state_client(self.cmd, self.__name)
         res_ = self.get_state_client([0], self.__obname)
@@ -186,16 +176,15 @@ class Test(core.Env):
             self.old, self.joint_pos[:12], self.joint_angle = res.state, res.joint_pos, res.joint_angle
             self.joint_pos[12:24] = res_.joint_pos
             self.joint_pos[24:27] = [res_.state[0], res_.state[1], res_.state[2]]
-            self.get_state_jointpos()
-            s = self.old
+            s = np.append(self.goal, self.old)
             s = np.append(s, np.subtract(self.goal, self.old))
-            s = np.append(s, self.s_jointpos)
+            s = np.append(s, self.joint_pos)
             s = np.append(s, self.joint_angle)
             s = np.append(s, self.limit)
-            self.dis_pos = np.linalg.norm(self.goal[:3] - s[:3])
-            self.dis_ori = np.linalg.norm(self.goal[3:7] - s[3:7])
-            self.dis_phi = math.fabs(self.goal[7] - s[7])
-            self.dis_state = np.linalg.norm(self.goal - s[:8])
+            self.dis_pos = np.linalg.norm(self.goal[:3] - s[8:11])
+            self.dis_ori = np.linalg.norm(self.goal[3:7] - s[11:15])
+            self.dis_phi = math.fabs(self.goal[7] - s[15])
+            self.dis_state = np.linalg.norm(self.goal - s[8:16])
             r_ori = (self.dis_ori/self.dis_pos)/6
             r_phi = (self.dis_phi/self.dis_pos)/6
             r_pos = 1 if self.dis_pos > 0.04 else self.dis_pos*20+0.2
@@ -211,7 +200,7 @@ class Test(core.Env):
         if ik_success:
             linkPosM = np.array(self.joint_pos[0:12])
             linkPosS = np.array(self.joint_pos[12:27])
-            linkPosM = np.append(linkPosM, s[:3])
+            linkPosM = np.append(linkPosM, s[8:11])
             linkPosM = np.append([0.,0.,-0.8], linkPosM)
             linkPosS = np.append([0.,0.,-0.8], linkPosS)
             linkPosM = linkPosM.reshape(6,3)
@@ -235,9 +224,9 @@ class Test(core.Env):
         
 
     def get_reward(self, s, ik_success, terminal):
-        goal_vec = self.goal[:3] - self.state[:3]
-        goal_ori = self.goal[3:7]- self.state[3:7]
-        goal_phi = self.goal[7]  - self.state[7]
+        goal_vec = self.goal[:3] - self.state[8:11]
+        goal_ori = self.goal[3:7]- self.state[11:15]
+        goal_phi = self.goal[7]  - self.state[15]
         # old_dis = np.linalg.norm(self.goal - self.state[8:16])
         cos_vec = np.dot(self.action[:3],  goal_vec)/(np.linalg.norm(self.action[:3]) *np.linalg.norm(goal_vec))
         cos_ori = np.dot(self.action[3:7], goal_ori)/(np.linalg.norm(self.action[3:7])*np.linalg.norm(goal_ori))
