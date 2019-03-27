@@ -39,7 +39,7 @@ TAU = 0.001      # soft replacement
 MEMORY_CAPACITY = 10000
 BATCH_SIZE = 128
 SIDE = ['right_arm', 'left_arm']
-GOAL_REWARD = 1250
+GOAL_REWARD = 1500
 NAME = 'DDPG_v1'
 LOAD = False
 
@@ -60,32 +60,40 @@ class DDPG(object):
         self.a_dim, self.s_dim, self.a_bound = a_dim, s_dim, a_bound,
         self.S = tf.placeholder(tf.float32, [None, s_dim], 's')
         self.S_ = tf.placeholder(tf.float32, [None, s_dim], 's_')
-        self.R = tf.placeholder(tf.float32, [None, 1], 'r')
-
-        self.a = self._build_a(self.S,)
-        q = self._build_c(self.S, self.a, )
-        a_params = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='Actor'+self.name)
-        c_params = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='Critic'+self.name)
+        with tf.name_scope(self.name+'actor_a'):
+            self.R = tf.placeholder(tf.float32, [None, 1], 'r')
+        with tf.name_scope(self.name+'actor_a'):
+            self.a = self._build_a(self.S,)
+        with tf.name_scope(self.name+'critic_c'):
+            q = self._build_c(self.S, self.a, )
+        a_params = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope=self.name+'Actor')
+        c_params = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope=self.name+'Critic')
         ema = tf.train.ExponentialMovingAverage(decay=1 - TAU)          # soft replacement
 
         def ema_getter(getter, name, *args, **kwargs):
             return ema.average(getter(name, *args, **kwargs))
 
         target_update = [ema.apply(a_params), ema.apply(c_params)]      # soft update operation
-        a_ = self._build_a(self.S_, reuse=True, custom_getter=ema_getter)   # replaced target parameters
-        q_ = self._build_c(self.S_, a_, reuse=True, custom_getter=ema_getter)
-
-        a_loss = - tf.reduce_mean(q)  # maximize the q
+        with tf.name_scope(self.name+'actor_target'):
+            a_ = self._build_a(self.S_, reuse=True, custom_getter=ema_getter)   # replaced target parameters
+        with tf.name_scope(self.name+'critic_target'):
+            q_ = self._build_c(self.S_, a_, reuse=True, custom_getter=ema_getter)
+        with tf.name_scope(self.name+'_a_loss'):
+            a_loss = - tf.reduce_mean(q)  # maximize the q  
+        tf.summary.scalar(self.name+'_a_loss', a_loss)
         self.atrain = tf.train.AdamOptimizer(LR_A).minimize(a_loss, var_list=a_params)
 
         with tf.control_dependencies(target_update):    # soft replacement happened at here
+            # with tf.name_scope(self.name+'_q_target'):
             q_target = self.R + GAMMA * q_
-            td_error = tf.losses.mean_squared_error(labels=q_target, predictions=q)
-            tf.Print(td_error, [td_error])
+            # tf.summary.scalar(self.name+'_q_target', q_target)
+            with tf.name_scope(self.name+'_td_error'):
+                td_error = tf.losses.mean_squared_error(labels=q_target, predictions=q)
+            tf.summary.scalar(self.name+'_td_error', td_error)
             self.ctrain = tf.train.AdamOptimizer(LR_C).minimize(td_error, var_list=c_params)
-
-        self.sess.run(tf.global_variables_initializer())
-
+       
+        self.merged = tf.summary.merge_all()
+        self.writer = tf.summary.FileWriter('src/Collision_Avoidance/train/logs/'+NAME+'/'+self.name+"/",self.sess.graph)
         self.saver = tf.train.Saver()
         self.path = './'+ NAME + self.name
         if LOAD:
@@ -96,16 +104,20 @@ class DDPG(object):
     def choose_action(self, s):
         return self.sess.run(self.a, {self.S: s[np.newaxis, :]})[0]
 
-    def learn(self):
+    def learn(self, iswrite, indx=0):
         indices = np.random.choice(MEMORY_CAPACITY, size=BATCH_SIZE)
         bt = self.memory[indices, :]
         bs = bt[:, :self.s_dim]
         ba = bt[:, self.s_dim: self.s_dim + self.a_dim]
         br = bt[:, -self.s_dim - 1: -self.s_dim]
         bs_ = bt[:, -self.s_dim:]
-
-        self.sess.run(self.atrain, {self.S: bs})
-        self.sess.run(self.ctrain, {self.S: bs, self.a: ba, self.R: br, self.S_: bs_})
+        if iswrite:
+            
+            _, __, result = self.sess.run([self.atrain, self.ctrain, self.merged], {self.S: bs, self.a: ba, self.R: br, self.S_: bs_})
+            self.writer.add_summary(result, indx)
+        else:
+            self.sess.run(self.atrain, {self.S: bs})
+            self.sess.run(self.ctrain, {self.S: bs, self.a: ba, self.R: br, self.S_: bs_})
 
     def store_transition(self, s, a, r, s_):
         transition = np.hstack((s, a, [r], s_))
@@ -115,29 +127,17 @@ class DDPG(object):
 
     def _build_a(self, s, reuse=None, custom_getter=None):
         trainable = True if reuse is None else False
-        with tf.variable_scope('Actor'+self.name, reuse=reuse, custom_getter=custom_getter):
+        with tf.variable_scope(self.name+'Actor', reuse=reuse, custom_getter=custom_getter):
             net = tf.layers.dense(s, 128, activation=tf.nn.leaky_relu, name='l1', trainable=trainable)
             net = tf.layers.dense(net, 128, activation=tf.nn.leaky_relu, name='l2', trainable=trainable)
             net = tf.layers.dense(net, 128, activation=tf.nn.leaky_relu, name='l3', trainable=trainable)
             net = tf.layers.dense(net, 128, activation=tf.nn.leaky_relu, name='l4', trainable=trainable)
-            # net = tf.layers.dense(net, 256, activation=tf.nn.leaky_relu, name='l5', trainable=trainable) 
-            # net = tf.layers.dense(net, 1000, activation=tf.nn.relu, name='l3', trainable=trainable)
-            # t1 = tf.layers.dense(net, 300, activation=tf.nn.tanh, name='t1', trainable=trainable)
-            # t2 = tf.layers.dense(net, 400, activation=tf.nn.tanh, name='t2', trainable=trainable)
-            # t3 = tf.layers.dense(net, 100, activation=tf.nn.tanh, name='t3', trainable=trainable)
-            # a1 = tf.layers.dense(t1, 3, activation=tf.nn.tanh, name='a1', trainable=trainable)
-            # a2 = tf.layers.dense(t2, 4, activation=tf.nn.tanh, name='a2', trainable=trainable)
-            # a3 = tf.layers.dense(t3, 1, activation=tf.nn.tanh, name='a3', trainable=trainable)
             a = tf.layers.dense(net, self.a_dim, activation=tf.nn.tanh, name='a', trainable=trainable)
-            # a = [a1[0],a2[0],a3[0]]
-            # a = tf.reshape(a,[-1])
-            # a = tf.concat([a1[0],a2[0]], 0)
-            # a = tf.concat([a[0], a3[0]], 0)
-            return a#tf.multiply(a, self.a_bound, name='scaled_a')
+            return a
 
     def _build_c(self, s, a, reuse=None, custom_getter=None):
         trainable = True if reuse is None else False
-        with tf.variable_scope('Critic'+self.name, reuse=reuse, custom_getter=custom_getter):
+        with tf.variable_scope(self.name+'Critic', reuse=reuse, custom_getter=custom_getter):
             n_l1 = 128
             w1_s = tf.get_variable('w1_s', [self.s_dim, n_l1], trainable=trainable)
             w1_a = tf.get_variable('w1_a', [self.a_dim, n_l1], trainable=trainable)
@@ -146,9 +146,8 @@ class DDPG(object):
             net = tf.layers.dense(net, 128, activation=tf.nn.leaky_relu, name='l2', trainable=trainable)
             net = tf.layers.dense(net, 128, activation=tf.nn.leaky_relu, name='l3', trainable=trainable)
             net = tf.layers.dense(net, 128, activation=tf.nn.leaky_relu, name='l4', trainable=trainable)
-            # net = tf.layers.dense(net, 1000, activation=tf.nn.relu, name='l3', trainable=trainable)
-            return tf.layers.dense(net, 1, trainable=trainable)  # Q(s,a)
-
+            v = tf.layers.dense(net, 1, trainable=trainable)  # Q(s,a)
+            return v
 
 ###############################  training  ####################################
 def train(nameIndx):
@@ -163,7 +162,7 @@ def train(nameIndx):
     ddpg = DDPG(a_dim, s_dim, a_bound, SIDE[nameIndx])
 
     var = 0.8  # control exploration
-    rar = 0.3
+    rar = 0.6
     
     t1 = time.time()
     for i in range(MAX_EPISODES):
@@ -173,10 +172,11 @@ def train(nameIndx):
         for j in range(MAX_EP_STEPS):
             # Add exploration noise
             a = ddpg.choose_action(s)
-            a = np.clip(np.random.normal(a, var), -1, 1)    # add randomness to action selection for exploration
-            if (np.random.rand(1) < 8/math.sqrt(i+1) or np.random.rand(1) < rar) and i > 64:
+            sigma = var if np.random.rand(1)<0.2 else 0.8
+            a = np.clip(np.random.normal(a, sigma), -1, 1)    # add randomness to action selection for exploration
+            if np.random.rand(1) < rar:
                 a = action_sample(s)
-                rar *= .9999995
+                if rar>0.2: rar *= .999999
             s_, r, done, info = env.step(a)
             if r > 0 or ddpg.r_flag:
                 ddpg.r_flag = not ddpg.r_flag
@@ -184,8 +184,10 @@ def train(nameIndx):
             cnt += info
             if ddpg.pointer > MEMORY_CAPACITY:
                 var *= .999995    # decay the action randomness
-                ddpg.learn()
-
+                if j%100 == 0:
+                    ddpg.learn(True, ddpg.pointer)
+                else:
+                    ddpg.learn(False)
             s = s_
             ep_reward += r
             if j == MAX_EP_STEPS-1 or done or ep_reward < -5000:
