@@ -9,6 +9,7 @@ import rospy
 import math
 from train.srv import environment
 from CheckCollision import CheckCollision
+# from CheckCollision_tensor import CheckCollision
 # from vacuum_cmd_msg.srv import VacuumCmd
 class Test(core.Env):
 
@@ -44,6 +45,7 @@ class Test(core.Env):
         self.__name = self.NAME[name%2]
         self.__obname = self.NAME[name%2 + 1]
         self.viewer = None
+
         high = np.array([1.,1.,1.,1.,1.,1.,1.,1.,
                          1.,1.,1.,1.,1.,1.,1.,1.,
                          1.,1.,1.,1.,1.,1.,1.,1.,
@@ -58,6 +60,7 @@ class Test(core.Env):
         self.action_space = spaces.Discrete(8)
         self.state = []
         self.action = []
+        self.cmd = []
         self.point = []
         self.goal = []
         self.goal_pos = []
@@ -127,7 +130,7 @@ class Test(core.Env):
         self.dis_phi = math.fabs(self.goal[7] - self.old[7])
         r_ori = (self.dis_ori/self.dis_pos)/6
         r_phi = (self.dis_phi/self.dis_pos)/6
-        r_pos = 1 if self.dis_pos > 0.05 else self.dis_pos*20
+        r_pos = 1 if self.dis_pos > 0.04 else self.dis_pos*20+0.2
         move_rate = [r_pos, r_ori, r_phi]
         self.state = np.append(self.state, move_rate)
         self.collision = False
@@ -165,9 +168,9 @@ class Test(core.Env):
         action_phi = a[7]*np.pi*self.ACTION_PHI_TRANS
         self.action = np.append(action_vec, action_ori)
         self.action = np.append(self.action, action_phi)
-        self.action = np.add(s[8:16], self.action)
-        self.action[3:7] /= np.linalg.norm(self.action[3:7])
-        res = self.get_state_client(self.action, self.__name)
+        self.cmd = np.add(s[8:16], self.action)
+        self.cmd[3:7] /= np.linalg.norm(self.cmd[3:7])
+        res = self.get_state_client(self.cmd, self.__name)
         res_ = self.get_state_client([0], self.__obname)
         if res.success:
             self.old, self.joint_pos[:12], self.joint_angle = res.state, res.joint_pos, res.joint_angle
@@ -181,9 +184,10 @@ class Test(core.Env):
             self.dis_pos = np.linalg.norm(self.goal[:3] - s[8:11])
             self.dis_ori = np.linalg.norm(self.goal[3:7] - s[11:15])
             self.dis_phi = math.fabs(self.goal[7] - s[15])
+            self.dis_state = np.linalg.norm(self.goal - s[8:16])
             r_ori = (self.dis_ori/self.dis_pos)/6
             r_phi = (self.dis_phi/self.dis_pos)/6
-            r_pos = 1 if self.dis_pos > 0.05 else self.dis_pos*20
+            r_pos = 1 if self.dis_pos > 0.04 else self.dis_pos*20+0.2
             move_rate = [r_pos, r_ori, r_phi]
             s = np.append(s, move_rate)
    
@@ -196,7 +200,7 @@ class Test(core.Env):
         if ik_success:
             linkPosM = np.array(self.joint_pos[0:12])
             linkPosS = np.array(self.joint_pos[12:27])
-            linkPosM = np.append(linkPosM, s[:3])
+            linkPosM = np.append(linkPosM, s[8:11])
             linkPosM = np.append([0.,0.,-0.8], linkPosM)
             linkPosS = np.append([0.,0.,-0.8], linkPosS)
             linkPosM = linkPosM.reshape(6,3)
@@ -208,11 +212,10 @@ class Test(core.Env):
             if alarm_cnt>0:
                 self.collision = True
 
-            if (self.dis_pos < 0.015 and self.dis_ori < 0.1 and self.dis_phi < 0.1) or self.collision:
-                if not self.collision:
-                    self.s_cnt += 1
-                    self.range_cnt = self.range_cnt + 0.003 if self.range_cnt < 0.9 else 0.9
-                    print('ssssssuuuuuuccccccccceeeeeeeesssssssssss' , self.s_cnt)
+            if (self.dis_pos < 0.015 and self.dis_ori < 0.1 and self.dis_phi < 0.1):
+                self.s_cnt += 1
+                self.range_cnt = self.range_cnt + 0.003 if self.range_cnt < 0.9 else 0.9
+                print('ssssssuuuuuuccccccccceeeeeeeesssssssssss' , self.s_cnt)
                 return True
             else:
                 return False
@@ -224,22 +227,23 @@ class Test(core.Env):
         goal_vec = self.goal[:3] - self.state[8:11]
         goal_ori = self.goal[3:7]- self.state[11:15]
         goal_phi = self.goal[7]  - self.state[15]
-
+        # old_dis = np.linalg.norm(self.goal - self.state[8:16])
         cos_vec = np.dot(self.action[:3],  goal_vec)/(np.linalg.norm(self.action[:3]) *np.linalg.norm(goal_vec))
         cos_ori = np.dot(self.action[3:7], goal_ori)/(np.linalg.norm(self.action[3:7])*np.linalg.norm(goal_ori))
        
-        goal_dis = np.linalg.norm(goal_vec)
+        goal_dis = np.linalg.norm(self.dis_pos)
         a_leng = np.linalg.norm(self.action[:3]/self.ACTION_VEC_TRANS)
 
         reward = 0
+
         if terminal:
             if not self.collision:
-                reward += 1000
+                reward += 100
             else:
-                reward += -10000
+                reward += -100
             return reward
         if not ik_success:
-            return -10
+            return -100
         if a_leng<0.2 or a_leng>2:
             reward += -2
         
@@ -264,11 +268,29 @@ class Test(core.Env):
             reward += 5
         return reward/5
 
-    def _get_ob(self):
-        return self.state
-   
-    def close(self):
-        if self.viewer:
-            self.viewer.close()
-            self.viewer = None
+
+        #===============================================================================
+        # if terminal:
+        #     return 10
+        # if not ik_success:
+        #     return -10
+        # if self.collision:
+        #     return -10
+
+        # if a_leng<0.2 or a_leng>2:
+        #     reward += -1
+        # if cos_vec > np.math.cos(10*np.pi/180):
+        #     r = (cos_vec*cos_vec*cos_vec)
+        #     reward += 2*r
+        # elif self.dis_state < old_dis:
+        #     reward += 1
+       
+        # if self.dis_pos < 0.05 or self.dis_ori < 0.15 or self.dis_phi < 0.15:
+        #     reward += 2
+        # reward /= 2
+        # reward = 1 if reward>1 else reward
+        # reward = -1 if reward < -1 else reward
+        # return reward
+        #==================================================================================
+
 
