@@ -12,10 +12,10 @@ from env import Test
 
 
 MAX_EPISODES = 100000
-MAX_EP_STEPS = 1000
+MAX_EP_STEPS = 1200
 MEMORY_CAPACITY = 10000
 SIDE = ['right_', 'left_']
-GOAL_REWARD = 500
+GOAL_REWARD = 1500
 LOAD = False
 
 def train(nameIndx):

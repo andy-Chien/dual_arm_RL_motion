@@ -11,6 +11,8 @@ NOISE_DECAY = 0.9999
 NOISE_MIN = 0.001
 NAME = 'DDPG_v2'
 LOAD = False
+BATCH_SIZE = 2048
+MEMORY_CAPACITY = 204800
 
 class ReplayBuffer(object):
     def __init__(self, capacity):
@@ -39,11 +41,13 @@ class ActorNetwork(object):
 
     def step(self, obs, reuse):
         with tf.variable_scope(self.name, reuse=reuse):
-            h1 = tf.layers.dense(obs, 64, tf.nn.relu,
+            h1 = tf.layers.dense(obs, 1024, tf.nn.leaky_relu,
                                  kernel_initializer=tf.orthogonal_initializer(gain=np.sqrt(2)))
-            h2 = tf.layers.dense(h1, 64, tf.nn.relu,
+            h2 = tf.layers.dense(h1, 1024, tf.nn.leaky_relu,
                                  kernel_initializer=tf.orthogonal_initializer(gain=np.sqrt(2)))
-            action = tf.layers.dense(h2, self.act_dim, tf.nn.tanh,
+            h3 = tf.layers.dense(h2, 1024, tf.nn.leaky_relu,
+                                 kernel_initializer=tf.orthogonal_initializer(gain=np.sqrt(2)))
+            action = tf.layers.dense(h3, self.act_dim, tf.nn.tanh,
                                  kernel_initializer=tf.orthogonal_initializer(gain=np.sqrt(2)))
         return action
 
@@ -58,10 +62,12 @@ class QValueNetwork(object):
 
     def step(self, obs, action, reuse):
         with tf.variable_scope(self.name, reuse=reuse):
-            h1 = tf.layers.dense(obs, 64, tf.nn.relu,
+            h1 = tf.layers.dense(obs, 256, tf.nn.leaky_relu,
                                  kernel_initializer=tf.orthogonal_initializer(gain=np.sqrt(2)))
             h1 = tf.concat([h1, action], axis=-1)
-            h2 = tf.layers.dense(h1, 64, tf.nn.relu,
+            h2 = tf.layers.dense(h1, 1024, tf.nn.leaky_relu,
+                                 kernel_initializer=tf.orthogonal_initializer(gain=np.sqrt(2)))
+            h3 = tf.layers.dense(h2, 1024, tf.nn.leaky_relu,
                                  kernel_initializer=tf.orthogonal_initializer(gain=np.sqrt(2)))
             value = tf.layers.dense(h2, 1,
                                     kernel_initializer=tf.orthogonal_initializer(gain=0.01))
@@ -99,7 +105,7 @@ class DDPG(object):
         target_actor = ActorNetwork(self.act_dim, self.name+'target_actor')
         target_q_value = QValueNetwork(self.name+'target_q_value')
 
-        self.memory = ReplayBuffer(capacity=int(1e6))
+        self.memory = ReplayBuffer(capacity = MEMORY_CAPACITY)
 
         self.action = actor.choose_action(self.OBS0)
         self.q_value0_with_actor = q_value.get_q_value(self.OBS0, self.action)
@@ -135,7 +141,7 @@ class DDPG(object):
         tf.summary.scalar(self.name+'_q_loss', self.q_value_loss)
         tf.summary.scalar(self.name+'_a_loss', self.actor_loss)
         self.merged = tf.summary.merge_all()
-        self.writer = tf.summary.FileWriter('src/Collision_Avoidance/train/logs/'+NAME+'/'+self.name+'/', self.sess.graph)
+        self.writer = tf.summary.FileWriter('/home/iclab-arm/Andy/collision/src/Collision_Avoidance/train/logs/'+NAME+'/'+self.name+'/', self.sess.graph)
         self.saver = tf.train.Saver()
         self.path = './'+ NAME + self.name
         if LOAD:
@@ -152,7 +158,7 @@ class DDPG(object):
         return action
 
     def learn(self, indx):
-        obs0, act, rwd, obs1, done = self.memory.sample(batch_size=128)
+        obs0, act, rwd, obs1, done = self.memory.sample(batch_size=BATCH_SIZE)
 
         target_q_value1 = self.sess.run(self.target_q_value1, feed_dict={self.OBS1: obs1, self.RWD: rwd,
                                                                self.DONE: np.float32(done)})
