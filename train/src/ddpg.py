@@ -4,10 +4,8 @@ import gym
 import numpy as np
 import tensorflow as tf
 import random
-import time
 
-
-NOISE_DECAY = 0.9999
+NOISE_DECAY = 0.99999
 NOISE_MIN = 0.001
 NAME = 'DDPG_v2'
 LOAD = False
@@ -41,13 +39,13 @@ class ActorNetwork(object):
 
     def step(self, obs, reuse):
         with tf.variable_scope(self.name, reuse=reuse):
-            h1 = tf.layers.dense(obs, 1024, tf.nn.leaky_relu,
+            h1 = tf.layers.dense(obs, 256, tf.nn.leaky_relu,
                                  kernel_initializer=tf.orthogonal_initializer(gain=np.sqrt(2)))
-            h2 = tf.layers.dense(h1, 1024, tf.nn.leaky_relu,
+            h2 = tf.layers.dense(h1, 256, tf.nn.leaky_relu,
                                  kernel_initializer=tf.orthogonal_initializer(gain=np.sqrt(2)))
-            h3 = tf.layers.dense(h2, 1024, tf.nn.leaky_relu,
-                                 kernel_initializer=tf.orthogonal_initializer(gain=np.sqrt(2)))
-            action = tf.layers.dense(h3, self.act_dim, tf.nn.tanh,
+            # h3 = tf.layers.dense(h2, 1024, tf.nn.leaky_relu,
+            #                      kernel_initializer=tf.orthogonal_initializer(gain=np.sqrt(2)))
+            action = tf.layers.dense(h2, self.act_dim, tf.nn.tanh,
                                  kernel_initializer=tf.orthogonal_initializer(gain=np.sqrt(2)))
         return action
 
@@ -65,10 +63,10 @@ class QValueNetwork(object):
             h1 = tf.layers.dense(obs, 256, tf.nn.leaky_relu,
                                  kernel_initializer=tf.orthogonal_initializer(gain=np.sqrt(2)))
             h1 = tf.concat([h1, action], axis=-1)
-            h2 = tf.layers.dense(h1, 1024, tf.nn.leaky_relu,
+            h2 = tf.layers.dense(h1, 256, tf.nn.leaky_relu,
                                  kernel_initializer=tf.orthogonal_initializer(gain=np.sqrt(2)))
-            h3 = tf.layers.dense(h2, 1024, tf.nn.leaky_relu,
-                                 kernel_initializer=tf.orthogonal_initializer(gain=np.sqrt(2)))
+            # h3 = tf.layers.dense(h2, 1024, tf.nn.leaky_relu,
+            #                      kernel_initializer=tf.orthogonal_initializer(gain=np.sqrt(2)))
             value = tf.layers.dense(h2, 1,
                                     kernel_initializer=tf.orthogonal_initializer(gain=0.01))
             return value
@@ -141,7 +139,7 @@ class DDPG(object):
         tf.summary.scalar(self.name+'_q_loss', self.q_value_loss)
         tf.summary.scalar(self.name+'_a_loss', self.actor_loss)
         self.merged = tf.summary.merge_all()
-        self.writer = tf.summary.FileWriter('/home/iclab-arm/Andy/collision/src/Collision_Avoidance/train/logs/'+NAME+'/'+self.name+'/', self.sess.graph)
+        self.writer = tf.summary.FileWriter('/home/andy/collision_ws/src/Collision_Avoidance/train/logs/'+NAME+'/'+self.name+'/', self.sess.graph)
         self.saver = tf.train.Saver()
         self.path = './'+ NAME + self.name
         if LOAD:

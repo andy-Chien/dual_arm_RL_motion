@@ -3,11 +3,11 @@ import math
 
 class CheckCollision():
     def __init__(self):
-        self.threshold = [[0.16, 0.16, 0.14],
+        self.threshold = np.array([[0.16, 0.16, 0.14],
                           [0.16, 0.14, 0.12], 
                           [0.14, 0.14, 0.12], 
                           [0.14, 0.14, 0.12], 
-                          [0.12, 0.12, 0.1]]
+                          [0.12, 0.12, 0.1]])
 
     def checkCollision(self, RobotLinkPos_Master, RobotLinkPos_Slave):
 

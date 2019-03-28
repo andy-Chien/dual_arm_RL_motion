@@ -182,6 +182,8 @@ class Test(core.Env):
         return linkPosM, linkPosS
 
     def step(self, a):
+        alarm = []
+        Link_dis = []
         s = self.state
         action_vec = a[:3]*self.ACTION_VEC_TRANS
         action_ori = a[3:7]*self.ACTION_ORI_TRANS
@@ -239,72 +241,74 @@ class Test(core.Env):
 
     def get_reward(self, s, ik_success, terminal):
         goal_vec = self.goal[:3] - self.state[:3]
-        goal_ori = self.goal[3:7]- self.state[3:7]
-        goal_phi = self.goal[7]  - self.state[7]
-        # old_dis = np.linalg.norm(self.goal - self.state[8:16])
-        cos_vec = np.dot(self.action[:3],  goal_vec)/(np.linalg.norm(self.action[:3]) *np.linalg.norm(goal_vec))
-        cos_ori = np.dot(self.action[3:7], goal_ori)/(np.linalg.norm(self.action[3:7])*np.linalg.norm(goal_ori))
+        # goal_ori = self.goal[3:7]- self.state[3:7]
+        # goal_phi = self.goal[7]  - self.state[7]
+        # old_dis = np.linalg.norm(self.goal - self.state[:8])
+        # cos_vec = np.dot(self.action[:3],  goal_vec)/(np.linalg.norm(self.action[:3]) *np.linalg.norm(goal_vec))
+        # cos_ori = np.dot(self.action[3:7], goal_ori)/(np.linalg.norm(self.action[3:7])*np.linalg.norm(goal_ori))
        
-        goal_dis = np.linalg.norm(self.dis_pos)
+        # goal_dis = np.linalg.norm(self.dis_pos)
         a_leng = np.linalg.norm(self.action[:3]/self.ACTION_VEC_TRANS)
 
         reward = 0
 
-        if terminal:
-            if not self.collision:
-                reward += 100
-            else:
-                reward += -100
-            return reward
-        if not ik_success:
-            return -100
-        if a_leng<0.2 or a_leng>2:
-            reward += -2
+        # if terminal:
+        #     if not self.collision:
+        #         reward += 100
+        #     else:
+        #         reward += -100
+        #     return reward
+        # if not ik_success:
+        #     return -100
+        # if a_leng<0.2 or a_leng>2:
+        #     reward += -2
         
-        if cos_vec > np.math.cos(30*np.pi/180):
-            r = (cos_vec*cos_vec*cos_vec)/(goal_dis**0.5)
-            reward += 10 if r > 10 else r
-        elif self.dis_pos > 0.05:
-            r = -goal_dis/(cos_vec+1)
-            reward += -2 if r<-2 else r
+        # if cos_vec > np.math.cos(30*np.pi/180):
+        #     r = (cos_vec*cos_vec*cos_vec)/(goal_dis**0.5)
+        #     reward += 10 if r > 10 else r
+        # elif self.dis_pos > 0.05:
+        #     r = -goal_dis/(cos_vec+1)
+        #     reward += -2 if r<-2 else r
        
-        if cos_ori > np.math.cos(30*np.pi/180):
-            reward += 3
-        elif self.dis_ori > 0.15:
-            reward += -2
-        # if cos_ori < np.math.cos(60*np.pi/180):
+        # if cos_ori > np.math.cos(30*np.pi/180):
+        #     reward += 3
+        # elif self.dis_ori > 0.15:
+        #     reward += -2
+        # # if cos_ori < np.math.cos(60*np.pi/180):
+        # #     reward += -1
+        # if goal_phi*self.action[7] > 0:
+        #     reward += 2
+        # elif self.dis_phi > 0.15:
         #     reward += -1
-        if goal_phi*self.action[7] > 0:
-            reward += 2
-        elif self.dis_phi > 0.15:
-            reward += -1
-        if self.dis_pos < 0.05 or self.dis_ori < 0.15 or self.dis_phi < 0.15:
-            reward += 5
-        return reward/5
+        # if self.dis_pos < 0.05 or self.dis_ori < 0.15 or self.dis_phi < 0.15:
+        #     reward += 5
+        # return reward/5
 
 
         #===============================================================================
-        # if terminal:
-        #     return 10
-        # if not ik_success:
-        #     return -10
-        # if self.collision:
-        #     return -10
+        if terminal:
+            return 10
+        if not ik_success:
+            return -10
+        if self.collision:
+            return -10
 
-        # if a_leng<0.2 or a_leng>2:
-        #     reward += -1
+        if a_leng<0.2 or a_leng>2:
+            reward += -1
         # if cos_vec > np.math.cos(10*np.pi/180):
         #     r = (cos_vec*cos_vec*cos_vec)
         #     reward += 2*r
         # elif self.dis_state < old_dis:
         #     reward += 1
-       
+        reward -= self.dis_state
+        if self.dis_state < 0.3:
+            reward += 1
         # if self.dis_pos < 0.05 or self.dis_ori < 0.15 or self.dis_phi < 0.15:
         #     reward += 2
         # reward /= 2
-        # reward = 1 if reward>1 else reward
-        # reward = -1 if reward < -1 else reward
-        # return reward
+        reward = 2 if reward>2 else reward
+        reward = -2 if reward < -2 else reward
+        return reward
         #==================================================================================
 
 
