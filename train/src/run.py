@@ -8,19 +8,19 @@ import numpy as np
 import math
 import rospy
 from ddpg import DDPG
-from env_v3 import Test 
+from env_v4 import Test 
 
 MAX_EPISODES = 100000
-MAX_EP_STEPS = 1200
+MAX_EP_STEPS = 800
 MEMORY_CAPACITY = 10000
 SIDE = ['right_', 'left_']
-GOAL_REWARD = 1500
+GOAL_REWARD = 2
 LOAD = False
 
 def train(nameIndx):
     T_REWARD = []
     MU_REWARD = 0
-    BEST_R = 0
+    BEST_R = -1000
     env = Test(nameIndx) #0 = right
 
     # agent = DDPG(a_dim, s_dim, a_bound, SIDE[nameIndx])
@@ -38,7 +38,7 @@ def train(nameIndx):
         ep_reward = 0
         for j in range(MAX_EP_STEPS):
             a = agent.choose_action(s)
-            a = np.clip(np.random.normal(a, var), -1, 1)    # add randomness to action selection for exploration
+            # a = np.clip(np.random.normal(a, var), -1, 1)    # add randomness to action selection for exploration
             t2 = time.time()
             if t3 != 0:t32 += (t2-t3)
             s_, r, done, info = env.step(a)
