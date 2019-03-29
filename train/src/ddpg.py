@@ -43,6 +43,8 @@ class ActorNetwork(object):
                                  kernel_initializer=tf.orthogonal_initializer(gain=np.sqrt(2)))
             h2 = tf.layers.dense(h1, 256, tf.nn.leaky_relu,
                                  kernel_initializer=tf.orthogonal_initializer(gain=np.sqrt(2)))
+            # h3 = tf.layers.dense(h1, 256, tf.nn.leaky_relu,
+            #                      kernel_initializer=tf.orthogonal_initializer(gain=np.sqrt(2)))
             # h3 = tf.layers.dense(h2, 1024, tf.nn.leaky_relu,
             #                      kernel_initializer=tf.orthogonal_initializer(gain=np.sqrt(2)))
             action = tf.layers.dense(h2, self.act_dim, tf.nn.tanh,
@@ -65,9 +67,11 @@ class QValueNetwork(object):
             h1 = tf.concat([h1, action], axis=-1)
             h2 = tf.layers.dense(h1, 256, tf.nn.leaky_relu,
                                  kernel_initializer=tf.orthogonal_initializer(gain=np.sqrt(2)))
+            h3 = tf.layers.dense(h2, 256, tf.nn.leaky_relu,
+                                 kernel_initializer=tf.orthogonal_initializer(gain=np.sqrt(2)))
             # h3 = tf.layers.dense(h2, 1024, tf.nn.leaky_relu,
             #                      kernel_initializer=tf.orthogonal_initializer(gain=np.sqrt(2)))
-            value = tf.layers.dense(h2, 1,
+            value = tf.layers.dense(h3, 1,
                                     kernel_initializer=tf.orthogonal_initializer(gain=0.01))
             return value
 

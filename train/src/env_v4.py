@@ -81,7 +81,7 @@ class Test(core.Env):
         # self.dis_pos
         self.cc = CheckCollision()
         self.collision = False
-        self.range_cnt = 0.2
+        self.range_cnt = 0.05
         self.s_cnt = 0
         self.seed()
         self.reset()
