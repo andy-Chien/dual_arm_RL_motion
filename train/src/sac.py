@@ -2,9 +2,9 @@ import numpy as np
 import tensorflow as tf
 import gym
 import random
-
+NAME = 'SAC_v1'
 EPS = 1e-8
-
+LOAD = False
 class ReplayBuffer(object):
     def __init__(self, capacity):
         self.buffer = []
@@ -97,7 +97,7 @@ class ActorNetwork(object):
 
 
 class SAC(object):
-    def __init__(self, act_dim, obs_dim, lr_actor, lr_value, gamma, tau, alpha=0.2, name):
+    def __init__(self, act_dim, obs_dim, lr_actor, lr_value, gamma, tau, alpha=0.2, name=None):
         self.act_dim = act_dim
         self.obs_dim = obs_dim
         self.lr_actor = lr_actor
@@ -138,19 +138,19 @@ class SAC(object):
         next_q_value = tf.stop_gradient(self.RWD + self.gamma * (1 - self.DONE) * target_value)
         next_value = tf.stop_gradient(min_q_value_pi - alpha * logp_pi)
 
-        policy_loss = tf.reduce_mean(alpha * logp_pi - q_value1_pi)
-        q_value1_loss = tf.reduce_mean(tf.squared_difference(next_q_value, q_value1))
-        q_value2_loss = tf.reduce_mean(tf.squared_difference(next_q_value, q_value2))
-        value_loss = tf.reduce_mean(tf.squared_difference(next_value, value))
-        total_value_loss = q_value1_loss + q_value2_loss + value_loss
+        self.policy_loss = tf.reduce_mean(alpha * logp_pi - q_value1_pi)
+        self.q_value1_loss = tf.reduce_mean(tf.squared_difference(next_q_value, q_value1))
+        self.q_value2_loss = tf.reduce_mean(tf.squared_difference(next_q_value, q_value2))
+        self.value_loss = tf.reduce_mean(tf.squared_difference(next_value, value))
+        self.total_value_loss = self.q_value1_loss + self.q_value2_loss + self.value_loss
 
         actor_optimizer = tf.train.AdamOptimizer(learning_rate=self.lr_actor)
-        actor_train_op = actor_optimizer.minimize(policy_loss, var_list=tf.global_variables(self.name+'Actor'))
+        actor_train_op = actor_optimizer.minimize(self.policy_loss, var_list=tf.global_variables(self.name+'Actor'))
         value_optimizer = tf.train.AdamOptimizer(learning_rate=self.lr_value)
         value_params = tf.global_variables(self.name+'Q_value') + tf.global_variables(self.name+'Value')
 
         with tf.control_dependencies([actor_train_op]):
-            value_train_op = value_optimizer.minimize(total_value_loss, var_list=value_params)
+            value_train_op = value_optimizer.minimize(self.total_value_loss, var_list=value_params)
         with tf.control_dependencies([value_train_op]):
             self.target_update = [tf.assign(tv, self.tau * tv + (1 - self.tau) * v)
                              for v, tv in zip(tf.global_variables(self.name+'Value'), tf.global_variables(self.name+'Target_Value'))]
@@ -176,17 +176,19 @@ class SAC(object):
 
     def choose_action(self, obs):
         action = self.sess.run(self.pi, feed_dict={self.OBS0: obs.reshape(1, -1)})
-        action = np.squeeze(action, axis=1)
+        action = np.squeeze(action)
         return action
 
     def learn(self, indx):
         obs0, act, rwd, obs1, done = self.replay_buffer.sample(batch_size=128)
         feed_dict = {self.OBS0: obs0, self.ACT: act,self.OBS1: obs1, self.RWD: rwd,
                                                                self.DONE: np.float32(done)}
-        self.sess.run(self.target_update, feed_dict)
+        
         if indx is not 0:
-            result = self.sess.run(self.merged, feed_dict)
+            _,result = self.sess.run([self.target_update, self.merged], feed_dict)
             self.writer.add_summary(result, indx)
+        else:
+            self.sess.run(self.target_update, feed_dict)
 # env = gym.make("Pendulum-v0")
 # env.seed(1)
 # env = env.unwrapped

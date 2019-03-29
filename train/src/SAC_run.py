@@ -8,10 +8,10 @@ import numpy as np
 import math
 import rospy
 from sac import SAC
-from env_v3 import Test 
+from env_v4 import Test 
 
 MAX_EPISODES = 100000
-MAX_EP_STEPS = 1200
+MAX_EP_STEPS = 800
 MEMORY_CAPACITY = 10000
 BATTH_SIZE = 512
 SIDE = ['right_', 'left_']
@@ -27,7 +27,7 @@ def train(nameIndx):
     # agent = DDPG(a_dim, s_dim, a_bound, SIDE[nameIndx])
     # agent = PPO(act_dim=8, obs_dim=39,
     #             lr_actor=0.0001, lr_value=0.0002, gamma=0.9, clip_range=0.2, name=SIDE[nameIndx])
-    agent = SAC(act_dim=8, obs_dim=39,
+    agent = SAC(act_dim=8, obs_dim=42,
             lr_actor=1e-3, lr_value=1e-3, gamma=0.99, tau=0.995, name=SIDE[nameIndx])
 
     var = 0.8  # control exploration
@@ -39,7 +39,7 @@ def train(nameIndx):
         s = env.reset() 
         ep_reward = 0
         for j in range(MAX_EP_STEPS):
-            a, neglogp, _ = agent.choose_action(s)
+            a = agent.choose_action(s)
             # a = np.clip(np.random.normal(a, var), -1, 1)    # add randomness to action selection for exploration
             s_, r, done, info = env.step(a)
             
