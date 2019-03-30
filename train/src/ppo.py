@@ -2,7 +2,7 @@ import gym
 import numpy as np
 import tensorflow as tf
 
-NAME = 'PPO_v1'
+NAME = 'PPO_v2'
 LOAD = False
 
 class Memory(object):
@@ -33,16 +33,17 @@ class ActorNetwork(object):
 
     def step(self, obs, reuse):
         with tf.variable_scope(self.name, reuse=reuse):
-            h1 = tf.layers.dense(obs, 100, activation=tf.nn.relu)
-            mu = 2 * tf.layers.dense(h1, self.act_dim, activation=tf.nn.tanh)
-            sigma = tf.layers.dense(h1, self.act_dim, activation=tf.nn.softplus)
+            h1 = tf.layers.dense(obs, 4096, activation=tf.nn.relu)
+            h2 = tf.layers.dense(h1, 4096, activation=tf.nn.relu)
+            mu = 2 * tf.layers.dense(h2, self.act_dim, activation=tf.nn.tanh)
+            sigma = tf.layers.dense(h2, self.act_dim, activation=tf.nn.softplus)
             pd = tf.distributions.Normal(loc=mu, scale=sigma)
         return pd
 
     def choose_action(self, obs, reuse=False):
         pd = self.step(obs, reuse)
         action = tf.squeeze(pd.sample(1), axis=0)
-        action = tf.clip_by_value(action, -2, 2)
+        action = tf.clip_by_value(action, -1, 1)
         return action
 
     def get_logp(self, obs, act, reuse=False):
@@ -57,8 +58,9 @@ class ValueNetwork(object):
 
     def step(self, obs, reuse):
         with tf.variable_scope(self.name, reuse=reuse):
-            h1 = tf.layers.dense(inputs=obs, units=100, activation=tf.nn.relu)
-            value = tf.layers.dense(inputs=h1, units=1)
+            h1 = tf.layers.dense(inputs=obs, units=4096, activation=tf.nn.relu)
+            h2 = tf.layers.dense(inputs=obs, units=4096, activation=tf.nn.relu)
+            value = tf.layers.dense(inputs=h2, units=1)
             return value
 
     def get_value(self, obs, reuse=False):
@@ -80,7 +82,7 @@ class PPO(object):
         self.ACT = tf.placeholder(tf.float32, [None, self.act_dim], name=self.name+"action")
         self.Q_VAL = tf.placeholder(tf.float32, [None, 1], name=self.name+"q_value")
         self.ADV = tf.placeholder(tf.float32, [None, 1], name=self.name+"advantage")
-        self.NEGLOGP = tf.placeholder(tf.float32, [None, 1], name=self.name+"old_neglogp")
+        self.NEGLOGP = tf.placeholder(tf.float32, [None, self.act_dim], name=self.name+"old_neglogp")
         self.value_loss = tf.placeholder(tf.float32, [None, 1], name=self.name+"_v_loss")
         self.actor_loss = tf.placeholder(tf.float32, [None, 1], name=self.name+"_a_loss")
 
@@ -104,7 +106,7 @@ class PPO(object):
         tf.summary.scalar(self.name+'_v_loss', self.value_loss)
         tf.summary.scalar(self.name+'_a_loss', self.actor_loss)
         self.merged = tf.summary.merge_all()
-        self.writer = tf.summary.FileWriter('/home/andy/collision_ws/src/Collision_Avoidance/train/logs/'+NAME+'/'+self.name+'/', self.sess.graph)
+        self.writer = tf.summary.FileWriter('/home/ubuntu/Andy/collision_ws/src/Collision_Avoidance/train/logs/'+NAME+'/'+self.name+'/', self.sess.graph)
         self.saver = tf.train.Saver()
         self.path = './'+ NAME + self.name
         if LOAD:
@@ -115,12 +117,13 @@ class PPO(object):
     def choose_action(self, obs):
         if obs.ndim < 2: obs = obs[np.newaxis, :]
         action = self.sess.run(self.action, feed_dict={self.OBS: obs})
-        action = np.squeeze(action, 1).clip(-2, 2)
-
+        # action = np.squeeze(action, 1).clip(-2, 2)
+        action = np.squeeze(action)
         neglogp = self.sess.run(self.neglogp, feed_dict={self.OBS: obs, self.ACT: action[np.newaxis, :]})
 
         value = self.sess.run(self.value, feed_dict={self.OBS: obs})
-        value = np.squeeze(value, 1).squeeze(0)
+        # value = np.squeeze(value, 1).squeeze(0)
+        value = np.squeeze(value)
         return action, neglogp, value
 
     def learn(self, last_value, done, indx):
@@ -134,7 +137,7 @@ class PPO(object):
         [self.sess.run(self.actor_train_op,
                        {self.OBS: obs, self.ACT: act, self.ADV: adv, self.NEGLOGP: neglogp}) for _ in range(10)]
         result = self.sess.run(self.merged, 
-                       {self.OBS: obs, self.ACT: act, self.ADV: adv, self.NEGLOGP: neglogp})
+                       {self.OBS: obs, self.ACT: act, self.ADV: adv, self.NEGLOGP: neglogp, self.Q_VAL: q_value, self.Q_VAL: q_value})
         self.writer.add_summary(result, indx)
         self.memory.reset()
 

@@ -9,3 +9,4 @@
 CATKIN_IGNORE
 .vscode/settings.json
 train/src/__pycache__/env.cpython-35.pyc
+train/logs/

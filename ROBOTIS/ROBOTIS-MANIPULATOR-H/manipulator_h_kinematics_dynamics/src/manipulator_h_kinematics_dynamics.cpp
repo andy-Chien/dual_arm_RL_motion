@@ -1061,7 +1061,7 @@ bool ManipulatorKinematicsDynamics::limit_check(Eigen::Vector3d goal_position, E
   test_pos(1) = test_pos(1) - (d1*RL_prm);
   Lsw = test_pos.norm();
 
-  if(test_pos.norm() < (d2+d3) && test_pos.norm() > 0.1)
+  if(Lsw < (d2+d3) && Lsw > 0.1)
     return true;
   else
     std::cout<<"Out of range !!!"<<std::endl;
