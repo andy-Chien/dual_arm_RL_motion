@@ -11,10 +11,10 @@ from ddpg import DDPG
 from env_v4 import Test 
 
 MAX_EPISODES = 100000
-MAX_EP_STEPS = 800
+MAX_EP_STEPS = 500
 MEMORY_CAPACITY = 10000
 SIDE = ['right_', 'left_']
-GOAL_REWARD = 2
+GOAL_REWARD = 1000
 LOAD = False
 
 def train(nameIndx):

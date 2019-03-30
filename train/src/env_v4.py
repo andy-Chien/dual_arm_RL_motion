@@ -209,7 +209,7 @@ class Test(core.Env):
             self.dis_pos = np.linalg.norm(self.goal[:3] - s[:3])
             self.dis_ori = np.linalg.norm(self.goal[3:7] - s[3:7])
             self.dis_phi = math.fabs(self.goal[7] - s[7])
-            self.dis_state = np.linalg.norm(self.goal - s[:8])
+            self.dis_state = np.linalg.norm(self.goal[:7] - s[:7])
             r_ori = (self.dis_ori/self.dis_pos)/6
             r_phi = (self.dis_phi/self.dis_pos)/6
             r_pos = 1 if self.dis_pos > 0.04 else self.dis_pos*20+0.2
@@ -230,7 +230,7 @@ class Test(core.Env):
             if alarm_cnt>0:
                 self.collision = True
 
-            if (self.dis_pos < 0.04 and self.dis_ori < 0.2 and self.dis_phi < 0.2):
+            if (self.dis_pos < 0.04 and self.dis_ori < 0.2):
                 if not self.done:
                     self.done = True
                     self.s_cnt += 1
@@ -244,7 +244,7 @@ class Test(core.Env):
         
 
     def get_reward(self, s, ik_success, terminal):
-        goal_vec = self.goal[:3] - self.state[:3]
+        # goal_vec = self.goal[:3] - self.state[:3]
         # goal_ori = self.goal[3:7]- self.state[3:7]
         # goal_phi = self.goal[7]  - self.state[7]
         # old_dis = np.linalg.norm(self.goal - self.state[:8])
@@ -252,7 +252,7 @@ class Test(core.Env):
         # cos_ori = np.dot(self.action[3:7], goal_ori)/(np.linalg.norm(self.action[3:7])*np.linalg.norm(goal_ori))
        
         # goal_dis = np.linalg.norm(self.dis_pos)
-        a_leng = np.linalg.norm(self.action[:3]/self.ACTION_VEC_TRANS)
+        # a_leng = np.linalg.norm(self.action[:3]/self.ACTION_VEC_TRANS)
 
         reward = 0
 
@@ -297,8 +297,8 @@ class Test(core.Env):
         if self.collision:
             return -10
 
-        if a_leng<0.2 or a_leng>2:
-            reward += -1
+        # if a_leng<0.2 or a_leng>2:
+        #     reward += -1
         # if cos_vec > np.math.cos(10*np.pi/180):
         #     r = (cos_vec*cos_vec*cos_vec)
         #     reward += 2*r
@@ -310,8 +310,8 @@ class Test(core.Env):
         # if self.dis_pos < 0.05 or self.dis_ori < 0.15 or self.dis_phi < 0.15:
         #     reward += 2
         # reward /= 2
-        reward = 2 if reward>2 else reward
-        reward = -2 if reward < -2 else reward
+        # reward = 2 if reward>2 else reward
+        # reward = -2 if reward < -2 else reward
         return reward
         #==================================================================================
 

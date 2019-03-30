@@ -7,10 +7,10 @@ import random
 
 NOISE_DECAY = 0.99999
 NOISE_MIN = 0.001
-NAME = 'DDPG_v2'
+NAME = 'DDPG_v3'#dont care phi
 LOAD = False
-BATCH_SIZE = 2048
-MEMORY_CAPACITY = 204800
+BATCH_SIZE = 512
+MEMORY_CAPACITY = 4096
 
 class ReplayBuffer(object):
     def __init__(self, capacity):
