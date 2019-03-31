@@ -194,6 +194,8 @@ class Test(core.Env):
         self.action = np.append(self.action, action_phi)
         self.cmd = np.add(s[:8], self.action)
         self.cmd[3:7] /= np.linalg.norm(self.cmd[3:7])
+        if self.cmd[7]>1: self.cmd[7] = 1
+        elif self.cmd[7]<-1: self.cmd[7] = -1
         res = self.get_state_client(self.cmd, self.__name)
         res_ = self.get_state_client([0], self.__obname)
         if res.success:
@@ -209,7 +211,7 @@ class Test(core.Env):
             self.dis_pos = np.linalg.norm(self.goal[:3] - s[:3])
             self.dis_ori = np.linalg.norm(self.goal[3:7] - s[3:7])
             self.dis_phi = math.fabs(self.goal[7] - s[7])
-            self.dis_state = np.linalg.norm(self.goal - s[:8])
+            self.dis_state = np.linalg.norm(self.goal[:7] - s[:7])
             # r_ori = (self.dis_ori/self.dis_pos)/6
             # r_phi = (self.dis_phi/self.dis_pos)/6
             # r_pos = 1 if self.dis_pos > 0.04 else self.dis_pos*20+0.2
@@ -218,7 +220,8 @@ class Test(core.Env):
    
         terminal = self._terminal(s, res.success, alarm)
         reward = self.get_reward(s, res.success, terminal)
-        self.state = s
+        if not self.collision:
+            self.state = s
         return self.state, reward, terminal, 1
 
     def _terminal(self, s, ik_success, alarm):
@@ -230,7 +233,7 @@ class Test(core.Env):
             if alarm_cnt>0:
                 self.collision = True
 
-            if (self.dis_pos < 0.04 and self.dis_ori < 0.2 and self.dis_phi < 0.2):
+            if (self.dis_pos < 0.01 and self.dis_ori < 0.2):
                 if not self.done:
                     self.done = True
                     self.s_cnt += 1
@@ -291,11 +294,11 @@ class Test(core.Env):
 
         #===============================================================================
         if terminal:
-            return 10
+            return 3
         if not ik_success:
-            return -10
+            reward -= 3
         if self.collision:
-            return -10
+            reward -=3
 
         # if a_leng<0.2 or a_leng>2:
         #     reward += -1
@@ -304,9 +307,12 @@ class Test(core.Env):
         #     reward += 2*r
         # elif self.dis_state < old_dis:
         #     reward += 1
-        reward -= self.dis_state
-        if self.dis_state < 0.3:
+        reward -= (self.dis_pos + self.dis_ori/2)
+        if self.dis_pos < 0.04:
             reward += 1
+        if self.dis_ori < 0.3:
+            reward += 0.5
+        reward /= 2
         # if self.dis_pos < 0.05 or self.dis_ori < 0.15 or self.dis_phi < 0.15:
         #     reward += 2
         # reward /= 

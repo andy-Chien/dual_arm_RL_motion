@@ -207,7 +207,7 @@ bool BaseModule::env_reset_callback(train::environment::Request &req,
   res.state[4]= quaternion.x();
   res.state[5]= quaternion.y();
   res.state[6]= quaternion.z();
-  res.state[7]= manipulator_->manipulator_link_data_[END_LINK]->phi_ / M_PI;
+  res.state[7]= 2*manipulator_->manipulator_link_data_[END_LINK]->phi_ / M_PI;
   res.joint_pos[0]  = manipulator_->manipulator_link_data_[0]->position_(0);
   res.joint_pos[1]  = manipulator_->manipulator_link_data_[0]->position_(1);
   res.joint_pos[2]  = manipulator_->manipulator_link_data_[0]->position_(2);
@@ -264,7 +264,7 @@ bool BaseModule::training_callback(train::environment::Request &req,
                                        req.action[5],
                                        req.action[6]);
 
-    double p2p_phi = req.action[7];
+    double p2p_phi = req.action[7]*M_PI/2;
     p2p_rotation = robotis_framework::convertQuaternionToRotation(p2p_quaterniond);
     robotis_->is_ik = true;
     manipulator_->forwardKinematics(7);
@@ -311,7 +311,7 @@ bool BaseModule::training_callback(train::environment::Request &req,
   res.state[4]= quaternion.x();
   res.state[5]= quaternion.y();
   res.state[6]= quaternion.z();
-  res.state[7]= manipulator_->manipulator_link_data_[END_LINK]->phi_ / M_PI;
+  res.state[7]= 2*manipulator_->manipulator_link_data_[END_LINK]->phi_ / M_PI;
   res.joint_pos[0]  = manipulator_->manipulator_link_data_[0]->position_(0);
   res.joint_pos[1]  = manipulator_->manipulator_link_data_[0]->position_(1);
   res.joint_pos[2]  = manipulator_->manipulator_link_data_[0]->position_(2);
