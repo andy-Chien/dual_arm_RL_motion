@@ -7,7 +7,7 @@ import shutil
 import numpy as np
 import math
 import rospy
-from sac_v4 import SAC
+from sac_v6 import SAC
 from env_v7 import Test 
 
 MAX_EPISODES = 100000
@@ -75,7 +75,7 @@ def train(nameIndx):
                 if cnt%50 == 0:
                     agent.learn(cnt)
                 else:
-                    agent.learn(cnt)
+                    agent.learn(0)
 
             s = s_
             ep_reward += r

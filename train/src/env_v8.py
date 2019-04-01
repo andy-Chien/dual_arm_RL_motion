@@ -85,7 +85,7 @@ class Test(core.Env):
         self.s_cnt = 0
         self.seed()
         self.reset()
-        self.done = False
+        self.done = True
         
     def get_state_client(self, cmd, name):
         ik_service = name+'/train_env'
@@ -128,7 +128,8 @@ class Test(core.Env):
         self.s_jointpos = np.append(self.joint_pos[6:12], self.joint_pos[18:27])
 
     def reset(self):
-        self.goal = self.set_goal()
+        if self.done:
+            self.goal = self.set_goal()
         self.old, self.joint_pos[:12], self.joint_pos[12:24], self.joint_pos[24:27],self.joint_angle, self.limit = self.set_old()
         linkPosM, linkPosS = self.collision_init(self.old[:3])
         _, Link_dis = self.cc.checkCollision(linkPosM, linkPosS)
@@ -160,11 +161,12 @@ class Test(core.Env):
             return self.set_goal()
 
     def set_old(self):
-        self.old = self.np_random.uniform(low=0., high=self.range_cnt, size=(8,))
-        # print('self.old = ', self.old)
-        self.old[0] = 0
-        self.old = np.append(self.old, self.range_cnt)
-        res = self.env_reset_client(self.old, self.__name)
+        if self.done:
+            self.start = self.np_random.uniform(low=0., high=self.range_cnt, size=(8,))
+            # print('self.old = ', self.old)
+            self.start[0] = 0
+            self.start = np.append(self.start, self.range_cnt)
+        res = self.env_reset_client(self.start, self.__name)
         res_ = self.env_reset_client([0], self.__obname)
         old_pos = []
         old_pos = np.append(old_pos, res.state)
