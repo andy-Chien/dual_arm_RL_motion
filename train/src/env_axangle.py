@@ -134,9 +134,9 @@ class Test(core.Env):
         self.s_jointpos = np.append(self.joint_pos[6:12], self.joint_pos[18:27])
 
     def reset(self):
-        if self.done:
-            self.goal = np.array(self.set_goal())
-            self.goal[3:6], self.goal[6] = trans.quaternions.quat2axangle(self.goal[3:7])
+        # if self.done:
+        self.goal = np.array(self.set_goal())
+        self.goal[3:6], self.goal[6] = trans.quaternions.quat2axangle(self.goal[3:7])
         self.old, self.joint_pos[:12], self.joint_pos[12:24], self.joint_pos[24:27],self.joint_angle, self.limit = self.set_old()
         linkPosM, linkPosS = self.collision_init(self.old[:3])
         _, Link_dis = self.cc.checkCollision(linkPosM, linkPosS)
@@ -161,12 +161,12 @@ class Test(core.Env):
             return self.set_goal()
 
     def set_old(self):
-        if self.done:
-            self.start = self.np_random.uniform(low=0., high=self.range_cnt, size=(8,))
-            # print('self.old = ', self.old)
-            self.start[0] = 0
-            self.start = np.append(self.start, self.range_cnt)
-            self.start[3:6], self.start[6] = trans.quaternions.quat2axangle(self.start[3:7])
+        # if self.done:
+        self.start = self.np_random.uniform(low=0., high=self.range_cnt, size=(8,))
+        # print('self.old = ', self.old)
+        self.start[0] = 0
+        self.start = np.append(self.start, self.range_cnt)
+        self.start[3:6], self.start[6] = trans.quaternions.quat2axangle(self.start[3:7])
         res = self.env_reset_client(self.start, self.__name)
         res_ = self.env_reset_client([0], self.__obname)
         old_pos = np.array(res.state)
@@ -197,7 +197,7 @@ class Test(core.Env):
         new_ori_ang = a[6]*self.ACTION_ORI_TRANS+self.state[6]
         if new_ori_ang < -1: new_ori_ang = -1
         if new_ori_ang > 1 : new_ori_ang = 1
-        action_ori = trans.quaternions.axangle2quat(new_ori_v, new_ori_ang)
+        action_ori = trans.quaternions.axangle2quat(new_ori_v, new_ori_ang*pi)
         action_phi = self.state[7] + a[7]*self.ACTION_PHI_TRANS
         self.action = np.append(action_vec, action_ori)
         self.action = np.append(self.action, action_phi)
