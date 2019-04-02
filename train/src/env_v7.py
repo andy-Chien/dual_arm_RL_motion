@@ -202,7 +202,7 @@ class Test(core.Env):
             self.old, self.joint_pos[:12], self.joint_angle = res.state, res.joint_pos, res.joint_angle
             self.joint_pos[12:24] = res_.joint_pos
             self.joint_pos[24:27] = [res_.state[0], res_.state[1], res_.state[2]]
-            linkPosM, linkPosS = self.collision_init(s[:3])
+            linkPosM, linkPosS = self.collision_init(self.old[:3])
             alarm, Link_dis = self.cc.checkCollision(linkPosM, linkPosS)
             s = np.append(self.old, np.subtract(self.goal, self.old))
             s = np.append(s, Link_dis)

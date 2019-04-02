@@ -267,10 +267,11 @@ bool BaseModule::training_callback(train::environment::Request &req,
     double p2p_phi = req.action[7]*M_PI/2;
     p2p_rotation = robotis_framework::convertQuaternionToRotation(p2p_quaterniond);
     robotis_->is_ik = true;
-    manipulator_->forwardKinematics(7);
+    // manipulator_->forwardKinematics(7);
     // slide_success = manipulator_->slideInverseKinematics(p2p_positoin, p2p_rotation, 
     //                                                           slide_->slide_pos, slide_->goal_slide_pos);
     // std::cout<<"<<<<<<<<<<<<<<<<<<<slide_->goal_slide_pos<<<<<<<<<<<<<<<<<"<<std::endl<<slide_->goal_slide_pos<<std::endl;
+    slide_->goal_slide_pos = 0;
     limit_success = manipulator_->limit_check(p2p_positoin, p2p_rotation);
     if(limit_success)
       ik_success = manipulator_->inverseKinematics(robotis_->ik_id_end_,

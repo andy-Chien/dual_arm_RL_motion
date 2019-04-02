@@ -137,9 +137,9 @@ class Test(core.Env):
         self.state = np.append(self.state, Link_dis)
         self.state = np.append(self.state, self.joint_angle)
         self.state = np.append(self.state, self.limit[0])
-        self.dis_pos = np.linalg.norm(np.subtract(self.goal[:3], self.old[:3]))
-        self.dis_ori = np.linalg.norm(np.subtract(self.goal[3:7], self.old[3:7]))
-        self.dis_phi = math.fabs(self.goal[7] - self.old[7])
+        # self.dis_pos = np.linalg.norm(np.subtract(self.goal[:3], self.old[:3]))
+        # self.dis_ori = np.linalg.norm(np.subtract(self.goal[3:7], self.old[3:7]))
+        # self.dis_phi = math.fabs(self.goal[7] - self.old[7])
         # r_ori = (self.dis_ori/self.dis_pos)/6
         # r_phi = (self.dis_phi/self.dis_pos)/6
         # r_pos = 1 if self.dis_pos > 0.04 else self.dis_pos*20+0.2
@@ -168,9 +168,8 @@ class Test(core.Env):
             self.start = np.append(self.start, self.range_cnt)
         res = self.env_reset_client(self.start, self.__name)
         res_ = self.env_reset_client([0], self.__obname)
-        old_pos = []
-        old_pos = np.append(old_pos, res.state)
-        if np.linalg.norm(old_pos[:3] - self.goal[:3]) > 0.1:
+        old_pos = np.array(res.state)
+        if np.linalg.norm(np.subtract(old_pos[:3], self.goal[:3])) > 0.1:
             return res.state, res.joint_pos, res_.joint_pos,[res_.state[0], res_.state[1], res_.state[2]], res.joint_angle, res.limit
         else:
             return self.set_old()
@@ -204,7 +203,7 @@ class Test(core.Env):
             self.old, self.joint_pos[:12], self.joint_angle = res.state, res.joint_pos, res.joint_angle
             self.joint_pos[12:24] = res_.joint_pos
             self.joint_pos[24:27] = [res_.state[0], res_.state[1], res_.state[2]]
-            linkPosM, linkPosS = self.collision_init(s[:3])
+            linkPosM, linkPosS = self.collision_init(self.old[:3])
             alarm, Link_dis = self.cc.checkCollision(linkPosM, linkPosS)
             s = np.append(self.old, np.subtract(self.goal, self.old))
             s = np.append(s, Link_dis)
