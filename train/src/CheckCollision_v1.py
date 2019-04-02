@@ -23,7 +23,7 @@ class CheckCollision():
                                                                         RobotLinkPos_Master[cnt_M, :], RobotLinkPos_Master[cnt_M+1, :])                                                    
                 if Slave2Master_Dist[cnt_S, cnt_M-2] < self.threshold[cnt_S, cnt_M-2]:
                     Alarm[cnt_S] = 1
-        Slave2Master_Dist = self.threshold - Slave2Master_Dist + 1
+        Slave2Master_Dist = pow(self.threshold - Slave2Master_Dist + 1, 3)
         return Alarm,  np.reshape(Slave2Master_Dist, 15)
 
     def calculateDistance(self, pA, pB, pC, pD):

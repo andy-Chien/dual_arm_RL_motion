@@ -81,11 +81,12 @@ class Test(core.Env):
         # self.dis_pos
         self.cc = CheckCollision()
         self.collision = False
-        self.range_cnt = 0.2
+        self.range_cnt = 0.1
         self.s_cnt = 0
+        self.done = True
         self.seed()
         self.reset()
-        self.done = False
+        
         
     def get_state_client(self, cmd, name):
         ik_service = name+'/train_env'
@@ -128,7 +129,8 @@ class Test(core.Env):
         self.s_jointpos = np.append(self.joint_pos[6:12], self.joint_pos[18:27])
 
     def reset(self):
-        self.goal = self.set_goal()
+        if self.done:
+            self.goal = self.set_goal()
         self.old, self.joint_pos[:12], self.joint_pos[12:24], self.joint_pos[24:27],self.joint_angle, self.limit = self.set_old()
         linkPosM, linkPosS = self.collision_init(self.old[:3])
         _, Link_dis = self.cc.checkCollision(linkPosM, linkPosS)
@@ -136,14 +138,7 @@ class Test(core.Env):
         self.state = np.append(self.state, Link_dis)
         self.state = np.append(self.state, self.joint_angle)
         self.state = np.append(self.state, self.limit[0])
-        self.dis_pos = np.linalg.norm(np.subtract(self.goal[:3], self.old[:3]))
-        self.dis_ori = np.linalg.norm(np.subtract(self.goal[3:7], self.old[3:7]))
-        self.dis_phi = math.fabs(self.goal[7] - self.old[7])
-        # r_ori = (self.dis_ori/self.dis_pos)/6
-        # r_phi = (self.dis_phi/self.dis_pos)/6
-        # r_pos = 1 if self.dis_pos > 0.04 else self.dis_pos*20+0.2
-        # move_rate = [r_pos, r_ori, r_phi]
-        # self.state = np.append(self.state, move_rate)
+
         self.collision = False
         self.done = False
         return self.state
@@ -160,15 +155,15 @@ class Test(core.Env):
             return self.set_goal()
 
     def set_old(self):
-        self.old = self.np_random.uniform(low=0., high=self.range_cnt, size=(8,))
-        # print('self.old = ', self.old)
-        self.old[0] = 0
-        self.old = np.append(self.old, self.range_cnt)
-        res = self.env_reset_client(self.old, self.__name)
+        if self.done:
+            self.start = self.np_random.uniform(low=0., high=self.range_cnt, size=(8,))
+            # print('self.old = ', self.old)
+            self.start[0] = 0
+            self.start = np.append(self.start, self.range_cnt)
+        res = self.env_reset_client(self.start, self.__name)
         res_ = self.env_reset_client([0], self.__obname)
-        old_pos = []
-        old_pos = np.append(old_pos, res.state)
-        if np.linalg.norm(old_pos[:3] - self.goal[:3]) > 0.1:
+        old_pos = np.array(res.state)
+        if np.linalg.norm(np.subtract(old_pos[:3], self.goal[:3])) > 0.1:
             return res.state, res.joint_pos, res_.joint_pos,[res_.state[0], res_.state[1], res_.state[2]], res.joint_angle, res.limit
         else:
             return self.set_old()
@@ -194,10 +189,12 @@ class Test(core.Env):
         self.action = np.append(self.action, action_phi)
         self.cmd = np.add(s[:8], self.action)
         self.cmd[3:7] /= np.linalg.norm(self.cmd[3:7])
+        if self.cmd[7]>1: self.cmd[7] = 1
+        elif self.cmd[7]<-1: self.cmd[7] = -1
         res = self.get_state_client(self.cmd, self.__name)
         res_ = self.get_state_client([0], self.__obname)
         if res.success:
-            sself.old, self.joint_pos[:12], self.joint_angle self.limit= res.state, res.joint_pos, res.joint_angle, res.limit
+            self.old, self.joint_pos[:12], self.joint_angle, self.limit = res.state, res.joint_pos, res.joint_angle, res.limit
             self.joint_pos[12:24] = res_.joint_pos
             self.joint_pos[24:27] = [res_.state[0], res_.state[1], res_.state[2]]
             linkPosM, linkPosS = self.collision_init(self.old[:3])
@@ -218,7 +215,8 @@ class Test(core.Env):
    
         terminal = self._terminal(s, res.success, alarm)
         reward = self.get_reward(s, res.success, terminal)
-        self.state = s
+        if not self.collision:
+            self.state = s
         return self.state, reward, terminal, 1
 
     def _terminal(self, s, ik_success, alarm):
@@ -230,7 +228,7 @@ class Test(core.Env):
             if alarm_cnt>0:
                 self.collision = True
 
-            if (self.dis_pos < 0.04 and self.dis_ori < 0.2):
+            if (self.dis_pos < 0.01 and self.dis_ori < 0.2):
                 if not self.done:
                     self.done = True
                     self.s_cnt += 1
@@ -291,11 +289,11 @@ class Test(core.Env):
 
         #===============================================================================
         if terminal:
-            return 10
+            return 3
         if not ik_success:
-            return -10
+            reward -= 3
         if self.collision:
-            return -10
+            reward -=3
 
         # if a_leng<0.2 or a_leng>2:
         #     reward += -1
@@ -304,9 +302,11 @@ class Test(core.Env):
         #     reward += 2*r
         # elif self.dis_state < old_dis:
         #     reward += 1
-        reward -= self.dis_state
-        if self.dis_state < 0.15:
+        reward -= (self.dis_pos + self.dis_ori/2)
+        reward /= 2
+        if self.dis_pos < 0.04 and self.dis_ori < 0.3:
             reward += 1
+       
         # if self.dis_pos < 0.05 or self.dis_ori < 0.15 or self.dis_phi < 0.15:
         #     reward += 2
         # reward /= 

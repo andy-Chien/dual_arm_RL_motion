@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 import gym
 import random
-NAME = 'SAC_v6'
+NAME = 'SAC_v6_nodnor'
 EPS = 1e-8
 LOAD = False
 BATCH_SIZE = 256
@@ -169,9 +169,9 @@ class SAC(object):
         tf.summary.scalar(self.name+'value_loss', self.value_loss)
         tf.summary.scalar(self.name+'total_value_loss', self.total_value_loss)
         self.merged = tf.summary.merge_all()
-        self.writer = tf.summary.FileWriter('/home/andy/collision_ws/src/Collision_Avoidance/train/logs/'+NAME+'/'+self.name+'/', self.sess.graph)
+        self.writer = tf.summary.FileWriter('/home/iclab-arm/Andy/collision/src/Collision_Avoidance/train/logs/'+NAME+'/'+self.name+'/', self.sess.graph)
         self.saver = tf.train.Saver()
-        self.path = '/home/andy/collision_ws/src/Collision_Avoidance/train/'+ NAME +'/'+ self.name
+        self.path = '/home/iclab-arm/Andy/collision/src/Collision_Avoidance/train/'+ NAME +'/'+ self.name
         if LOAD:
             self.saver.restore(self.sess, tf.train.latest_checkpoint(self.path))
         else:

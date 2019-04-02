@@ -137,14 +137,7 @@ class Test(core.Env):
         self.state = np.append(self.state, Link_dis)
         self.state = np.append(self.state, self.joint_angle)
         self.state = np.append(self.state, self.limit[0])
-        # self.dis_pos = np.linalg.norm(np.subtract(self.goal[:3], self.old[:3]))
-        # self.dis_ori = np.linalg.norm(np.subtract(self.goal[3:7], self.old[3:7]))
-        # self.dis_phi = math.fabs(self.goal[7] - self.old[7])
-        # r_ori = (self.dis_ori/self.dis_pos)/6
-        # r_phi = (self.dis_phi/self.dis_pos)/6
-        # r_pos = 1 if self.dis_pos > 0.04 else self.dis_pos*20+0.2
-        # move_rate = [r_pos, r_ori, r_phi]
-        # self.state = np.append(self.state, move_rate)
+
         self.collision = False
         self.done = False
         return self.state
@@ -200,7 +193,7 @@ class Test(core.Env):
         res = self.get_state_client(self.cmd, self.__name)
         res_ = self.get_state_client([0], self.__obname)
         if res.success:
-            self.old, self.joint_pos[:12], self.joint_angle = res.state, res.joint_pos, res.joint_angle
+            self.old, self.joint_pos[:12], self.joint_angle self.limit= res.state, res.joint_pos, res.joint_angle, res.limit
             self.joint_pos[12:24] = res_.joint_pos
             self.joint_pos[24:27] = [res_.state[0], res_.state[1], res_.state[2]]
             linkPosM, linkPosS = self.collision_init(self.old[:3])

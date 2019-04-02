@@ -199,7 +199,7 @@ class Test(core.Env):
         res = self.get_state_client(self.cmd, self.__name)
         res_ = self.get_state_client([0], self.__obname)
         if res.success:
-            self.old, self.joint_pos[:12], self.joint_angle = res.state, res.joint_pos, res.joint_angle
+            self.old, self.joint_pos[:12], self.joint_angle self.limit= res.state, res.joint_pos, res.joint_angle, res.limit
             self.joint_pos[12:24] = res_.joint_pos
             self.joint_pos[24:27] = [res_.state[0], res_.state[1], res_.state[2]]
             linkPosM, linkPosS = self.collision_init(self.old[:3])
