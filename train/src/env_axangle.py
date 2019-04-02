@@ -137,7 +137,10 @@ class Test(core.Env):
         # if self.done:
         self.goal = np.array(self.set_goal())
         self.goal[3:6], self.goal[6] = trans.quaternions.quat2axangle(self.goal[3:7])
+        self.goal[6] /= pi
         self.old, self.joint_pos[:12], self.joint_pos[12:24], self.joint_pos[24:27],self.joint_angle, self.limit = self.set_old()
+        self.old[3:6], self.old[6] = trans.quaternions.quat2axangle(self.old[3:7])
+        self.old[6] /= pi
         linkPosM, linkPosS = self.collision_init(self.old[:3])
         _, Link_dis = self.cc.checkCollision(linkPosM, linkPosS)
         self.state = np.append(self.old, np.subtract(self.goal, self.old))
@@ -166,12 +169,11 @@ class Test(core.Env):
         # print('self.old = ', self.old)
         self.start[0] = 0
         self.start = np.append(self.start, self.range_cnt)
-        self.start[3:6], self.start[6] = trans.quaternions.quat2axangle(self.start[3:7])
         res = self.env_reset_client(self.start, self.__name)
         res_ = self.env_reset_client([0], self.__obname)
         old_pos = np.array(res.state)
         if np.linalg.norm(np.subtract(old_pos[:3], self.goal[:3])) > 0.1:
-            return res.state, res.joint_pos, res_.joint_pos,[res_.state[0], res_.state[1], res_.state[2]], res.joint_angle, res.limit
+            return np.array(res.state), res.joint_pos, res_.joint_pos,[res_.state[0], res_.state[1], res_.state[2]], res.joint_angle, res.limit
         else:
             return self.set_old()
 
@@ -215,6 +217,7 @@ class Test(core.Env):
             linkPosM, linkPosS = self.collision_init(self.old[:3])
             alarm, Link_dis = self.cc.checkCollision(linkPosM, linkPosS)
             self.old[3:6], self.old[6] = trans.quaternions.quat2axangle(self.old[3:7])
+            self.old[6] /= pi
             s = np.append(self.old, np.subtract(self.goal, self.old))
             s = np.append(s, Link_dis)
             s = np.append(s, self.joint_angle)
