@@ -192,6 +192,7 @@ class Test(core.Env):
         action_vec = [math.cos(a[0]*pi), math.sin(a[0]*pi), math.sin(a[1]*pi/2)]
         action_vec /= np.linalg.norm(action_vec)
         action_vec *= (a[2]*self.ACTION_VEC_TRANS)
+        action_vec += self.state[:3]
         new_ori_v = a[3:6]*self.ACTION_ORI_TRANS+self.state[3:6]
         new_ori_v /= np.linalg.norm(new_ori_v)
         new_ori_ang = a[6]*self.ACTION_ORI_TRANS+self.state[6]
@@ -208,7 +209,7 @@ class Test(core.Env):
         res = self.get_state_client(self.cmd, self.__name)
         res_ = self.get_state_client([0], self.__obname)
         if res.success:
-            self.old, self.joint_pos[:12], self.joint_angle, self.limit = res.state, res.joint_pos, res.joint_angle, res.limit
+            self.old, self.joint_pos[:12], self.joint_angle, self.limit = np.array(res.state), res.joint_pos, res.joint_angle, res.limit
             self.joint_pos[12:24] = res_.joint_pos
             self.joint_pos[24:27] = [res_.state[0], res_.state[1], res_.state[2]]
             linkPosM, linkPosS = self.collision_init(self.old[:3])
