@@ -7,7 +7,10 @@ from gym import core, spaces
 from gym.utils import seeding
 import rospy
 import math
-import quaternion as quat
+# import quaternion as quat
+# import quaternions as trans
+# import transforms3d as trans
+import transforms3d as trans
 from train.srv import environment
 from CheckCollision_v1 import CheckCollision
 # from CheckCollision_tensor import CheckCollision
@@ -80,7 +83,7 @@ class Test(core.Env):
         self.limit = []
         self.s_jointpos = []
         self.axangle = []
-        # self.dis_pos
+        self.dis_pos = []
         self.cc = CheckCollision()
         self.collision = False
         self.range_cnt = 0.1
@@ -132,8 +135,8 @@ class Test(core.Env):
 
     def reset(self):
         if self.done:
-            self.goal = self.set_goal()
-            self.goal[3:7] = quat.quat2axangle(self.goal[3:7])
+            self.goal = np.array(self.set_goal())
+            self.goal[3:6], self.goal[6] = trans.quaternions.quat2axangle(self.goal[3:7])
         self.old, self.joint_pos[:12], self.joint_pos[12:24], self.joint_pos[24:27],self.joint_angle, self.limit = self.set_old()
         linkPosM, linkPosS = self.collision_init(self.old[:3])
         _, Link_dis = self.cc.checkCollision(linkPosM, linkPosS)
@@ -163,7 +166,7 @@ class Test(core.Env):
             # print('self.old = ', self.old)
             self.start[0] = 0
             self.start = np.append(self.start, self.range_cnt)
-            self.start[3:7] = quat.quat2axangle(self.start[3:7])
+            self.start[3:6], self.start[6] = trans.quaternions.quat2axangle(self.start[3:7])
         res = self.env_reset_client(self.start, self.__name)
         res_ = self.env_reset_client([0], self.__obname)
         old_pos = np.array(res.state)
@@ -193,8 +196,8 @@ class Test(core.Env):
         new_ori_v /= np.linalg.norm(new_ori_v)
         new_ori_ang = a[6]*self.ACTION_ORI_TRANS+self.state[6]
         if new_ori_ang < -1: new_ori_ang = -1
-        if  > 1 : new_ori_ang = 1
-        action_ori = quat.axangle2quat(new_ori_v, new_ori_ang)
+        if new_ori_ang > 1 : new_ori_ang = 1
+        action_ori = trans.quaternions.axangle2quat(new_ori_v, new_ori_ang)
         action_phi = self.state[7] + a[7]*self.ACTION_PHI_TRANS
         self.action = np.append(action_vec, action_ori)
         self.action = np.append(self.action, action_phi)
@@ -210,14 +213,15 @@ class Test(core.Env):
             self.joint_pos[24:27] = [res_.state[0], res_.state[1], res_.state[2]]
             linkPosM, linkPosS = self.collision_init(self.old[:3])
             alarm, Link_dis = self.cc.checkCollision(linkPosM, linkPosS)
+            self.old[3:6], self.old[6] = trans.quaternions.quat2axangle(self.old[3:7])
             s = np.append(self.old, np.subtract(self.goal, self.old))
             s = np.append(s, Link_dis)
             s = np.append(s, self.joint_angle)
             s = np.append(s, self.limit[0])
-            self.dis_pos = np.linalg.norm(self.goal[:3] - s[:3])
-            self.dis_ori = np.linalg.norm(self.goal[3:7] - s[3:7])
-            self.dis_phi = math.fabs(self.goal[7] - s[7])
-            self.dis_state = np.linalg.norm(self.goal[:7] - s[:7])
+        self.dis_pos = np.linalg.norm(self.goal[:3] - s[:3])
+        self.dis_ori = np.linalg.norm(self.goal[3:7] - s[3:7])
+        self.dis_phi = math.fabs(self.goal[7] - s[7])
+        self.dis_state = np.linalg.norm(self.goal[:7] - s[:7])
             # r_ori = (self.dis_ori/self.dis_pos)/6
             # r_phi = (self.dis_phi/self.dis_pos)/6
             # r_pos = 1 if self.dis_pos > 0.04 else self.dis_pos*20+0.2
