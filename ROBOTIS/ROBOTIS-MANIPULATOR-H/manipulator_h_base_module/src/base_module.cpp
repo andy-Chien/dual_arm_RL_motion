@@ -165,8 +165,13 @@ bool BaseModule::env_reset_callback(train::environment::Request &req,
 {
   double dis, mu;
   is_train = true;
+  bool ik_success = false;
   if(req.action.size() > 1)
   {
+    Eigen::Vector3d p2p_positoin;
+    Eigen::Matrix3d p2p_rotation;
+    double p2p_phi;
+    
     robotis_->is_ik = true;
     for (int i=1; i<=MAX_JOINT_ID; i++)
     {
@@ -174,13 +179,20 @@ bool BaseModule::env_reset_callback(train::environment::Request &req,
       mu = (manipulator_->manipulator_link_data_[i]->train_limit_max_ + manipulator_->manipulator_link_data_[i]->train_limit_min_)/2;
       req.action[i] = req.action[i] * fabs(dis) + (mu - req.action[8]*fabs(dis)/2);
     }
-
     manipulator_->manipulator_link_data_[0]->slide_position_ = req.action[0];
     for (int i=1; i<=MAX_JOINT_ID; i++)
       manipulator_->manipulator_link_data_[i]->joint_angle_ = req.action[i];
     manipulator_->forwardKinematics(7);
+    p2p_positoin = manipulator_->manipulator_link_data_[6]->position_;
+    p2p_positoin(2) -= 0.24;
+    p2p_rotation<<1,0,0,0,-1,0,0,0,-1;
+    p2p_phi = 0;
+    slide_->goal_slide_pos = 0;
+    robotis_->ik_id_end_   = END_LINK;
+    ik_success = manipulator_->inverseKinematics(robotis_->ik_id_end_,
+                                                              p2p_positoin, p2p_rotation, p2p_phi, slide_->goal_slide_pos, true);
     robotis_->is_ik = false;
-    if(enable_)
+    if(enable_ && ik_success)
     {
       robotis_->all_time_steps_ = 1;
       robotis_->calc_joint_tra_.resize(robotis_->all_time_steps_, MAX_JOINT_ID + 1);
@@ -194,12 +206,20 @@ bool BaseModule::env_reset_callback(train::environment::Request &req,
       robotis_->is_moving_ = true;
     }
   }
-
+  else
+  {
+    ik_success = true;
+    manipulator_->forwardKinematics(7);
+  }
+  
   Eigen::Quaterniond quaternion = robotis_framework::convertRotationToQuaternion(manipulator_->manipulator_link_data_[END_LINK]->orientation_);
   res.state.resize(8);
   res.joint_pos.resize(12);
-  res.joint_angle.resize(7);
-  res.limit.resize(2);
+  res.joint_angle.resize(2);
+  res.limit.resize(1);
+  // res.success = ik_success;
+  // if(!ik_success)
+  //   return true;
   res.state[0]= manipulator_->manipulator_link_data_[8]->position_(0);
   res.state[1]= manipulator_->manipulator_link_data_[8]->position_(1);
   res.state[2]= manipulator_->manipulator_link_data_[8]->position_(2);
@@ -221,20 +241,20 @@ bool BaseModule::env_reset_callback(train::environment::Request &req,
   res.joint_pos[10] = manipulator_->manipulator_link_data_[6]->position_(1);
   res.joint_pos[11] = manipulator_->manipulator_link_data_[6]->position_(2);
   // res.joint_angle[0] = manipulator_->manipulator_link_data_[0]->slide_position_;
-  for (int i=1; i<=MAX_JOINT_ID; i++)
+  for (int i=2; i<=MAX_JOINT_ID; i+=4)
   {
     dis = manipulator_->manipulator_link_data_[i]->joint_limit_max_ - manipulator_->manipulator_link_data_[i]->joint_limit_min_;
-    res.joint_angle[i-1] = pow((2*(manipulator_->manipulator_link_data_[i]->joint_angle_ - manipulator_->manipulator_link_data_[i]->joint_limit_min_)/fabs(dis))-1, 3);
+    res.joint_angle[(i-2)/4] = pow((2*(manipulator_->manipulator_link_data_[i]->joint_angle_ - manipulator_->manipulator_link_data_[i]->joint_limit_min_)/fabs(dis))-1, 3);
   }
   Eigen::Vector3d limit_vec = manipulator_->manipulator_link_data_[6]->position_ - manipulator_->manipulator_link_data_[2]->position_;
-  Eigen::Vector3d vecO;
-  vecO << res.joint_pos[9], res.joint_pos[10], 0;
+  // Eigen::Vector3d vecO;
+  // vecO << res.joint_pos[9], res.joint_pos[10], 0;
   double limit_dis = limit_vec.norm();
-  double limit_cos = vecO.dot(limit_vec)/(vecO.norm()*limit_dis);
+  // double limit_cos = vecO.dot(limit_vec)/(vecO.norm()*limit_dis);
   limit_dis = ((limit_dis - 0.1)/0.448)*2 - 1;
   res.limit[0] = pow(limit_dis, 3);
-  res.limit[1] = pow(limit_cos, 3);
-  res.success = true;
+  // res.limit[1] = pow(limit_cos, 3);
+  res.success = ik_success;
   return true;
 }
 
@@ -275,10 +295,11 @@ bool BaseModule::training_callback(train::environment::Request &req,
     limit_success = manipulator_->limit_check(p2p_positoin, p2p_rotation);
     if(limit_success)
       ik_success = manipulator_->inverseKinematics(robotis_->ik_id_end_,
-                                                              p2p_positoin, p2p_rotation, p2p_phi, slide_->goal_slide_pos, false);
+                                                              p2p_positoin, p2p_rotation, p2p_phi, slide_->goal_slide_pos, true);
     robotis_->is_ik = false;
   }
-  if ((ik_success == true && limit_success == true) || req.action.size() < 2)
+  
+  if ((ik_success == true && limit_success == true))
   {
     res.success = true;
     if(enable_)
@@ -303,8 +324,8 @@ bool BaseModule::training_callback(train::environment::Request &req,
   Eigen::Quaterniond quaternion = robotis_framework::convertRotationToQuaternion(manipulator_->manipulator_link_data_[END_LINK]->orientation_);
   res.state.resize(8);
   res.joint_pos.resize(12);
-  res.joint_angle.resize(7);
-  res.limit.resize(2);
+  res.joint_angle.resize(2);
+  res.limit.resize(1);
   res.state[0]= manipulator_->manipulator_link_data_[8]->position_(0);
   res.state[1]= manipulator_->manipulator_link_data_[8]->position_(1);
   res.state[2]= manipulator_->manipulator_link_data_[8]->position_(2);
@@ -327,19 +348,19 @@ bool BaseModule::training_callback(train::environment::Request &req,
   res.joint_pos[11] = manipulator_->manipulator_link_data_[6]->position_(2);
   // res.joint_angle[0] = manipulator_->manipulator_link_data_[0]->slide_position_;
       
-  for (int i=1; i<=MAX_JOINT_ID; i++)
+  for (int i=2; i<=MAX_JOINT_ID; i+=4)
   {
     dis = manipulator_->manipulator_link_data_[i]->joint_limit_max_ - manipulator_->manipulator_link_data_[i]->joint_limit_min_;
-    res.joint_angle[i-1] = pow((2*(manipulator_->manipulator_link_data_[i]->joint_angle_ - manipulator_->manipulator_link_data_[i]->joint_limit_min_)/fabs(dis))-1, 3);
+    res.joint_angle[(i-2)/4] = pow((2*(manipulator_->manipulator_link_data_[i]->joint_angle_ - manipulator_->manipulator_link_data_[i]->joint_limit_min_)/fabs(dis))-1, 3);
   }
   Eigen::Vector3d limit_vec = manipulator_->manipulator_link_data_[6]->position_ - manipulator_->manipulator_link_data_[2]->position_;
   Eigen::Vector3d vecO;
   vecO << res.joint_pos[9], res.joint_pos[10], 0;
   double limit_dis = limit_vec.norm();
-  double limit_cos = vecO.dot(limit_vec)/(vecO.norm()*limit_dis);
+  // double limit_cos = vecO.dot(limit_vec)/(vecO.norm()*limit_dis);
   limit_dis = ((limit_dis - 0.1)/0.448)*2 - 1;
   res.limit[0] = pow(limit_dis, 3);
-  res.limit[1] = pow(2*limit_cos, 3);
+  // res.limit[1] = pow(2*limit_cos, 3);
   robotis_->is_ik = false;
   return true;
 }

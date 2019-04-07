@@ -51,6 +51,9 @@ private:
   Eigen::MatrixXd R04;
   Eigen::MatrixXd R07;
   Eigen::MatrixXd R47;
+  Eigen::MatrixXd R57;
+  Eigen::MatrixXd R72;
+  Eigen::MatrixXd R05_notheta3;
 
 public:
   ManipulatorKinematicsDynamics();
@@ -81,6 +84,8 @@ public:
   Eigen::MatrixXd Trans( double &Theta, Eigen::VectorXd &DH );
   Eigen::Vector3d forwardKinematics_7(int joint_ID, Eigen::VectorXd angle);
   bool InverseKinematics_7( Eigen::VectorXd position, Eigen::Matrix3d rotation, double phi, 
+                            double slide_position, Eigen::VectorXd Old_JointAngle, bool is_p2p);
+  bool InverseKinematics_p2p( Eigen::VectorXd position, Eigen::Matrix3d rotation, double phi, 
                             double slide_position, Eigen::VectorXd Old_JointAngle, bool is_p2p);
   bool slideInverseKinematics(Eigen::Vector3d goal_position, Eigen::Matrix3d rotation, 
                                                             double slide_pos, double& goal_slide_pos);

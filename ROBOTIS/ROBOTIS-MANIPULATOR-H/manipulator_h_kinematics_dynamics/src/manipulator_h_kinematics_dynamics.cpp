@@ -63,8 +63,8 @@ ManipulatorKinematicsDynamics::ManipulatorKinematicsDynamics(TreeSelect tree)
     manipulator_link_data_[1]->center_of_mass_    = robotis_framework::getTransitionXYZ(0.0, 0.0, 0.0);
     manipulator_link_data_[1]->joint_limit_max_   =  180 * M_PI/180;
     manipulator_link_data_[1]->joint_limit_min_   = -180 * M_PI/180;
-    manipulator_link_data_[1]->train_limit_max_   =  135 * M_PI/180;
-    manipulator_link_data_[1]->train_limit_min_   = -135 * M_PI/180;
+    manipulator_link_data_[1]->train_limit_max_   =  150 * M_PI/180;
+    manipulator_link_data_[1]->train_limit_min_   = -150 * M_PI/180;
     manipulator_link_data_[1]->inertia_           = robotis_framework::getInertiaXYZ(1.0, 0.0, 0.0, 1.0, 0.0, 1.0);
 
     manipulator_link_data_[2]->name_    = "joint2";
@@ -215,6 +215,9 @@ void ManipulatorKinematicsDynamics::load_LinkParam()
     R04 = Eigen::MatrixXd::Zero(4, 4);
     R07 = Eigen::MatrixXd::Zero(4, 4);
     R47 = Eigen::MatrixXd::Zero(4, 4);
+    R57 = Eigen::MatrixXd::Zero(4, 4);
+    R72 = Eigen::MatrixXd::Zero(4, 4);
+    R05_notheta3 = Eigen::MatrixXd::Zero(4, 4);
     
 }
 
@@ -427,18 +430,22 @@ bool ManipulatorKinematicsDynamics::inverseKinematics(int to, Eigen::MatrixXd ta
   Eigen::VectorXd Old_JointAngle(8);
   Eigen::VectorXd angle;
 
-  if(is_p2p)
-    Old_JointAngle << 0,0,0,0,0,0,0,0;
-  else
-  {
-    for (int id = 0; id < idx.size(); id++)
+  // if(is_p2p)
+  //   Old_JointAngle << 0,0,0,0,0,0,0,0;
+  // else
+  // {
+  //   for (int id = 0; id < idx.size(); id++)
+  //     Old_JointAngle[idx[id]] = manipulator_link_data_[idx[id]]->joint_angle_;
+  // }
+  for (int id = 0; id < idx.size(); id++)
     Old_JointAngle[idx[id]] = manipulator_link_data_[idx[id]]->joint_angle_;
-  }
-
-  ik_success = InverseKinematics_7(tar_position, tar_orientation, tar_phi, tar_slide_pos, Old_JointAngle, is_p2p);
+  if(is_p2p)
+    ik_success = InverseKinematics_p2p(tar_position, tar_orientation, tar_phi, tar_slide_pos, Old_JointAngle, is_p2p);
+  else
+    ik_success = InverseKinematics_7(tar_position, tar_orientation, tar_phi, tar_slide_pos, Old_JointAngle, is_p2p);
 
   forwardKinematics(7);
-  
+
   int joint_num;
 
   for (int id = 0; id < idx.size(); id++)
@@ -751,23 +758,6 @@ bool ManipulatorKinematicsDynamics::InverseKinematics_7( Eigen::VectorXd goal_po
         JointAngle(5) = theta_5 - pi;
     else
         JointAngle(5) = pi + theta_5; 
-  
-    // JointAngle(5) = theta_5;
-    // if(R47(1,3)*JointAngle(5)>0 || fabs(R47(1,3))<0.0001)
-    // {
-    //   if(fabs(R47(1,3))<0.0001){
-    //     if (R47(0,3)*cos(JointAngle(5)) > 0){
-    //       if(JointAngle(5)<0)
-    //         JointAngle(5) += pi;
-    //       else
-    //         JointAngle(5) -= pi;
-    //     }
-    //   }
-    //   else if(JointAngle(5)<0)
-    //     JointAngle(5) += pi;
-    //   else
-    //     JointAngle(5) -= pi;
-    // }
     
     if (i == 1)
         JointAngle(6) = theta_6;
@@ -884,6 +874,210 @@ bool ManipulatorKinematicsDynamics::InverseKinematics_7( Eigen::VectorXd goal_po
   /////////////////////////////////////////////////////////////////////////////////////////////////
   return ik_success;
 }
+
+bool ManipulatorKinematicsDynamics::InverseKinematics_p2p( Eigen::VectorXd goal_position, Eigen::Matrix3d rotation, 
+                                                            double Phi, double slide_position, Eigen::VectorXd Old_JointAngle, bool is_p2p)
+{
+  bool ik_success = false;
+
+  int isMatch;
+  double theta_e, modify_euler_theta;
+  double theta_1, theta_2, theta_3, theta_4, theta_5, theta_6, theta_7;
+  double Deviation, D_Joint_1, D_Joint_2, D_Joint_1_2, D_Joint_2_2;
+  double Lsw, Lec, Lsc;
+  
+  Eigen::VectorXd Angle(5, 1);
+  Eigen::VectorXd Oc(3, 1);
+  Eigen::VectorXd testOc(3, 1);
+  Eigen::VectorXd Ps(3, 1);
+  Eigen::VectorXd Vsw(3, 1);
+  Eigen::VectorXd eRc(3, 1);
+  Eigen::VectorXd Distance(8, 1);
+
+  Eigen::MatrixXd A(4,4);
+  Eigen::MatrixXd T(4,4);
+  Eigen::MatrixXd DH(5, 4);
+  Eigen::VectorXd DH_row(4);
+  Eigen::Matrix3d Modify_euler;
+
+  modify_euler_theta = (-pi/2)*RL_prm;
+  Modify_euler << cos(modify_euler_theta), -sin(modify_euler_theta), 0,
+                  sin(modify_euler_theta),  cos(modify_euler_theta), 0,
+                  0,                        0,                       1;
+
+  R07 = Eigen::MatrixXd::Identity(4,4);
+  R07.block(0,0,3,3) = rotation*Modify_euler;
+  R07.block(0,3,3,1) = goal_position;
+  Oc << goal_position(0)-d4*R07(0,2), goal_position(1)-d4*R07(1,2), goal_position(2)-d4*R07(2,2);
+
+  DHTABLE(0,2) = slide_position;       
+          
+  ////////////////////////////////////////////////////////////////////////////////////////////////
+
+  Ps << 0, d1*cos(DHTABLE(0,3)), slide_position;   
+  Vsw = Oc - Ps;     
+  Lsw = Vsw.norm();  
+  theta_e = acos((Lse*Lse + Lsw*Lsw - Lew*Lew) / (2*Lse*Lsw));  
+  eRc = Ps + (Vsw * Lse * cos(theta_e) / Lsw);    //Phi旋轉中心位置
+  //////////////////////////////////////////////////////////////////////////////////////////
+  Lsc = Lse * cos(theta_e); 
+  Lec = Lse * sin(theta_e); 
+
+  DH << 0,   -pi/2, slide_position, DHTABLE(0,3),    
+        0,   -pi/2, d1,             pi/2,
+        0,   -pi/2, 0,             -pi/2, 
+        Lec,  pi/2, Lsc,            0,
+        0,    0,    0,              0;
+  
+  theta_1 = atan2(-RL_prm *eRc(0) , -(eRc(2)-slide_position));   
+  theta_2 = asin((d1 - RL_prm *eRc(1)) / Lsc);        
+  theta_3 = Phi;
+  theta_4 = -(theta_e + atan(a1/d2));
+ 
+  Angle << 0, theta_1, theta_2, theta_3, theta_4;
+  T = Eigen::MatrixXd::Identity(4,4);
+  for ( int i=0; i<5; i++ )
+  {
+    DH_row = DH.row(i);
+    A = Trans( Angle(i), DH_row );
+    T = T*A;
+  }
+  R03 = T;
+
+ 
+  theta_4 = M_PI - acos((Lse*Lse + Lew*Lew - Lsw*Lsw) / (2*Lse*Lew)) + atan(a1/d2) + atan(a2/d3);
+  
+  DH_row = DHTABLE.row(4);
+  A = Trans(theta_4, DH_row);   
+  R04 = R03 * A;
+
+  JointAngle << 0, 0, 0, 0, 0, 0, 0, 0;
+
+  theta_1 = atan((-RL_prm *R03(0,1)) / -R03(2,1));
+  theta_2 = asin(-RL_prm *R03(1,1));
+  theta_3 = atan( (RL_prm *R03(1,2)) / (RL_prm *R03(1,0)));
+
+  R47 = R04.inverse() * R07;
+
+  theta_5 = atan(-R47(1,2) / -R47(0,2));
+  theta_6 = acos(R47(2,2));
+  theta_7 = atan(-R47(2,1) / R47(2,0));
+  ////////////////////////////////////////////////////////////////////////////////////////////
+  
+  for ( int i = 1; i>= -1; i-=2 )
+  { 
+    bool theta_1_flag = false;
+    double t_3;
+    if( -R03(2,1)*i>= 0)
+    {  
+        JointAngle(1) = theta_1;
+        theta_1_flag = true;
+    }
+    else if(theta_1>=0)  
+        JointAngle(1) = theta_1 - pi;
+    else                                 
+        JointAngle(1) = pi + theta_1;
+    
+    if ( i == 1 )
+        JointAngle(2) = theta_2;
+    else
+        JointAngle(2) = (theta_2/fabs(theta_2))*(pi - fabs(theta_2));    
+    if( RL_prm *R03(1,0)*i >= 0){                     
+        JointAngle(3) = theta_3;
+        t_3 = 0;
+    }
+    else if(theta_3>=0){
+        JointAngle(3) = theta_3 - pi;
+        t_3 = pi;
+    }
+    else{
+        JointAngle(3) = pi + theta_3;
+        t_3 = pi;
+    }
+    Angle.resize(6,1);
+    Angle << 0, JointAngle(1), JointAngle(2), t_3, theta_4, 0;
+    // std::cout<<Angle<<std::endl;
+    T = Eigen::MatrixXd::Identity(4,4);
+    for ( int i=0; i<6; i++ )
+    {
+      DH_row = DHTABLE.row(i);
+      A = Trans( Angle(i), DH_row );
+      T = T*A;
+    }
+    R05_notheta3 = T;
+
+    // std::cout<<R05_notheta3<<std::endl;
+
+    if((R05_notheta3(2,3) <= 0.00001 && theta_1_flag) || (R05_notheta3(2,3) > 0.00001 && !theta_1_flag))
+      break;
+  }
+
+  JointAngle(4) = theta_4;
+  // A = Trans(theta_4, DH_row);
+  // R57 = A.inverse()*R47;
+
+  for ( int i = 1; i>=-1; i-=2 ) 
+  {
+    bool theta_5_flag = false;
+    if(-R47(0,2)*i>=0)
+    {
+        JointAngle(5) = theta_5;
+        theta_5_flag = true;
+    }
+    else if(theta_5>=0)  
+        JointAngle(5) = theta_5 - pi;
+    else
+        JointAngle(5) = pi + theta_5; 
+    
+    if (i == 1)
+        JointAngle(6) = theta_6;
+    else
+        JointAngle(6) = -theta_6;
+    
+            
+    if(R47(2,0)*i>=0)
+        JointAngle(7) = theta_7;
+    else if(theta_7>=0)
+        JointAngle(7) = theta_7 - pi;
+    else
+        JointAngle(7) = pi + theta_7;
+    // std::cout<<R47.block(0,3,3,1)<<std::endl;
+    // Angle.resize(6,1);
+    // Angle << 0, 0, JointAngle(4), JointAngle(5), JointAngle(6), JointAngle(7);
+    // // std::cout<<Angle<<std::endl;
+    // T = Eigen::MatrixXd::Identity(4,4);
+    // for ( int i=7; i>4; i-- )
+    // {
+    //   DH_row = DHTABLE.row(i);
+    //   A = Trans( Angle(i-2), DH_row );
+    //   T = T*A;
+    // }
+    // R72 = T;
+    // std::cout<<R72.block(0,3,3,1)<<std::endl;
+    if((R47(0,3)>=0.00001 && theta_5_flag) || (R47(0,3)<0.00001 && !theta_5_flag))
+      break;
+  }
+
+  Eigen::VectorXd testPos = forwardKinematics_7(7,JointAngle);
+  testPos = testPos - goal_position;
+  Deviation = testPos.norm();
+  if ( Deviation < 0.0001 )
+    ik_success = true;
+  
+  for (int id = 0; id <= MAX_JOINT_ID; id++){
+    manipulator_link_data_[id]->joint_angle_ = JointAngle.coeff(id);
+  }
+  if(ik_success)
+  {
+    manipulator_link_data_[END_LINK]->phi_ = Phi;
+    manipulator_link_data_[0]->slide_position_ = slide_position;
+    for (int id = 0; id <= MAX_JOINT_ID; id++)
+      manipulator_link_data_[id]->joint_angle_ = JointAngle.coeff(id);
+  }
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  return ik_success;
+}
+
 bool ManipulatorKinematicsDynamics::slideInverseKinematics(Eigen::Vector3d goal_position, Eigen::Matrix3d rotation, 
                                                             double slide_pos, double& goal_slide_pos)
 {
@@ -1050,7 +1244,6 @@ Eigen::MatrixXd ManipulatorKinematicsDynamics::rotation2rpy( Eigen::MatrixXd rot
 
 bool ManipulatorKinematicsDynamics::limit_check(Eigen::Vector3d goal_position, Eigen::Matrix3d rotation)
 {
-  double slide_position;
   double Lsw;
   Eigen::Vector3d Oc;
   Eigen::Vector3d test_pos;

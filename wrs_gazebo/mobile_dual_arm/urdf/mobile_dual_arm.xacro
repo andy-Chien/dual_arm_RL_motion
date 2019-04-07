@@ -67,55 +67,7 @@
     <child link="Arm_Base_R"/>
   </joint-->
 
-  <link name="Bin">
-    <inertial>
-      <origin
-	xyz="0 0 0"
-	rpy="0 0 0" />
-      <mass
-	value="0.823603974032196" />
-      <inertia
-	ixx="0"
-	ixy="0"
-	ixz="0"
-	iyy="0"
-	iyz="0"
-	izz="0" />
-    </inertial>
-    <visual>
-      <origin
-	xyz="0 0 0"
-	rpy="0 0 0" />
-      <geometry>
-	<mesh
-          scale="0.001 0.001 0.001"
-	  filename="package://mobile_dual_arm/scene/meshes/bin.STL" />
-      </geometry>
-      <material
-	name="blue_">
-	<color
-	  rgba="0.4 0.66 0.99 1" />
-      </material>
-    </visual>
-    <collision>
-      <origin
-	xyz="0 0 0"
-	rpy="0 0 0" />
-      <geometry>
-	<mesh
-          scale="0.001 0.001 0.001"
-	  filename="package://mobile_dual_arm/scene/meshes/bin.STL" />
-      </geometry>
-    </collision>
-  </link>
 
-  <joint name="fixed4" type="fixed">
-    <origin
-      xyz="-0.175 -0.31 0.06"
-      rpy="0 0 1.5708" />
-    <parent link="mobile_base"/>
-    <child link="Bin"/>
-  </joint>
 
 
   <transmission name="tran1_slide_R">

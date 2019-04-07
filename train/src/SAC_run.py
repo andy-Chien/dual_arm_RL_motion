@@ -7,13 +7,13 @@ import shutil
 import numpy as np
 import math
 import rospy
-from sac_v6 import SAC
-from env_v7 import Test 
+from sac_v7 import SAC
+from env_no_ori import Test 
 
 MAX_EPISODES = 100000
-MAX_EP_STEPS = 800
+MAX_EP_STEPS = 200
 MEMORY_CAPACITY = 10000
-BATTH_SIZE = 256
+BATTH_SIZE = 128
 SIDE = ['right_', 'left_']
 GOAL_REWARD = 800
 LOAD = False
@@ -28,7 +28,7 @@ def train(nameIndx):
     # agent = DDPG(a_dim, s_dim, a_bound, SIDE[nameIndx])
     # agent = PPO(act_dim=8, obs_dim=39,
     #             lr_actor=0.0001, lr_value=0.0002, gamma=0.9, clip_range=0.2, name=SIDE[nameIndx])
-    agent = SAC(act_dim=8, obs_dim=39,
+    agent = SAC(act_dim=env.act_dim, obs_dim=env.obs_dim,
             lr_actor=1e-3, lr_value=1e-3, gamma=0.99, tau=0.995, name=SIDE[nameIndx])
 
     var = 0.8  # control exploration
@@ -61,6 +61,7 @@ def train(nameIndx):
             l_run = True
         
         ep_reward = 0
+        done_cnt = 0
         for j in range(MAX_EP_STEPS):
             cnt+=1
             a = agent.choose_action(s)
@@ -68,9 +69,8 @@ def train(nameIndx):
             # if (i+1)%20 == 0 and np.random.rand(1) < 0.5:
             #     a = action_sample(s)
             s_, r, done, info = env.step(a)
-            
-            agent.replay_buffer.store_transition(s, a, r/10, s_, done)
-            
+            agent.replay_buffer.store_transition(s, a, r, s_, done)
+            done_cnt += int(done)
             if cnt >= BATTH_SIZE * 3:
                 if cnt%50 == 0:
                     agent.learn(cnt)
@@ -79,6 +79,8 @@ def train(nameIndx):
 
             s = s_
             ep_reward += r
+            if done_cnt > 32:
+                break
             
         
         

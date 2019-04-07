@@ -16,7 +16,7 @@ class CheckCollision():
         Alarm = np.zeros(LinkNum)
         
         
-        Slave2Master_Dist = np.ones((LinkNum, LinkNum-2), dtype=np.float32)*999
+        Slave2Master_Dist = np.ones((LinkNum, LinkNum-2), dtype=np.float32)*1.
         for cnt_S in range(0,LinkNum):
             for cnt_M in range(2,LinkNum):
                 Slave2Master_Dist[cnt_S, cnt_M-2] = self.calculateDistance( RobotLinkPos_Slave[cnt_S, :], RobotLinkPos_Slave[cnt_S+1, :],
@@ -30,8 +30,8 @@ class CheckCollision():
         vAB = pB - pA # u
         vCD = pD - pC # v
         vCA = pA - pC # r
-        
-        if np.dot(np.cross(vAB, vCD), vCA) != 0: # check determination in 3-dimension or planar
+        distance = 1.
+        if math.fabs(np.dot(np.cross(vAB, vCD), vCA)) > 0.00000001: # check determination in 3-dimension or planar
             a = np.dot( vAB, vAB)
             b = np.dot(-vAB, vCD)
             c = np.dot( vCD, vCD)
@@ -59,6 +59,8 @@ class CheckCollision():
                 distance = np.linalg.norm(pC-pB + t*vCD)            
             elif (1 < s) and (1 < t):  # BD
                 distance = np.linalg.norm(pD-pB)
+            else:
+                print('11111111111nodistancenodistancenodistancenodistancenodistancenodistancenodistance')
         else:
             vAC = pC - pA
             vAD = pD - pA
@@ -67,8 +69,8 @@ class CheckCollision():
             s2 = np.dot(vAD, vAB)/(np.linalg.norm(vAB)*np.linalg.norm(vAB))
             t1 = np.dot(vCA, vCD)/(np.linalg.norm(vCD)*np.linalg.norm(vCD))
             t2 = np.dot(vCB, vCD)/(np.linalg.norm(vCD)*np.linalg.norm(vCD))   
-            distance_planar = np.array([999, 999, 999, 999]) # s1 s2 t1 t2
-            distance_Temp = 999
+            distance_planar = np.array([1., 1., 1., 1.]) # s1 s2 t1 t2
+            distance_Temp = 1.
             
             if (0 <= s1) and (s1 <= 1):
                 distance_planar[0] = np.linalg.norm(vCA + s1*vAB)   # CA + s1*AB        
@@ -88,7 +90,7 @@ class CheckCollision():
             elif (s1 > 1) and (s2 > 1) and (t1 > 1) and (t2 > 1): # BD
                 distance_planar[3] = np.linalg.norm(pD - pB)
             
-            for cnt in range(1,4):
+            for cnt in range(4):
                 if distance_Temp > distance_planar[cnt]:
                     distance_Temp =  distance_planar[cnt]
                     # cnt_Temp = cnt
