@@ -161,7 +161,7 @@ class Test(core.Env):
         for i in alarm:
             alarm_cnt += i
         if alarm_cnt>0:
-            print('fuckfuckfuckfuckfuckfuckfuckfuckfuckfuck')
+            print('fuckfuck')
             return self.reset()
         self.state = np.append(self.old[:3], np.subtract(self.goal, self.old[:3]))
         self.state = np.append(self.state, Link_dis)
@@ -171,7 +171,6 @@ class Test(core.Env):
         self.state = np.append(self.state, self.dis_pos)
         self.collision = False
         self.done = False
-        print(self.dis_pos)
         return self.state
 
     def set_goal(self):
@@ -183,12 +182,10 @@ class Test(core.Env):
         res = self.env_reset_client(self.goal, self.__name)
         goal_pos = np.array(res.state)
         if not res.success:
-            print('hihihihihihihihihihi')
             return self.set_goal()
         if np.linalg.norm(goal_pos[:2])>0.2:
             return goal_pos[:3]
         else:
-            print('heheheheheheehhehehehe')
             return self.set_goal()
 
     def set_old(self):
@@ -202,12 +199,10 @@ class Test(core.Env):
         res_ = self.env_reset_client([0], self.__obname)
         old_pos = np.array(res.state)
         if not res.success:
-            print('hahahahahahahahaha')
             return self.set_old()
         if np.linalg.norm(np.subtract(old_pos[:3], self.goal[:3])) > 0.1:
             return np.array(res.state), res.joint_pos, res_.joint_pos,[res_.state[0], res_.state[1], res_.state[2]], res.joint_angle, res.limit
         else:
-            print('hohohohohohohohohoho')
             return self.set_old()
 
     def collision_init(self, endpos):
@@ -262,8 +257,8 @@ class Test(core.Env):
             self.state = s
         # else:
         #     print(Link_dis)
-        self.set_object(self.__name, (self.goal[0], self.goal[1], self.goal[2]+1.45086), (0, 0, 0, 0))
-        return self.state, reward, terminal, 1
+        self.set_object(self.__name, (self.goal[0]-0.08, self.goal[1], self.goal[2]+1.45086), (0, 0, 0, 0))
+        return self.state, reward, terminal, self.collision
 
     def _terminal(self, s, ik_success, alarm):
         alarm_cnt = 0
@@ -277,7 +272,7 @@ class Test(core.Env):
                     self.done = True
                     self.s_cnt += 1
                     self.range_cnt = self.range_cnt + 0.003 if self.range_cnt < 0.95 else 0.95
-                    self.goal_err = self.goal_err*0.995 if self.goal_err > 0.005 else 0.005
+                    self.goal_err = self.goal_err*0.995 if self.goal_err > 0.01 else 0.01
                     print('ssssssuuuuuuccccccccceeeeeeeesssssssssss' , self.s_cnt, self.goal_err)
                 return True
             else:
@@ -289,15 +284,25 @@ class Test(core.Env):
     def get_reward(self, s, ik_success, terminal):
         reward = 0.
 
-        if terminal and ik_success and not self.collision:
-            reward += 1
         if not ik_success:
-            return -1
-        if self.collision:
             return -2
+        if self.collision:
+            return -3
 
         reward -= self.dis_pos
-        reward += self.goal_err
+        reward += 0.2
+
+        if reward > 0:
+            reward *= 3
+
+        cos_vec = np.dot(self.action[:3],  self.state[3:6])/(np.linalg.norm(self.action[:3]) *np.linalg.norm(self.state[3:6]))
+        reward += (cos_vec*self.dis_pos - self.dis_pos)
+        
+        
+
+        reward -= 1.4
+        # if terminal and ik_success and not self.collision:
+        #     reward += 1
         # if self.dis_pos < 0.04:
         #     reward += 1
         

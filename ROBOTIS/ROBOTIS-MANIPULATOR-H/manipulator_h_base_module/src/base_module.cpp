@@ -264,7 +264,6 @@ bool BaseModule::training_callback(train::environment::Request &req,
   bool limit_success = false;
   bool ik_success = false;
   Eigen::Matrix3d p2p_rotation;
-  
   if(req.action.size() > 1)
   {
     robotis_->ik_id_start_ = 0;
@@ -354,8 +353,8 @@ bool BaseModule::training_callback(train::environment::Request &req,
     res.joint_angle[(i-2)/4] = pow((2*(manipulator_->manipulator_link_data_[i]->joint_angle_ - manipulator_->manipulator_link_data_[i]->joint_limit_min_)/fabs(dis))-1, 3);
   }
   Eigen::Vector3d limit_vec = manipulator_->manipulator_link_data_[6]->position_ - manipulator_->manipulator_link_data_[2]->position_;
-  Eigen::Vector3d vecO;
-  vecO << res.joint_pos[9], res.joint_pos[10], 0;
+  // Eigen::Vector3d vecO;
+  // vecO << res.joint_pos[9], res.joint_pos[10], 0;
   double limit_dis = limit_vec.norm();
   // double limit_cos = vecO.dot(limit_vec)/(vecO.norm()*limit_dis);
   limit_dis = ((limit_dis - 0.1)/0.448)*2 - 1;

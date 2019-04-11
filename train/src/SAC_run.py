@@ -11,18 +11,24 @@ from sac_v7 import SAC
 from env_no_ori import Test 
 
 MAX_EPISODES = 100000
-MAX_EP_STEPS = 200
+MAX_EP_STEPS =  500
 MEMORY_CAPACITY = 10000
 BATTH_SIZE = 128
 SIDE = ['right_', 'left_']
 GOAL_REWARD = 800
 LOAD = False
+SAVE = [False, False]
 
 def train(nameIndx):
-    global r_run, l_run
+    global r_run, l_run, SAVE
     T_REWARD = []
     MU_REWARD = 0
-    BEST_R = 0
+    BEST_R = -999
+    SUCCESS_ARRAY = np.zeros([100])
+    SUCCESS_RATE = 0
+    COLLISION = False
+    GOAL_RATE = 60
+
     env = Test(nameIndx) #0 = right
 
     # agent = DDPG(a_dim, s_dim, a_bound, SIDE[nameIndx])
@@ -30,6 +36,7 @@ def train(nameIndx):
     #             lr_actor=0.0001, lr_value=0.0002, gamma=0.9, clip_range=0.2, name=SIDE[nameIndx])
     agent = SAC(act_dim=env.act_dim, obs_dim=env.obs_dim,
             lr_actor=1e-3, lr_value=1e-3, gamma=0.99, tau=0.995, name=SIDE[nameIndx])
+    print(agent.path)
 
     var = 0.8  # control exploration
     rar = 0.3
@@ -62,28 +69,40 @@ def train(nameIndx):
         
         ep_reward = 0
         done_cnt = 0
+
+        SUCCESS_ARRAY[i%100] = 0
+        COLLISION = False
         for j in range(MAX_EP_STEPS):
             cnt+=1
             a = agent.choose_action(s)
             # a = np.clip(np.random.normal(a, var), -1, 1)    # add randomness to action selection for exploration
             # if (i+1)%20 == 0 and np.random.rand(1) < 0.5:
             #     a = action_sample(s)
-            s_, r, done, info = env.step(a)
+            s_, r, done, collision = env.step(a)
             agent.replay_buffer.store_transition(s, a, r, s_, done)
             done_cnt += int(done)
+            if collision:
+                COLLISION = True
             if cnt >= BATTH_SIZE * 3:
                 if cnt%50 == 0:
                     agent.learn(cnt)
-                else:
+                elif cnt%5 == 0:
                     agent.learn(0)
 
             s = s_
             ep_reward += r
             if done_cnt > 32:
+                if not COLLISION:
+                    SUCCESS_ARRAY[i%100] = 1
                 break
-            
-        
-        
+
+        SUCCESS_RATE = 0
+        for z in SUCCESS_ARRAY:
+            SUCCESS_RATE += z
+        if SUCCESS_RATE >= GOAL_RATE:
+            SAVE[nameIndx] = True
+        else:
+            SAVE[nameIndx] = False
         if len(T_REWARD) >= 100:
             T_REWARD.pop(0)
         T_REWARD.append(ep_reward)
@@ -92,16 +111,18 @@ def train(nameIndx):
             r_sum += k
         MU_REWARD = r_sum/100
         BEST_R = MU_REWARD if MU_REWARD>BEST_R else BEST_R
-        print('Episode:', i, ' Reward: %i' % int(ep_reward), 'MU_REWARD: ', int(MU_REWARD),'BEST_R: ', int(BEST_R), 'cnt = ',j)# , 't_step:', int(t23), 't_learn: ', int(t32)) #'var: %.3f' % var, 'rar: %.3f' % rar)
-        if MU_REWARD > GOAL_REWARD:
-            break
-
-    if os.path.isdir(agent.path): shutil.rmtree(agent.path)
-    os.mkdir(agent.path)
-    ckpt_path = os.path.join(agent.path, 'SAC.ckpt')
-    save_path = agent.saver.save(agent.sess, ckpt_path, write_meta_graph=False)
-    print("\nSave Model %s\n" % save_path)
-    print('Running time: ', time.time() - t1)
+        print(SIDE[nameIndx], SAVE)
+        print('Episode:', i, ' Reward: %i' % int(ep_reward), 'MU_REWARD: ', int(MU_REWARD),'BEST_R: ', int(BEST_R), 'cnt = ',j, 's_rate = ', SUCCESS_RATE)# , 't_step:', int(t23), 't_learn: ', int(t32)) #'var: %.3f' % var, 'rar: %.3f' % rar)
+        if SAVE[nameIndx]:
+            print(agent.path)
+            if os.path.isdir(agent.path+str(GOAL_RATE)): shutil.rmtree(agent.path+str(GOAL_RATE))
+            os.mkdir(agent.path+str(GOAL_RATE))
+            ckpt_path = os.path.join(agent.path+str(GOAL_RATE), 'SAC.ckpt')
+            save_path = agent.saver.save(agent.sess, ckpt_path, write_meta_graph=False)
+            print("\nSave Model %s\n" % save_path)
+            print('Running time: ', time.time() - t1)
+            GOAL_RATE += 5
+            
 
 def action_sample(s):
     a = s[8:16]
@@ -114,7 +135,6 @@ def action_sample(s):
     a[3:7] *= (1/6)*(rl/al)
     a[7]   *= (1/6)*(pl/al)
     return a
-
 
 if __name__ == '__main__':
     rospy.init_node('a')
