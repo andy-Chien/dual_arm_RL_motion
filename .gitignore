@@ -12,4 +12,4 @@ train/src/__pycache__/env.cpython-35.pyc
 train/logs/
 train/SAC_v7_noroi_v5
 train/SAC_v7_noroi_v6
-.vscode/settings.json
+

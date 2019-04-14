@@ -68,6 +68,7 @@ bool QNode::init() {
   joint_pose_msg_pub_ = n.advertise<manipulator_h_base_module_msgs::JointPose>("/robotis/base/joint_pose_msg", 0);
   kinematics_pose_msg_pub_ = n.advertise<manipulator_h_base_module_msgs::KinematicsPose>("/robotis/base/kinematics_pose_msg", 0);
   p2p_pose_msg_pub_ = n.advertise<manipulator_h_base_module_msgs::P2PPose>("/robotis/base/p2p_pose_msg", 0);
+  drl_pose_msg_pub_ = n.advertise<manipulator_h_base_module_msgs::P2PPose>("/robotis/base/drl_pose_msg", 0);
 
   get_joint_pose_client_ = n.serviceClient<manipulator_h_base_module_msgs::GetJointPose>("/robotis/base/get_joint_pose", 0);
   get_kinematics_pose_client_ = n.serviceClient<manipulator_h_base_module_msgs::GetKinematicsPose>("/robotis/base/get_kinematics_pose", 0);
@@ -157,6 +158,13 @@ void QNode::sendP2PPoseMsg( manipulator_h_base_module_msgs::P2PPose msg )
   p2p_pose_msg_pub_.publish( msg );
 
   log( Info , "Send P2P Pose Msg" );
+}
+
+void QNode::sendDRLPoseMsg( manipulator_h_base_module_msgs::P2PPose msg )
+{
+  drl_pose_msg_pub_.publish( msg );
+
+  log( Info , "Send DRL Pose Msg" );
 }
 
 void QNode::sendIniPoseMsg( std_msgs::String msg )

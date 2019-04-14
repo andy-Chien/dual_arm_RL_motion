@@ -7,14 +7,14 @@ import shutil
 import numpy as np
 import math
 import rospy
-from sac_v7 import SAC
-from env_no_ori import Test
+from sac_v8 import SAC
+from env_v10 import Test
 from manipulator_h_base_module_msgs.msg import P2PPose
 
 MAX_EPISODES = 100000
 MAX_EP_STEPS =  500
 MEMORY_CAPACITY = 10000
-BATTH_SIZE = 128
+BATTH_SIZE = 256
 SIDE = ['right_', 'left_']
 GOAL_REWARD = 800
 LOAD = False
@@ -58,7 +58,7 @@ def train(nameIndx):
         elif nameIndx ==1:
             l_run = False
         while r_run or l_run:
-            time.sleep(0)
+            time.sleep(0.0001)
 
         s = env.reset()
 
@@ -84,7 +84,7 @@ def train(nameIndx):
             done_cnt += int(done)
             if collision:
                 COLLISION = True
-            if cnt >= BATTH_SIZE * 3:
+            if cnt >= BATTH_SIZE*9:
                 if cnt%50 == 0:
                     agent.learn(cnt)
                 elif cnt%5 == 0:
@@ -112,7 +112,7 @@ def train(nameIndx):
             r_sum += k
         MU_REWARD = r_sum/100
         BEST_R = MU_REWARD if MU_REWARD>BEST_R else BEST_R
-        print(SIDE[nameIndx], SAVE)
+        # print(SIDE[nameIndx], SAVE)
         print('Episode:', i, ' Reward: %i' % int(ep_reward), 'MU_REWARD: ', int(MU_REWARD),'BEST_R: ', int(BEST_R), 'cnt = ',j, 's_rate = ', SUCCESS_RATE)# , 't_step:', int(t23), 't_learn: ', int(t32)) #'var: %.3f' % var, 'rar: %.3f' % rar)
         if SAVE[nameIndx]:
             print(agent.path)

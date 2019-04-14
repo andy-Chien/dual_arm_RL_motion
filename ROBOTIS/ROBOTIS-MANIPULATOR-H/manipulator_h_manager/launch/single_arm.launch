@@ -54,6 +54,7 @@
         <remap from="/robotis/base/kinematics_pose_msg"   to="/$(arg side)_arm/kinematics_pose_msg" />
         <remap from="/robotis/base/set_mode_msg" 	  to="/$(arg side)_arm/set_mode_msg"        />
         <remap from="/robotis/status" 			  to="/$(arg side)_arm/status"                    />
+        <remap from="/robotis/base/drl_pose_msg"  	  to="/$(arg side)_arm/drl_pose_msg"        />
 
         <!-- service -->
         <remap from="/robotis/base/get_joint_pose" 	  to="/$(arg side)_arm/get_joint_pose"	          />

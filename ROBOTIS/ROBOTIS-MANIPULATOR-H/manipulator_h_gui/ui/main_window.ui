@@ -353,6 +353,13 @@
              </property>
             </widget>
            </item>
+           <item>
+            <widget class="QPushButton" name="des_drl_button">
+             <property name="text">
+              <string>Send DRL Pos.</string>
+             </property>
+            </widget>
+           </item>
           </layout>
          </widget>
         </item>

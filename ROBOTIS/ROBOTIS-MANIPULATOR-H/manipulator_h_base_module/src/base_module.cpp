@@ -165,7 +165,7 @@ bool BaseModule::env_reset_callback(train::environment::Request &req,
 {
   double dis, mu;
   is_train = true;
-  bool ik_success = false;
+  bool ik_success = true;
   if(req.action.size() > 1)
   {
     Eigen::Vector3d p2p_positoin;
@@ -183,14 +183,16 @@ bool BaseModule::env_reset_callback(train::environment::Request &req,
     for (int i=1; i<=MAX_JOINT_ID; i++)
       manipulator_->manipulator_link_data_[i]->joint_angle_ = req.action[i];
     manipulator_->forwardKinematics(7);
+    //==========================================================================================================================
     p2p_positoin = manipulator_->manipulator_link_data_[6]->position_;
-    p2p_positoin(2) -= 0.24;
-    p2p_rotation<<1,0,0,0,-1,0,0,0,-1;
+    p2p_rotation = robotis_framework::convertRPYToRotation(req.rpy[0]*M_PI, req.rpy[1]*M_PI, req.rpy[2]*M_PI);
+    p2p_positoin += 0.24*p2p_rotation.block(0,2,3,1);
     p2p_phi = 0;
     slide_->goal_slide_pos = 0;
     robotis_->ik_id_end_   = END_LINK;
     ik_success = manipulator_->inverseKinematics(robotis_->ik_id_end_,
                                                               p2p_positoin, p2p_rotation, p2p_phi, slide_->goal_slide_pos, true);
+    //===============================================================================================================================
     robotis_->is_ik = false;
     if(enable_ && ik_success)
     {
@@ -215,7 +217,7 @@ bool BaseModule::env_reset_callback(train::environment::Request &req,
   Eigen::Quaterniond quaternion = robotis_framework::convertRotationToQuaternion(manipulator_->manipulator_link_data_[END_LINK]->orientation_);
   res.state.resize(8);
   res.joint_pos.resize(12);
-  res.joint_angle.resize(2);
+  res.joint_angle.resize(3);
   res.limit.resize(1);
   // res.success = ik_success;
   // if(!ik_success)
@@ -241,10 +243,12 @@ bool BaseModule::env_reset_callback(train::environment::Request &req,
   res.joint_pos[10] = manipulator_->manipulator_link_data_[6]->position_(1);
   res.joint_pos[11] = manipulator_->manipulator_link_data_[6]->position_(2);
   // res.joint_angle[0] = manipulator_->manipulator_link_data_[0]->slide_position_;
-  for (int i=2; i<=MAX_JOINT_ID; i+=4)
+  int z = 1;
+  for (int i=1; i<=MAX_JOINT_ID; i+=z)
   {
+    z = 3*i-2;
     dis = manipulator_->manipulator_link_data_[i]->joint_limit_max_ - manipulator_->manipulator_link_data_[i]->joint_limit_min_;
-    res.joint_angle[(i-2)/4] = pow((2*(manipulator_->manipulator_link_data_[i]->joint_angle_ - manipulator_->manipulator_link_data_[i]->joint_limit_min_)/fabs(dis))-1, 3);
+    res.joint_angle[(i+2)%3] = pow((2*(manipulator_->manipulator_link_data_[i]->joint_angle_ - manipulator_->manipulator_link_data_[i]->joint_limit_min_)/fabs(dis))-1, 3);
   }
   Eigen::Vector3d limit_vec = manipulator_->manipulator_link_data_[6]->position_ - manipulator_->manipulator_link_data_[2]->position_;
   // Eigen::Vector3d vecO;
@@ -323,7 +327,7 @@ bool BaseModule::training_callback(train::environment::Request &req,
   Eigen::Quaterniond quaternion = robotis_framework::convertRotationToQuaternion(manipulator_->manipulator_link_data_[END_LINK]->orientation_);
   res.state.resize(8);
   res.joint_pos.resize(12);
-  res.joint_angle.resize(2);
+  res.joint_angle.resize(3);
   res.limit.resize(1);
   res.state[0]= manipulator_->manipulator_link_data_[8]->position_(0);
   res.state[1]= manipulator_->manipulator_link_data_[8]->position_(1);
@@ -347,10 +351,12 @@ bool BaseModule::training_callback(train::environment::Request &req,
   res.joint_pos[11] = manipulator_->manipulator_link_data_[6]->position_(2);
   // res.joint_angle[0] = manipulator_->manipulator_link_data_[0]->slide_position_;
       
-  for (int i=2; i<=MAX_JOINT_ID; i+=4)
+  int z = 1;
+  for (int i=1; i<=MAX_JOINT_ID; i+=z)
   {
+    z = 3*i-2;
     dis = manipulator_->manipulator_link_data_[i]->joint_limit_max_ - manipulator_->manipulator_link_data_[i]->joint_limit_min_;
-    res.joint_angle[(i-2)/4] = pow((2*(manipulator_->manipulator_link_data_[i]->joint_angle_ - manipulator_->manipulator_link_data_[i]->joint_limit_min_)/fabs(dis))-1, 3);
+    res.joint_angle[(i+2)%3] = pow((2*(manipulator_->manipulator_link_data_[i]->joint_angle_ - manipulator_->manipulator_link_data_[i]->joint_limit_min_)/fabs(dis))-1, 3);
   }
   Eigen::Vector3d limit_vec = manipulator_->manipulator_link_data_[6]->position_ - manipulator_->manipulator_link_data_[2]->position_;
   // Eigen::Vector3d vecO;

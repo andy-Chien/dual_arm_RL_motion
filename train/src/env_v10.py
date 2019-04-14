@@ -30,8 +30,8 @@ class Test(core.Env):
     MAX_VEL_3 = 2.
 
     ACTION_VEC_TRANS = 1/240
-    ACTION_ORI_TRANS = 1/40
-    ACTION_PHI_TRANS = 1/40
+    ACTION_ORI_TRANS = 1/240
+    ACTION_PHI_TRANS = 1/240
 
     NAME = ['/right_arm', '/left_arm', '/right_arm']
 
@@ -48,12 +48,12 @@ class Test(core.Env):
         self.__obname = self.NAME[name%2 + 1]
         self.viewer = None
 
-        high = np.array([1.,1.,1.,#1.,1.,1.,1.,1.,  #8
-                         1.,1.,1.,#1.,1.,1.,1.,1.,  #8
+        high = np.array([1.,1.,1.,1.,1.,1.,1.,1.,  #8
+                         1.,1.,1.,1.,1.,1.,1.,     #7
                          0.,0.,0.,0.,0.,0.,         #6
                          0.,0.,0.,0.,0.,0.,0.,0.,0.,#9
                          0.,0.,0.,                     #2
-                         0.,0])                       #1
+                         0.,0.,0.])                       #1
                                                     #24
         low = -high 
                     # ox,oy,oz,oa,ob,oc,od,of,
@@ -64,8 +64,8 @@ class Test(core.Env):
                     # limit(1), rate(3)
         self.observation_space = spaces.Box(low=low, high=high, dtype=np.float32)
         self.action_space = spaces.Discrete(3)
-        self.act_dim=3
-        self.obs_dim=26
+        self.act_dim=7
+        self.obs_dim=39
         self.state = []
         self.action = []
         self.cmd = []
@@ -74,6 +74,7 @@ class Test(core.Env):
         self.goal_pos = []
         self.goal_quat = []
         self.goal_phi = 0
+        self.goal_rpy = []
         self.old = []
         self.old_pos = []
         self.old_quat = []
@@ -86,9 +87,11 @@ class Test(core.Env):
         self.cc = CheckCollision()
         self.collision = False
         self.range_cnt = 0.8
+        self.rpy_range = 0.05
         self.s_cnt = 0
         self.done = True
         self.goal_err = 0.08
+        self.ori_err = 0.24
         self.set_mode_pub = rospy.Publisher(
             '/gazebo/set_model_state',
             ModelState,
@@ -112,23 +115,23 @@ class Test(core.Env):
             environment
         )
         # res = client(cmd)
-        res = client.call(cmd)
+        res = client.call(cmd, [0])
         return res
 
-    def env_reset_client(self, cmd, name):
+    def env_reset_client(self, cmd, rpy, name):
         reset_service = name+'/env_reset'
         try:
             rospy.wait_for_service(reset_service, timeout=1.)
         except rospy.ROSException as e:
             rospy.logwarn('wait_for_service timeout')
-            self.env_reset_client(cmd, name)
+            self.env_reset_client(cmd, rpy, name)
             
         client = rospy.ServiceProxy(
             reset_service,
             environment
         )
         # res = client(cmd)
-        res = client.call(cmd)
+        res = client(action=cmd, rpy=rpy)
         return res
 
     def set_object(self, name, pos, ori):
@@ -182,45 +185,50 @@ class Test(core.Env):
         if alarm_cnt>0:
             print('fuckfuck')
             return self.reset()
-        self.state = np.append(self.old[:3], np.subtract(self.goal, self.old[:3]))
+        self.state = np.append(self.old, np.subtract(self.goal, self.old[:7]))
         self.state = np.append(self.state, Link_dis)
         self.state = np.append(self.state, self.joint_angle)
-        self.state = np.append(self.state, self.limit[0])
+        self.state = np.append(self.state, self.limit)
         self.dis_pos = np.linalg.norm(self.goal[:3] - self.old[:3])
+        self.dis_ori = np.linalg.norm(self.goal[3:7] - self.old[3:7])
         self.state = np.append(self.state, self.dis_pos)
+        self.state = np.append(self.state, self.dis_ori)
+        self.state = np.append(self.state, self.joint_pos[9:12])
         self.collision = False
         self.done = False
         return self.state
 
     def set_goal(self):
         self.goal = self.np_random.uniform(low=0., high=self.range_cnt, size=(8,))
+        rpy = self.np_random.uniform(low=-1*self.rpy_range, high=self.rpy_range, size=(3,))
         # print('self.goal = ', self.goal)
         self.goal[0] = 0
         self.goal[3] = self.range_cnt/2
         self.goal = np.append(self.goal, self.range_cnt)
-        res = self.env_reset_client(self.goal, self.__name)
+        res = self.env_reset_client(self.goal, rpy, self.__name)
         goal_pos = np.array(res.state)
         if not res.success:
             return self.set_goal()
         if np.linalg.norm(goal_pos[:2])>0.2:
-            return goal_pos[:3]
+            return goal_pos[:7]
         else:
             return self.set_goal()
 
     def set_old(self):
         # if self.done:
         self.start = self.np_random.uniform(low=0., high=self.range_cnt, size=(8,))
+        rpy = self.np_random.uniform(low=-1*self.rpy_range, high=self.rpy_range, size=(3,))
         # print('self.old = ', self.old)
         self.start[0] = 0
         self.start[3] = self.range_cnt/2
         self.start = np.append(self.start, self.range_cnt)
-        res = self.env_reset_client(self.start, self.__name)
-        res_ = self.env_reset_client([0], self.__obname)
+        res = self.env_reset_client(self.start, rpy, self.__name)
+        res_ = self.env_reset_client([0], [0], self.__obname)
         old_pos = np.array(res.state)
         if not res.success:
             return self.set_old()
         if np.linalg.norm(np.subtract(old_pos[:3], self.goal[:3])) > 0.1:
-            return np.array(res.state), res.joint_pos, res_.joint_pos,[res_.state[0], res_.state[1], res_.state[2]], res.joint_angle, res.limit
+            return old_pos, res.joint_pos, res_.joint_pos,[res_.state[0], res_.state[1], res_.state[2]], res.joint_angle, res.limit
         else:
             return self.set_old()
 
@@ -235,36 +243,37 @@ class Test(core.Env):
         return linkPosM, linkPosS
 
     def step(self, a):
-        t1 = time.time()
         alarm = []
         Link_dis = []
         s = self.state
         self.collision = False
         action_vec = a[:3]*self.ACTION_VEC_TRANS
-        # action_ori = a[3:7]*self.ACTION_ORI_TRANS
+        action_ori = a[3:7]*self.ACTION_ORI_TRANS
         # action_phi = a[7]*self.ACTION_PHI_TRANS
-        self.action = action_vec
-        self.cmd = np.add(s[:3], self.action)
-        self.cmd = np.append(self.cmd, self.old[3:])
+        self.action = np.append(action_vec, action_ori)
+        self.action = np.append(self.action, [0])
+        self.cmd = np.add(s[:8], self.action)
+        self.cmd[3:7] /= np.linalg.norm(self.cmd[3:7])
+        # self.cmd = np.append(self.cmd, self.old[3:])
         # if self.__name == '/right_arm':
             # print(self.cmd)
-        t2 = time.time()
         res = self.get_state_client(self.cmd, self.__name)
-        t3 = time.time()
         res_ = self.get_state_client([0], self.__obname)
-        t4 = time.time()
         if res.success:
             self.old, self.joint_pos[:12], self.joint_angle, self.limit = np.array(res.state), res.joint_pos, res.joint_angle, res.limit
             self.joint_pos[12:24] = res_.joint_pos
             self.joint_pos[24:27] = [res_.state[0], res_.state[1], res_.state[2]]
             linkPosM, linkPosS = self.collision_init(self.old[:3])
             alarm, Link_dis = self.cc.checkCollision(linkPosM, linkPosS)
-            s = np.append(self.old[:3], np.subtract(self.goal[:3], self.old[:3]))
+            s = np.append(self.old, np.subtract(self.goal[:7], self.old[:7]))
             s = np.append(s, Link_dis)
             s = np.append(s, self.joint_angle)
-            s = np.append(s, self.limit[0])
+            s = np.append(s, self.limit)
             self.dis_pos = np.linalg.norm(self.goal[:3] - s[:3])
+            self.dis_ori = np.linalg.norm(self.goal[3:7] - s[3:7])
             s = np.append(s, self.dis_pos)
+            s = np.append(s, self.dis_ori)
+            s = np.append(s, self.joint_pos[9:12])
             # print(Link_dis)
         # else:
         #     print(res.joint_angle, res.limit)
@@ -290,12 +299,14 @@ class Test(core.Env):
         if alarm_cnt>0.5:
             self.collision = True
         if ik_success and not self.collision:
-            if self.dis_pos < self.goal_err:
+            if self.dis_pos < self.goal_err and self.dis_ori < self.ori_err:
                 if not self.done:
                     self.done = True
                     self.s_cnt += 1
                     self.range_cnt = self.range_cnt + 0.003 if self.range_cnt < 0.95 else 0.95
+                    self.rpy_range = self.rpy_range + 0.001 if self.rpy_range < 0.95 else 0.95
                     self.goal_err = self.goal_err*0.995 if self.goal_err > 0.01 else 0.01
+                    self.ori_err = self.ori_err*0.995 if self.ori_err > 0.03 else 0.03
                     print('ssssssuuuuuuccccccccceeeeeeeesssssssssss' , self.s_cnt, self.goal_err)
                 return True
             else:
@@ -308,13 +319,14 @@ class Test(core.Env):
         reward = 0.
 
         if not ik_success:
-            return -2
-        if self.collision:
             return -3
+        if self.collision:
+            return -5
 
         reward -= self.dis_pos
+        reward -= self.dis_ori/5
         reward += 0.2
-
+        
         if reward > 0:
             reward *= 3
 
