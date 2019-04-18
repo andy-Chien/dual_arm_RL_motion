@@ -41,6 +41,7 @@ public:
 
   bool    is_moving_;
   bool    is_ik;
+  bool    is_inv;
   // trajectory
   int     cnt_;
   int     all_time_steps_;
@@ -58,15 +59,19 @@ public:
   manipulator_h_base_module_msgs::KinematicsPose kinematics_pose_msg_;
   manipulator_h_base_module_msgs::P2PPose p2p_pose_msg_;  //new
 
+  ManipulatorKinematicsDynamics  *IK_test;
+
   // inverse kinematics
   bool ik_solve_;
   Eigen::MatrixXd ik_target_position_;
   Eigen::MatrixXd ik_start_rotation_, ik_target_rotation_;
+  Eigen::Quaterniond ik_target_quaternion;
   double ik_start_phi_, ik_target_phi_;   //new
   int ik_id_start_, ik_id_end_;   
   double slide_pos_;
 
-  void setInverseKinematics(int cnt, Eigen::MatrixXd start_rotation, double start_phi);
+  bool setInverseKinematics(int cnt, int all_steps, Eigen::MatrixXd start_rotation, double start_phi);
+  Eigen::Quaterniond slerp(double t, Eigen::Quaterniond& self, Eigen::Quaterniond& other, bool inv);
 };
 
 }

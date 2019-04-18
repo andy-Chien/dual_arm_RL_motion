@@ -57,6 +57,10 @@
 #include "robotis_device/robot.h"
 
 #include "train/environment.h"
+#include "train/set_start.h"
+#include "train/set_goal.h"
+#include "train/move_cmd.h"
+#include "train/get_state.h"
 
 namespace robotis_manipulator_h
 {
@@ -120,13 +124,33 @@ public:
   void p2pPoseMsgCallback(const manipulator_h_base_module_msgs::P2PPose::ConstPtr& msg);   //new
 
   bool training_callback(train::environment::Request &req,
-                         train::environment::Response &res);///////////////////////////////////////////////////////
+                         train::environment::Response &res);
   bool env_reset_callback(train::environment::Request &req,
                           train::environment::Response &res);
+  bool get_state_callback(train::get_state::Request &req,
+                          train::get_state::Response &res);
+  bool move_cmd_callback(train::move_cmd::Request &req,
+                          train::move_cmd::Response &res);
+  bool set_goal_callback(train::set_goal::Request &req,
+                          train::set_goal::Response &res);
+  bool set_start_callback(train::set_start::Request &req,
+                          train::set_start::Response &res);
   bool getJointPoseCallback(manipulator_h_base_module_msgs::GetJointPose::Request &req,
                             manipulator_h_base_module_msgs::GetJointPose::Response &res);
   bool getKinematicsPoseCallback(manipulator_h_base_module_msgs::GetKinematicsPose::Request &req,
                                  manipulator_h_base_module_msgs::GetKinematicsPose::Response &res);
+
+  template <typename T>
+  void set_response(T &res);
+  template <typename T>
+  void set_response_limit(T &res);
+  template <typename T>
+  void set_response_quat(T &res, Eigen::Quaterniond q);
+  template <typename T>
+  void set_goal_pose(T &res);
+  template <typename T>
+  void check_quat(T &res);
+  void drl_move_arm();
 
   /* ROS Calculation Functions */
   void generateInitPoseTrajProcess();

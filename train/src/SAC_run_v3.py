@@ -8,7 +8,7 @@ import numpy as np
 import math
 import rospy
 from sac_v8 import SAC
-from env_v11 import Test
+from env_v10 import Test
 from manipulator_h_base_module_msgs.msg import P2PPose
 
 MAX_EPISODES = 100000
@@ -71,7 +71,7 @@ def train(nameIndx):
         ep_reward = 0
         done_cnt = 0
 
-        SUCCESS_ARRAY[i%1000] = 0.
+        SUCCESS_ARRAY[i%100] = 0.
         COLLISION = False
         for j in range(MAX_EP_STEPS):
             cnt+=1
@@ -94,7 +94,7 @@ def train(nameIndx):
             ep_reward += r
             if done_cnt > 32:
                 if not COLLISION:
-                    SUCCESS_ARRAY[i%1000] = 1.
+                    SUCCESS_ARRAY[i%100] = 1.
                 break
 
         SUCCESS_RATE = 0

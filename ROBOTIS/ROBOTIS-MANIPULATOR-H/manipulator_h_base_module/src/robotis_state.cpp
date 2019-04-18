@@ -29,6 +29,7 @@ RobotisState::RobotisState()
 {
   is_moving_ = false;
   is_ik = false;
+  is_inv = false;
 
   cnt_      = 0;
   mov_time_ = 1.0;
@@ -48,6 +49,7 @@ RobotisState::RobotisState()
 
   ik_start_rotation_  = robotis_framework::convertRPYToRotation(0.0, 0.0, 0.0);
   ik_target_rotation_ = robotis_framework::convertRPYToRotation(0.0, 0.0, 0.0);
+  ik_target_quaternion = robotis_framework::convertRotationToQuaternion(ik_target_rotation_);
 
   ik_start_phi_ = 0;
   ik_target_phi_ = 0;
@@ -55,47 +57,101 @@ RobotisState::RobotisState()
 
   ik_id_start_  = 0;
   ik_id_end_    = 0;
+
+  IK_test  = new ManipulatorKinematicsDynamics(ARM);
 }
 
 RobotisState::~RobotisState()
 {
 }
 
-void RobotisState::setInverseKinematics(int cnt, Eigen::MatrixXd start_rotation, double start_phi)
+bool RobotisState::setInverseKinematics(int cnt, int all_steps, Eigen::MatrixXd start_rotation, double start_phi)
 {
   for (int dim = 0; dim < 3; dim++)
     ik_target_position_.coeffRef(dim, 0) = calc_task_tra_.coeff(cnt, dim);
   
-  // Eigen::Vector3d start_euler = ManipulatorKinematicsDynamics::rotation2rpy(start_rotation);
-  // start_euler(0) = (start_euler(0)+M_PI)/2;
-  // start_rotation = robotis_framework::convertRPYToRotation(start_euler(0), start_euler(1),start_euler(2));
-
   Eigen::Quaterniond start_quaternion = robotis_framework::convertRotationToQuaternion(start_rotation);
 
   Eigen::Quaterniond target_quaternion(kinematics_pose_msg_.pose.orientation.w,
                                        kinematics_pose_msg_.pose.orientation.x,
                                        kinematics_pose_msg_.pose.orientation.y,
                                        kinematics_pose_msg_.pose.orientation.z);
+  Eigen::Matrix3d goal_rotation = robotis_framework::convertQuaternionToRotation(target_quaternion);
 
-  // Eigen::Matrix3d target_rotation = robotis_framework::convertQuaternionToRotation(target_quaternion);                                    
-  // Eigen::Vector3d target_euler = ManipulatorKinematicsDynamics::rotation2rpy(target_rotation);
-  // Eigen::Vector3d m_pi(M_PI, M_PI, M_PI);
-  // target_euler = (target_euler+m_pi)/2;
-  // target_rotation = robotis_framework::convertRPYToRotation(target_euler(0), target_euler(1),target_euler(2));
-  // target_quaternion = target_rotation;
+  if(cnt == 0)
+  {
+    is_inv = false;
+    int c;
+    bool ik_s;
+    Eigen::Vector3d test_position;
+    Eigen::MatrixXd test_rotation;
+    float test_phi;
+    float test_slide_pos;
+    for(float i=1; i<7; i++)
+    {
+      c = int((double)all_steps * i/7);
+      for (int dim = 0; dim < 3; dim++)
+        test_position.coeffRef(dim, 0) = calc_task_tra_.coeff(c, dim);
+      Eigen::Quaterniond q = slerp(i/7, start_quaternion, target_quaternion, is_inv);
+      test_rotation = robotis_framework::convertQuaternionToRotation(q);
+      test_phi = start_phi + i/7 * (kinematics_pose_msg_.phi - start_phi);
+      test_slide_pos = calc_slide_tra_.coeff(c,0);
+      ik_s = IK_test->InverseKinematics_p2p(test_position, test_rotation, test_phi, test_slide_pos, true);
+      if(!ik_s){
+        if(!is_inv){
+          is_inv = true;
+          i = 0;
+        }else
+          return false;
+      }
+    }
+  }
 
-  double count = (double) cnt / (double) all_time_steps_;
 
-  Eigen::Quaterniond quaternion = start_quaternion.slerp(count, target_quaternion);
-  // std::cout<<"target_quaternion : "<<quaternion.w()<<"  "<<quaternion.x()<<"  "<<quaternion.y()<<"  "<<quaternion.z()<<"  "<<std::endl;
+  double count = (double) cnt / (double) all_steps;
+
+  ik_target_quaternion = slerp(count, start_quaternion, target_quaternion, is_inv);
 
   ik_target_phi_ = start_phi + count * (kinematics_pose_msg_.phi - start_phi);
 
-  ik_target_rotation_ = robotis_framework::convertQuaternionToRotation(quaternion);
-  // target_euler = ManipulatorKinematicsDynamics::rotation2rpy(ik_target_rotation_);
-  // target_euler = target_euler*2 - m_pi;
-  // ik_target_rotation_ = robotis_framework::convertRPYToRotation(target_euler(0), target_euler(1),target_euler(2));
+  ik_target_rotation_ = robotis_framework::convertQuaternionToRotation(ik_target_quaternion);
+  return true;
+}
 
-  // std::cout<<"ik_target_rotation_ik_target_rotation_"<<std::endl<<ik_target_rotation_<<std::endl;
+Eigen::Quaterniond RobotisState::slerp(double t, Eigen::Quaterniond& self, Eigen::Quaterniond& other, bool inv)
+{
+  using std::acos;
+  using std::sin;
+  using std::abs;
+  static const double one = 1 - 0.0001;
+
+  double d = self.dot(other);
+  double absD = abs(d);
+
+  double scale0;
+  double scale1;
+
+  if(absD>=one)
+  {
+    scale0 = 1 - t;
+    scale1 = t;
+  }
+  else 
+  {
+    // theta is the angle between the 2 quaternions
+    double theta = acos(absD);
+    
+    double sinTheta = sin(theta);
+    scale0 = sin( ( 1 - t ) * theta) / sinTheta;
+    scale1 = sin( ( t * theta) ) / sinTheta;
+  }
+  if(inv)
+    if(d>=0) scale1 = -scale1;
+  else
+    if(d<0) scale1 = -scale1;
+  Eigen::Quaterniond q;
+  q.coeffs() = (scale0 * self.coeffs()) + (scale1 * other.coeffs());
+  q.coeffs() /= q.norm();
+  return q;
 }
 

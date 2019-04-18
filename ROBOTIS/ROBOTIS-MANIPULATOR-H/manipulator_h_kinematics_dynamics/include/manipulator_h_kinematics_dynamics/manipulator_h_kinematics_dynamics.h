@@ -86,13 +86,14 @@ public:
   bool InverseKinematics_7( Eigen::VectorXd position, Eigen::Matrix3d rotation, double phi, 
                             double slide_position, Eigen::VectorXd Old_JointAngle, bool is_p2p);
   bool InverseKinematics_p2p( Eigen::VectorXd position, Eigen::Matrix3d rotation, double phi, 
-                            double slide_position, Eigen::VectorXd Old_JointAngle, bool is_p2p);
+                            double slide_position, bool test);
   bool slideInverseKinematics(Eigen::Vector3d goal_position, Eigen::Matrix3d rotation, 
                                                             double slide_pos, double& goal_slide_pos);
   static Eigen::MatrixXd rotation2rpy(Eigen::MatrixXd rotation);
   bool limit_check(Eigen::Vector3d goal_position, Eigen::Matrix3d rotation);
   void load_LinkParam();
   void getPhiAngle();
+  inline double get_d4(){return d4;};
 };
 
 }
