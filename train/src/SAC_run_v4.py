@@ -7,7 +7,7 @@ import shutil
 import numpy as np
 import math
 import rospy
-from sac_v8 import SAC
+from sac_v9 import SAC
 from env_v12 import Test
 from manipulator_h_base_module_msgs.msg import P2PPose
 
@@ -23,6 +23,7 @@ SAVE = [False, False]
 def train(nameIndx):
     global r_run, l_run, SAVE
     T_REWARD = []
+    T_REWARD.append(-2000)
     MU_REWARD = 0
     BEST_R = -999
     SUCCESS_ARRAY = np.zeros([1000])
@@ -81,7 +82,7 @@ def train(nameIndx):
             done_cnt += int(done)
             if collision:
                 COLLISION = True
-            if cnt >= BATTH_SIZE*9:
+            if cnt >= BATTH_SIZE*10:
                 if cnt%50 == 0:
                     agent.learn(cnt)
                 elif cnt%5 == 0:
@@ -104,6 +105,7 @@ def train(nameIndx):
         if len(T_REWARD) >= 1000:
             T_REWARD.pop(0)
         T_REWARD.append(ep_reward)
+        agent.replay_buffer.store_eprwd(ep_reward)
         r_sum = 0
         for k in T_REWARD:
             r_sum += k
@@ -111,10 +113,11 @@ def train(nameIndx):
         BEST_R = MU_REWARD if MU_REWARD>BEST_R else BEST_R
 
         if env.is_success:
-            print('Eps:', i, ' Reward: %i' % int(ep_reward), 'MU_R: ', int(MU_REWARD), 'cnt: ',j, 's_rate: ', int(SUCCESS_RATE), 'sssuuucccccceeessssss ', env.s_cnt)
+            print('Eps:', i, ' Reward: %i' % int(ep_reward), 'MU_R: ', int(MU_REWARD), 'cnt: ',j, 's_rate: ', int(SUCCESS_RATE), 'sssuuucccccceeessssss ', env.success_cnt)
         else:
             print('Eps:', i, ' Reward: %i' % int(ep_reward), 'MU_R: ', int(MU_REWARD), 'cnt: ',j, 's_rate: ', int(SUCCESS_RATE))
         if SAVE[nameIndx]:
+            SUCCESS_ARRAY = np.zeros([1000])
             print(agent.path)
             if os.path.isdir(agent.path+str(GOAL_RATE)): shutil.rmtree(agent.path+str(GOAL_RATE))
             os.mkdir(agent.path+str(GOAL_RATE))
@@ -122,7 +125,12 @@ def train(nameIndx):
             save_path = agent.saver.save(agent.sess, ckpt_path, write_meta_graph=False)
             print("\nSave Model %s\n" % save_path)
             print('Running time: ', time.time() - t1)
-            GOAL_RATE += 5
+            if GOAL_RATE < 90:
+                GOAL_RATE += 5
+            else:
+                GOAL_RATE += 2
+            if GOAL_RATE > 100:
+                break
 
 def run(nameIndx):
     global cmd, move

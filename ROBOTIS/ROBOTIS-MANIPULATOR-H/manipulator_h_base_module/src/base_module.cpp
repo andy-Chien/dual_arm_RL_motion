@@ -439,7 +439,7 @@ void BaseModule::set_response_limit(T &res)
   }
   Eigen::Vector3d limit_vec = manipulator_->manipulator_link_data_[6]->position_ - manipulator_->manipulator_link_data_[2]->position_;
   double limit_dis = limit_vec.norm();
-  limit_dis = ((limit_dis - 0.1)/0.448)*2 - 1;
+  limit_dis = ((limit_dis - 0.148)/0.4)*2 - 1;
   res.limit[0] = pow(limit_dis, 3);
 }
 

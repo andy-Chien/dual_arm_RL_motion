@@ -14,34 +14,11 @@ from gazebo_msgs.msg import ModelState
 # from CheckCollision_tensor import CheckCollision
 # from vacuum_cmd_msg.srv import VacuumCmd
 class Test(core.Env):
-
-    dt = .2
-
-    LINK_LENGTH_1 = 1.  # [m]
-    LINK_LENGTH_2 = 1.  # [m]
-    LINK_MASS_1 = 1.  #: [kg] mass of link 1
-    LINK_MASS_2 = 1.  #: [kg] mass of link 2
-    LINK_COM_POS_1 = 0.5  #: [m] position of the center of mass of link 1
-    LINK_COM_POS_2 = 0.5  #: [m] position of the center of mass of link 2
-    LINK_MOI = 1.  #: moments of inertia for both links
-
-    MAX_VEL_1 = 2.
-    MAX_VEL_2 = 2.
-    MAX_VEL_3 = 2.
-
     ACTION_VEC_TRANS = 1/240
-    ACTION_ORI_TRANS = 1/240
-    ACTION_PHI_TRANS = 1/240
+    ACTION_ORI_TRANS = 1/80
+    ACTION_PHI_TRANS = 1/80
 
     NAME = ['/right_arm', '/left_arm', '/right_arm']
-
-    torque_noise_max = 0.
-
-    #: use dynamics equations from the nips paper or the book
-    book_or_nips = "book"
-    action_arrow = None
-    domain_fig = None
-    actions_num = 8
 
     def __init__(self, name):
         self.__name = self.NAME[name%2]
@@ -53,7 +30,7 @@ class Test(core.Env):
                          0.,0.,0.,0.,0.,0.,         #6
                          0.,0.,0.,0.,0.,0.,0.,0.,0.,#9
                          0.,0.,0.,                  #2
-                         0.,0.,0.])                 #1
+                         0.,0.,0.,0.,0.,0.])                 #1
                                                     #24
         low = -1*high 
                     # ox,oy,oz,oa,ob,oc,od,of,
@@ -64,8 +41,8 @@ class Test(core.Env):
                     # limit(1), rate(3)
         self.observation_space = spaces.Box(low=low, high=high, dtype=np.float32)
         self.action_space = spaces.Discrete(3)
-        self.act_dim=7
-        self.obs_dim=39
+        self.act_dim=8
+        self.obs_dim=42
         self.state = []
         self.action = []
         self.cmd = []
@@ -86,10 +63,10 @@ class Test(core.Env):
         # self.dis_pos
         self.cc = CheckCollision()
         self.collision = False
-        self.range_cnt = 0.8
+        self.range_cnt = 0.6
         self.rpy_range = 0.1
-        self.s_cnt = 0
         self.done = True
+        self.s_cnt = 0
         self.goal_err = 0.08
         self.ori_err = 0.24
         self.quat_inv = False
@@ -101,7 +78,14 @@ class Test(core.Env):
         )
         self.seed()
         self.reset()
-        
+    
+    @property
+    def is_success(self):
+        return self.done
+
+    @property
+    def success_cnt(self):
+        return self.s_cnt
         
     def get_state_client(self, name):
         service = name+'/get_state'
@@ -209,7 +193,6 @@ class Test(core.Env):
         return s
 
     def reset(self):
-        # if self.done:
         self.goal = self.set_goal()
         self.old, self.joint_pos[:15], self.joint_pos[15:30], self.joint_angle, self.limit, self.goal_quat, self.quat_inv = self.set_old()
         linkPosM, linkPosS = self.collision_init()
@@ -218,7 +201,6 @@ class Test(core.Env):
         for i in alarm:
             alarm_cnt += i
         if alarm_cnt>0:
-            print('fuckfuck')
             return self.reset()
         self.state = np.append(self.old, np.subtract(self.goal[:3], self.old[:3]))
         self.state = np.append(self.state, self.goal_quat)
@@ -230,7 +212,7 @@ class Test(core.Env):
         self.angle_ori = self.quat_angle()
         self.state = np.append(self.state, self.dis_pos)
         self.state = np.append(self.state, self.angle_ori)
-        self.state = np.append(self.state, self.joint_pos[9:12])
+        self.state = np.append(self.state, self.joint_pos[6:12])
         self.collision = False
         self.done = False
         return self.state
@@ -240,7 +222,7 @@ class Test(core.Env):
         rpy = self.np_random.uniform(low=-1*self.rpy_range, high=self.rpy_range, size=(3,))
         # print('self.goal = ', self.goal)
         self.goal[0] = 0
-        self.goal[3] = self.range_cnt/2
+        # self.goal[3] = self.range_cnt/2
         self.goal = np.append(self.goal, self.range_cnt)
         res = self.set_goal_client(self.goal, rpy, self.__name)
         goal_pos = np.array(res.state)
@@ -256,7 +238,7 @@ class Test(core.Env):
         rpy = self.np_random.uniform(low=-1*self.rpy_range, high=self.rpy_range, size=(3,))
        
         self.start[0] = 0
-        self.start[3] = self.range_cnt/2
+        # self.start[3] = self.range_cnt/2
         self.start = np.append(self.start, self.range_cnt)
         res = self.set_start_client(self.start, rpy, self.__name)
         res_ = self.get_state_client(self.__obname)
@@ -284,9 +266,9 @@ class Test(core.Env):
         self.collision = False
         action_vec = a[:3]*self.ACTION_VEC_TRANS
         action_ori = a[3:7]*self.ACTION_ORI_TRANS
-        # action_phi = a[7]*self.ACTION_PHI_TRANS
+        action_phi = a[7]*self.ACTION_PHI_TRANS
         self.action = np.append(action_vec, action_ori)
-        self.action = np.append(self.action, [0])
+        self.action = np.append(self.action, action_phi)
         self.cmd = np.add(s[:8], self.action)
         self.cmd[3:7] /= np.linalg.norm(self.cmd[3:7])
 
@@ -306,12 +288,12 @@ class Test(core.Env):
             self.angle_ori = self.quat_angle()
             s = np.append(s, self.dis_pos)
             s = np.append(s, self.angle_ori)
-            s = np.append(s, self.joint_pos[9:12])
+            s = np.append(s, self.joint_pos[6:12])
    
         terminal = self._terminal(s, res.success, alarm)
         reward = self.get_reward(s, res.success, terminal)
 
-        if not self.collision:
+        if not self.collision and math.fabs(s[7])<0.9:
             self.state = s
 
         self.set_object(self.__name, (self.goal[0]-0.08, self.goal[1], self.goal[2]+1.45086), (0, 0, 0, 0))
@@ -329,10 +311,9 @@ class Test(core.Env):
                     self.done = True
                     self.s_cnt += 1
                     self.range_cnt = self.range_cnt + 0.003 if self.range_cnt < 0.95 else 0.95
-                    self.rpy_range = self.rpy_range + 0.001 if self.rpy_range < 0.45 else 0.45
-                    self.goal_err = self.goal_err*0.995 if self.goal_err > 0.01 else 0.01
-                    self.ori_err = self.ori_err*0.995 if self.ori_err > 0.03 else 0.03
-                    print('ssssssuuuuuuccccccccceeeeeeeesssssssssss' , self.s_cnt, self.goal_err)
+                    self.rpy_range = self.rpy_range + 0.0005 if self.rpy_range < 0.8 else 0.8
+                    self.goal_err = self.goal_err*0.999 if self.goal_err > 0.01 else 0.01
+                    self.ori_err = self.ori_err*0.999 if self.ori_err > 0.05 else 0.05
                 return True
             else:
                 return False
@@ -344,9 +325,11 @@ class Test(core.Env):
         reward = 0.
 
         if not ik_success:
-            return -3
+            return -4
         if self.collision:
             return -5
+        if math.fabs(s[7])>0.9:
+            return -3
 
         reward -= self.dis_pos
         reward -= self.angle_ori
@@ -354,6 +337,9 @@ class Test(core.Env):
         
         if reward > 0:
             reward *= 3
+        d = np.linalg.norm([self.joint_pos[6], self.joint_pos[8]])
+        if d<0.1:
+            reward -= (0.1-d)*20
 
         cos_vec = np.dot(self.action[:3],  self.state[8:11])/(np.linalg.norm(self.action[:3]) *np.linalg.norm(self.state[8:11]))
         

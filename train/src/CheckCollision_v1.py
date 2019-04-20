@@ -21,8 +21,13 @@ class CheckCollision():
             for cnt_M in range(2,LinkNum):
                 if cnt_S == 1 and cnt_M == 4:
                     RobotLinkPos_Slave[cnt_S, 1] = -1*RobotLinkPos_Slave[cnt_S+1, 1]
+                tmp = RobotLinkPos_Slave[cnt_S, 2]
+                if cnt_S == 0:
+                    RobotLinkPos_Slave[cnt_S+1, 2] = 0.8
                 Slave2Master_Dist[cnt_S, cnt_M-2] = self.calculateDistance( RobotLinkPos_Slave[cnt_S, :], RobotLinkPos_Slave[cnt_S+1, :],
-                                                                        RobotLinkPos_Master[cnt_M, :], RobotLinkPos_Master[cnt_M+1, :])                                                    
+                                                                        RobotLinkPos_Master[cnt_M, :], RobotLinkPos_Master[cnt_M+1, :])
+                if cnt_S == 0:
+                    RobotLinkPos_Slave[cnt_S+1, 2] = tmp
                 if Slave2Master_Dist[cnt_S, cnt_M-2] < self.threshold[cnt_S, cnt_M-2]:
                     Alarm[cnt_S] = 1
         Slave2Master_Dist = pow(self.threshold - Slave2Master_Dist + 1, 3)

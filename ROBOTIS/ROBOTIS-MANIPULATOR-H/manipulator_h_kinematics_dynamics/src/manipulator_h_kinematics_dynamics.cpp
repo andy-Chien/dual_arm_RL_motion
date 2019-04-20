@@ -61,8 +61,8 @@ ManipulatorKinematicsDynamics::ManipulatorKinematicsDynamics(TreeSelect tree)
     manipulator_link_data_[1]->relative_position_ = robotis_framework::getTransitionXYZ(0.0, 0.0, 0.0);
     manipulator_link_data_[1]->joint_axis_        = robotis_framework::getTransitionXYZ(0.0, 0.0, 1.0);
     manipulator_link_data_[1]->center_of_mass_    = robotis_framework::getTransitionXYZ(0.0, 0.0, 0.0);
-    manipulator_link_data_[1]->joint_limit_max_   =  175 * M_PI/180;
-    manipulator_link_data_[1]->joint_limit_min_   = -175 * M_PI/180;
+    manipulator_link_data_[1]->joint_limit_max_   =  170 * M_PI/180;
+    manipulator_link_data_[1]->joint_limit_min_   = -170 * M_PI/180;
     manipulator_link_data_[1]->train_limit_max_   =  150 * M_PI/180;
     manipulator_link_data_[1]->train_limit_min_   = -150 * M_PI/180;
     manipulator_link_data_[1]->inertia_           = robotis_framework::getInertiaXYZ(1.0, 0.0, 0.0, 1.0, 0.0, 1.0);
@@ -91,8 +91,8 @@ ManipulatorKinematicsDynamics::ManipulatorKinematicsDynamics(TreeSelect tree)
     manipulator_link_data_[3]->center_of_mass_    = robotis_framework::getTransitionXYZ(0.0, 0.0, 0.0);
     manipulator_link_data_[3]->joint_limit_max_   =  180 * M_PI/180;
     manipulator_link_data_[3]->joint_limit_min_   = -180 * M_PI/180;
-    manipulator_link_data_[3]->train_limit_max_   =  90  * M_PI/180;
-    manipulator_link_data_[3]->train_limit_min_   = -90  * M_PI/180;
+    manipulator_link_data_[3]->train_limit_max_   =  30  * M_PI/180;
+    manipulator_link_data_[3]->train_limit_min_   = -30  * M_PI/180;
     manipulator_link_data_[3]->inertia_           = robotis_framework::getInertiaXYZ(1.0, 0.0, 0.0, 1.0, 0.0, 1.0);
 
     manipulator_link_data_[4]->name_    = "joint4";
@@ -105,7 +105,7 @@ ManipulatorKinematicsDynamics::ManipulatorKinematicsDynamics(TreeSelect tree)
     manipulator_link_data_[4]->center_of_mass_    = robotis_framework::getTransitionXYZ(0.0, 0.0, 0.0);
     manipulator_link_data_[4]->joint_limit_max_   = 175 * M_PI/180;
     manipulator_link_data_[4]->joint_limit_min_   = -1  * M_PI/180;
-    manipulator_link_data_[4]->train_limit_max_   =  90 * M_PI/180;
+    manipulator_link_data_[4]->train_limit_max_   =  135 * M_PI/180;
     manipulator_link_data_[4]->train_limit_min_   =  32 * M_PI/180;
     manipulator_link_data_[4]->inertia_           = robotis_framework::getInertiaXYZ(1.0, 0.0, 0.0, 1.0, 0.0, 1.0);
 
@@ -1238,7 +1238,7 @@ bool ManipulatorKinematicsDynamics::limit_check(Eigen::Vector3d goal_position, E
   test_pos(1) = test_pos(1) - (d1*RL_prm);
   Lsw = test_pos.norm();
 
-  if(Lsw < (d2+d3) && Lsw > 0.1)
+  if(Lsw < (d2+d3) && Lsw > 0.148)
     return true;
   else
     std::cout<<"Out of range !!!"<<std::endl;
