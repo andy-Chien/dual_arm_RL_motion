@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 import gym
 import random
-NAME = 'SAC_v9_1'
+NAME = 'SAC_v9_5'
 EPS = 1e-8
 LOAD = False
 BATCH_SIZE = 256

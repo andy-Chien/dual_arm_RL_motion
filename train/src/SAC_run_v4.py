@@ -8,7 +8,7 @@ import numpy as np
 import math
 import rospy
 from sac_v9 import SAC
-from env_v12 import Test
+from env_v14 import Test
 from manipulator_h_base_module_msgs.msg import P2PPose
 
 MAX_EPISODES = 100000
@@ -105,7 +105,7 @@ def train(nameIndx):
         if len(T_REWARD) >= 1000:
             T_REWARD.pop(0)
         T_REWARD.append(ep_reward)
-        agent.replay_buffer.store_eprwd(ep_reward)
+        agent.replay_buffer.store_eprwd(ep_reward*j/100)
         r_sum = 0
         for k in T_REWARD:
             r_sum += k

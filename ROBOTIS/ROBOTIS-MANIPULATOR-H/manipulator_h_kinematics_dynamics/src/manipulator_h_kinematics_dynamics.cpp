@@ -440,9 +440,11 @@ bool ManipulatorKinematicsDynamics::inverseKinematics(int to, Eigen::MatrixXd ta
   for (int id = 0; id < idx.size(); id++)
     Old_JointAngle[idx[id]] = manipulator_link_data_[idx[id]]->joint_angle_;
   if(is_p2p)
-    ik_success = InverseKinematics_p2p(tar_position, tar_orientation, tar_phi, tar_slide_pos, false);
+    ik_success = InverseKinematics_p2p(tar_position, tar_orientation, tar_phi, tar_slide_pos, Old_JointAngle, true);
   else
-    ik_success = InverseKinematics_7(tar_position, tar_orientation, tar_phi, tar_slide_pos, Old_JointAngle, is_p2p);
+    ik_success = InverseKinematics_p2p(tar_position, tar_orientation, tar_phi, tar_slide_pos, Old_JointAngle, false);
+
+    // ik_success = InverseKinematics_7(tar_position, tar_orientation, tar_phi, tar_slide_pos, Old_JointAngle, is_p2p);
 
   forwardKinematics(7);
 
@@ -876,7 +878,7 @@ bool ManipulatorKinematicsDynamics::InverseKinematics_7( Eigen::VectorXd goal_po
 }
 
 bool ManipulatorKinematicsDynamics::InverseKinematics_p2p( Eigen::VectorXd goal_position, Eigen::Matrix3d rotation, 
-                                                            double Phi, double slide_position, bool test)
+                                                            double Phi, double slide_position, Eigen::VectorXd Old_JointAngle, bool test)
 {
   bool ik_success = false;
 
@@ -1004,7 +1006,7 @@ bool ManipulatorKinematicsDynamics::InverseKinematics_p2p( Eigen::VectorXd goal_
 
     // std::cout<<R05_notheta3<<std::endl;
 
-    if((R05_notheta3(2,3) <= 0.00001 && theta_1_flag) || (R05_notheta3(2,3) > 0.00001 && !theta_1_flag))
+    if((R05_notheta3(2,3) <= 0.000001 && theta_1_flag) || (R05_notheta3(2,3) > 0.000001 && !theta_1_flag))
       break;
   }
 
@@ -1038,7 +1040,7 @@ bool ManipulatorKinematicsDynamics::InverseKinematics_p2p( Eigen::VectorXd goal_
     else
         JointAngle(7) = pi + theta_7;
 
-    if((R47(0,3)>=0.00001 && theta_5_flag) || (R47(0,3)<0.00001 && !theta_5_flag))
+    if((R47(0,3)>=0.000001 && theta_5_flag) || (R47(0,3)<0.000001 && !theta_5_flag))
       break;
   }
 
@@ -1047,10 +1049,15 @@ bool ManipulatorKinematicsDynamics::InverseKinematics_p2p( Eigen::VectorXd goal_
   Deviation = testPos.norm();
   if ( Deviation < 0.0001 )
     ik_success = true;
-  if(test)
+  if(test && ik_success)
   {
     for (int id = 0; id <= MAX_JOINT_ID; id++)
-      ik_success = (fabs(manipulator_link_data_[id]->joint_angle_ - JointAngle.coeff(id)) < M_PI);
+    {
+      ik_success = (fabs(manipulator_link_data_[id]->joint_angle_ - JointAngle.coeff(id)) < (M_PI-0.5));
+      if(!ik_success)
+        break;
+      
+    }
   }
   if(ik_success)
   {
@@ -1059,6 +1066,7 @@ bool ManipulatorKinematicsDynamics::InverseKinematics_p2p( Eigen::VectorXd goal_
     for (int id = 0; id <= MAX_JOINT_ID; id++)
       manipulator_link_data_[id]->joint_angle_ = JointAngle.coeff(id);
   }
+  manipulator_link_data_[0]->singularity_ = false;
   return ik_success;
 }
 

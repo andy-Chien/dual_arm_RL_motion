@@ -85,22 +85,25 @@ bool RobotisState::setInverseKinematics(int cnt, int all_steps, Eigen::MatrixXd 
     bool ik_s;
     Eigen::Vector3d test_position;
     Eigen::MatrixXd test_rotation;
+    Eigen::VectorXd Old_JointAngle(8);
     float test_phi;
     float test_slide_pos;
-    for(float i=1; i<7; i++)
+    for(float i=0; i<=12; i++)
     {
-      c = int((double)all_steps * i/7);
+      c = int(((double)all_steps-1) * i/12);
       for (int dim = 0; dim < 3; dim++)
         test_position.coeffRef(dim, 0) = calc_task_tra_.coeff(c, dim);
-      Eigen::Quaterniond q = slerp(i/7, start_quaternion, target_quaternion, is_inv);
+      Eigen::Quaterniond q = slerp(i/12, start_quaternion, target_quaternion, is_inv);
       test_rotation = robotis_framework::convertQuaternionToRotation(q);
-      test_phi = start_phi + i/7 * (kinematics_pose_msg_.phi - start_phi);
+      test_phi = start_phi + i/12 * (kinematics_pose_msg_.phi - start_phi);
       test_slide_pos = calc_slide_tra_.coeff(c,0);
-      ik_s = IK_test->InverseKinematics_p2p(test_position, test_rotation, test_phi, test_slide_pos, true);
+      // for (int id = 0; id < idx.size(); id++)
+      //   Old_JointAngle[idx[id]] = manipulator_link_data_[idx[id]]->joint_angle_;
+      ik_s = IK_test->InverseKinematics_p2p(test_position, test_rotation, test_phi, test_slide_pos, Old_JointAngle, bool(i));
       if(!ik_s){
         if(!is_inv){
           is_inv = true;
-          i = 0;
+          i = -1;
         }else
           return false;
       }
@@ -127,7 +130,7 @@ Eigen::Quaterniond RobotisState::slerp(double t, Eigen::Quaterniond& self, Eigen
 
   double d = self.dot(other);
   double absD = abs(d);
-
+  
   double scale0;
   double scale1;
 
@@ -152,6 +155,16 @@ Eigen::Quaterniond RobotisState::slerp(double t, Eigen::Quaterniond& self, Eigen
   Eigen::Quaterniond q;
   q.coeffs() = (scale0 * self.coeffs()) + (scale1 * other.coeffs());
   q.coeffs() /= q.norm();
+  // Eigen::Quaterniond qq = q;
+  
+  // qq.coeffs() *= -1;
+  // d = 180*acos(other.dot(q))/M_PI;
+  // double dd = 180*acos(other.dot(qq))/M_PI; 
+  // double a = (q.coeffs()-other.coeffs()).norm();
+  // double b = (qq.coeffs()-other.coeffs()).norm();
+  // // d = fabs(q.coeffs().outer(other.coeffs()));
+  // // double dd = fabs(qq.coeffs().outer(other.coeffs()));
+  // std::cout<<d<<" "<<dd<<" "<<a<<" "<<b<<" "<<a+b-2<<std::endl;
   return q;
 }
 

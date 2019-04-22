@@ -428,15 +428,32 @@ template <typename T>
 void BaseModule::set_response_limit(T &res)
 {
   double dis;
-  res.joint_angle.resize(3);
+  res.joint_angle.resize(9);
   res.limit.resize(1);
-  int z = 1;
-  for (int i=1; i<=MAX_JOINT_ID; i+=z)
+  // int z = 1;
+  for (int i=1; i<=MAX_JOINT_ID; i++)
   {
-    z = 3*i-2;
+    // z = 3*i-2;
+    // dis = manipulator_->manipulator_link_data_[i]->joint_limit_max_ - manipulator_->manipulator_link_data_[i]->joint_limit_min_;
+    // res.joint_angle[(i+2)%3] = pow((2*(manipulator_->manipulator_link_data_[i]->joint_angle_ - manipulator_->manipulator_link_data_[i]->joint_limit_min_)/fabs(dis))-1, 3);
     dis = manipulator_->manipulator_link_data_[i]->joint_limit_max_ - manipulator_->manipulator_link_data_[i]->joint_limit_min_;
-    res.joint_angle[(i+2)%3] = pow((2*(manipulator_->manipulator_link_data_[i]->joint_angle_ - manipulator_->manipulator_link_data_[i]->joint_limit_min_)/fabs(dis))-1, 3);
+    res.joint_angle[i-1] = pow((2*(manipulator_->manipulator_link_data_[i]->joint_angle_ - manipulator_->manipulator_link_data_[i]->joint_limit_min_)/fabs(dis))-1, 3);
   }
+  
+  if(manipulator_->manipulator_link_data_[2]->joint_angle_  < -M_PI/2)
+  {
+    dis = fabs(manipulator_->manipulator_link_data_[2]->joint_angle_ - manipulator_->manipulator_link_data_[2]->joint_limit_min_);
+    res.joint_angle[7] = pow(dis/fabs(manipulator_->manipulator_link_data_[2]->joint_limit_min_ - (-M_PI/2)), 3);
+  }
+  else
+  {
+    dis = fabs(manipulator_->manipulator_link_data_[2]->joint_angle_ - manipulator_->manipulator_link_data_[2]->joint_limit_max_);
+    res.joint_angle[7] = pow(dis/fabs(manipulator_->manipulator_link_data_[2]->joint_limit_max_ - (-M_PI/2)), 3);
+  }
+
+  dis = fabs(fabs(manipulator_->manipulator_link_data_[6]->joint_angle_) - fabs(manipulator_->manipulator_link_data_[6]->joint_limit_min_));
+  res.joint_angle[8] = pow(dis/fabs(manipulator_->manipulator_link_data_[6]->joint_limit_min_), 3);
+  
   Eigen::Vector3d limit_vec = manipulator_->manipulator_link_data_[6]->position_ - manipulator_->manipulator_link_data_[2]->position_;
   double limit_dis = limit_vec.norm();
   limit_dis = ((limit_dis - 0.148)/0.4)*2 - 1;
@@ -446,40 +463,44 @@ void BaseModule::set_response_limit(T &res)
 template <typename T>
 void BaseModule::set_response_quat(T &res, Eigen::Quaterniond q)
 {
-  bool setIk_success = false;
-  int all_steps = 50;
-  double mov_time = robotis_->smp_time_ * all_steps;
+  // bool setIk_success = false;
+  // int all_steps = 50;
+  // double mov_time = robotis_->smp_time_ * all_steps;
 
-  robotis_->calc_task_tra_.resize(all_steps, 3);
+  // robotis_->calc_task_tra_.resize(all_steps, 3);
 
-  for (int dim = 0; dim < 3; dim++)
-  {
-    double ini_value = res.state[dim];
-    double tar_value;
+  // for (int dim = 0; dim < 3; dim++)
+  // {
+  //   double ini_value = res.state[dim];
+  //   double tar_value;
 
-    if (dim == 0)
-      tar_value = robotis_->kinematics_pose_msg_.pose.position.x;
-    else if (dim == 1)
-      tar_value = robotis_->kinematics_pose_msg_.pose.position.y;
-    else if (dim == 2)
-      tar_value = robotis_->kinematics_pose_msg_.pose.position.z;
+  //   if (dim == 0)
+  //     tar_value = robotis_->kinematics_pose_msg_.pose.position.x;
+  //   else if (dim == 1)
+  //     tar_value = robotis_->kinematics_pose_msg_.pose.position.y;
+  //   else if (dim == 2)
+  //     tar_value = robotis_->kinematics_pose_msg_.pose.position.z;
 
-    Eigen::MatrixXd tra = robotis_framework::calcMinimumJerkTra(ini_value, 0.0, 0.0, tar_value, 0.0, 0.0,
-                                                                robotis_->smp_time_, mov_time);
+  //   Eigen::MatrixXd tra = robotis_framework::calcMinimumJerkTra(ini_value, 0.0, 0.0, tar_value, 0.0, 0.0,
+  //                                                               robotis_->smp_time_, mov_time);
 
-    robotis_->calc_task_tra_.block(0, dim, all_steps, 1) = tra;
-  }
-  robotis_->calc_slide_tra_ = Eigen::MatrixXd::Zero(all_steps, 1);
-  setIk_success = robotis_->setInverseKinematics(0, all_steps, manipulator_->manipulator_link_data_[END_LINK]->orientation_, manipulator_->manipulator_link_data_[END_LINK]->phi_);
-  setIk_success = robotis_->setInverseKinematics(1, all_steps, manipulator_->manipulator_link_data_[END_LINK]->orientation_, manipulator_->manipulator_link_data_[END_LINK]->phi_);
+  //   robotis_->calc_task_tra_.block(0, dim, all_steps, 1) = tra;
+  // }
+  // robotis_->calc_slide_tra_ = Eigen::MatrixXd::Zero(all_steps, 1);
+  // setIk_success = robotis_->setInverseKinematics(0, all_steps, manipulator_->manipulator_link_data_[END_LINK]->orientation_, manipulator_->manipulator_link_data_[END_LINK]->phi_);
+  // setIk_success = robotis_->setInverseKinematics(1, all_steps, manipulator_->manipulator_link_data_[END_LINK]->orientation_, manipulator_->manipulator_link_data_[END_LINK]->phi_);
   res.quaterniond.resize(4);
-  Eigen::Quaterniond goal_q;
-  goal_q.coeffs() = robotis_->ik_target_quaternion.coeffs() - q.coeffs();
-  goal_q.coeffs() /= goal_q.norm();
-  res.quaterniond[0] = goal_q.w();
-  res.quaterniond[1] = goal_q.x();
-  res.quaterniond[2] = goal_q.y();
-  res.quaterniond[3] = goal_q.z();
+  // Eigen::Quaterniond goal_q;
+  // goal_q.coeffs() = robotis_->ik_target_quaternion.coeffs() - q.coeffs();
+  // goal_q.coeffs() /= goal_q.norm();
+  // res.quaterniond[0] = goal_q.w();
+  // res.quaterniond[1] = goal_q.x();
+  // res.quaterniond[2] = goal_q.y();
+  // res.quaterniond[3] = goal_q.z();
+  res.quaterniond[0] = q.w();
+  res.quaterniond[1] = q.x();
+  res.quaterniond[2] = q.y();
+  res.quaterniond[3] = q.z();
   return;
 }
 
