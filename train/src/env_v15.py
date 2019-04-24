@@ -18,12 +18,12 @@ class Test(core.Env):
     ACTION_ORI_TRANS = 1/80
     ACTION_PHI_TRANS = 1/80
 
-    NAME = ['/right_arm', '/left_arm', '/right_arm']
+    NAME = ['/right_', '/left_', '/right_']
 
-    def __init__(self, name):
+    def __init__(self, name, workers):
         self.__name = self.NAME[name%2]
         self.__obname = self.NAME[name%2 + 1]
-        self.viewer = None
+        self.workers = workers
 
         high = np.array([1.,1.,1.,1.,1.,1.,1.,1.,  #8
                          1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,     #7
@@ -88,7 +88,7 @@ class Test(core.Env):
         return self.s_cnt
         
     def get_state_client(self, name):
-        service = name+'/get_state'
+        service = name+self.workers+'/get_state'
         try:
             rospy.wait_for_service(service, timeout=1.)
         except rospy.ROSException as e:
@@ -104,7 +104,7 @@ class Test(core.Env):
         return res
 
     def move_cmd_client(self, cmd, name):
-        service = name+'/move_cmd'
+        service = name+self.workers+'/move_cmd'
         try:
             rospy.wait_for_service(service, timeout=1.)
         except rospy.ROSException as e:
@@ -120,7 +120,7 @@ class Test(core.Env):
         return res
 
     def set_start_client(self, cmd, rpy, name):
-        service = name+'/set_start'
+        service = name+self.workers+'/set_start'
         try:
             rospy.wait_for_service(service, timeout=1.)
         except rospy.ROSException as e:
@@ -136,7 +136,7 @@ class Test(core.Env):
         return res
 
     def set_goal_client(self, cmd, rpy, name):
-        service = name+'/set_goal'
+        service = name+self.workers+'/set_goal'
         try:
             rospy.wait_for_service(service, timeout=1.)
         except rospy.ROSException as e:
@@ -341,26 +341,12 @@ class Test(core.Env):
         reward += 0.4
         
         if reward > 0:
-            reward *= 3
-        d = np.linalg.norm([self.joint_pos[6], self.joint_pos[8]])
-        if d<0.1:
-            reward -= (0.1-d)*20
+            reward *= 2
 
         cos_vec = np.dot(self.action[:3],  self.state[8:11])/(np.linalg.norm(self.action[:3]) *np.linalg.norm(self.state[8:11]))
         
         reward += (cos_vec*self.dis_pos - self.dis_pos)
-        # reward += (cos_ori*self.dis_ori/2 - self.dis_ori/2)
-        
-        
-
-        reward -= 2
-        # if terminal and ik_success and not self.collision:
-        #     reward += 1
-        # if self.dis_pos < 0.04:
-        #     reward += 1
-        
-        # if self.dis_pos < 0.1:
-        #     reward += 1
+        reward -= 1.2
         return reward
         #==================================================================================
 

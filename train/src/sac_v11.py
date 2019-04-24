@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 import gym
 import random
-NAME = 'SAC_v10_3'
+NAME = 'SAC_v10_2'
 EPS = 1e-8
 LOAD = False
 BATCH_SIZE = 256
@@ -36,11 +36,11 @@ class ValueNetwork(object):
 
     def step(self, obs):
         with tf.variable_scope(self.name):
-            h1 = tf.layers.dense(obs, 512, tf.nn.leaky_relu)
-            h2 = tf.layers.dense(h1, 512, tf.nn.leaky_relu)
-            # h3 = tf.layers.dense(h2, 1024, tf.nn.leaky_relu)
-            # h4 = tf.layers.dense(h3, 1024, tf.nn.leaky_relu)
-            value = tf.layers.dense(h2, 1)
+            h1 = tf.layers.dense(obs, 1024, tf.nn.relu6)
+            h2 = tf.layers.dense(h1, 1024, tf.nn.relu6)
+            h3 = tf.layers.dense(h2, 1024, tf.nn.relu6)
+            h4 = tf.layers.dense(h3, 1024, tf.nn.relu6)
+            value = tf.layers.dense(h4, 1)
             value = tf.squeeze(value, axis=1)
             return value
 
@@ -56,11 +56,11 @@ class QValueNetwork(object):
     def step(self, obs, action, reuse):
         with tf.variable_scope(self.name, reuse=reuse):
             input = tf.concat([obs, action], axis=-1)
-            h1 = tf.layers.dense(input, 512, tf.nn.leaky_relu)
-            h2 = tf.layers.dense(h1, 512, tf.nn.leaky_relu)
-            # h3 = tf.layers.dense(h2, 1024, tf.nn.leaky_relu)
-            # h4 = tf.layers.dense(h3, 1024, tf.nn.leaky_relu)
-            q_value = tf.layers.dense(h2, 1)
+            h1 = tf.layers.dense(input, 1024, tf.nn.relu6)
+            h2 = tf.layers.dense(h1, 1024, tf.nn.relu6)
+            h3 = tf.layers.dense(h2, 1024, tf.nn.relu6)
+            h4 = tf.layers.dense(h3, 1024, tf.nn.relu6)
+            q_value = tf.layers.dense(h4, 1)
             q_value = tf.squeeze(q_value, axis=1)
             return q_value
 
@@ -76,11 +76,11 @@ class ActorNetwork(object):
 
     def step(self, obs, log_std_min=-20, log_std_max=2):
         with tf.variable_scope(self.name, reuse=tf.AUTO_REUSE):
-            h1 = tf.layers.dense(obs, 512, tf.nn.leaky_relu)
-            h2 = tf.layers.dense(h1, 512, tf.nn.leaky_relu)
-            h3 = tf.layers.dense(h2, 512, tf.nn.leaky_relu)
-            h4 = tf.layers.dense(h3, 512, tf.nn.leaky_relu)
-            h5 = tf.layers.dense(h4, 512, tf.nn.leaky_relu)
+            h1 = tf.layers.dense(obs, 1024, tf.nn.relu6)
+            h2 = tf.layers.dense(h1, 1024, tf.nn.relu6)
+            h3 = tf.layers.dense(h2, 1024, tf.nn.relu6)
+            h4 = tf.layers.dense(h3, 1024, tf.nn.relu6)
+            h5 = tf.layers.dense(h4, 1024, tf.nn.relu6)
             mu = tf.layers.dense(h5, self.act_dim, None)
             log_std = tf.layers.dense(h5, self.act_dim, tf.tanh)
             log_std = log_std_min + 0.5 * (log_std_max - log_std_min) * (log_std + 1)
@@ -119,8 +119,12 @@ class SAC(object):
         self.gamma = gamma
         self.tau = tau
         self.name = name
+        self.replay_buffer = []
 
-        self.replay_buffer = ReplayBuffer(capacity=int(1e6), name=self.name+'buffer')
+        self.replay_buffer[0] = ReplayBuffer(capacity=int(1e6), name=self.name+'buffer1')
+        self.replay_buffer[1] = ReplayBuffer(capacity=int(1e6), name=self.name+'buffer2')
+        self.replay_buffer[2] = ReplayBuffer(capacity=int(1e6), name=self.name+'buffer3')
+        self.replay_buffer[3] = ReplayBuffer(capacity=int(1e6), name=self.name+'buffer4')
 
         self.OBS0 = tf.placeholder(tf.float32, [None, self.obs_dim], name=self.name+"observations0")
         self.OBS1 = tf.placeholder(tf.float32, [None, self.obs_dim], name=self.name+"observations1")
@@ -134,8 +138,6 @@ class SAC(object):
         self.q_value2_loss = tf.placeholder(tf.float32, [None, 1], name=self.name+"q_value2_loss")
         self.value_loss = tf.placeholder(tf.float32, [None, 1], name=self.name+"value_loss")
         self.total_value_loss = tf.placeholder(tf.float32, [None, 1], name=self.name+"total_value_loss")
-        # self.ep_reward = tf.placeholder(tf.int32, [None, 1], name=self.name+"ep_reward")
-        # self.ep_reward = tf.global_variables(self.name+'buffer')#self.ERWD#tf.squeeze(tf.Variable([self.replay_buffer.epraw], tf.int32))
 
         policy = ActorNetwork(self.act_dim, self.name+'Actor')
         q_value_net_1 = QValueNetwork(self.name+'Q_value1')
@@ -199,78 +201,12 @@ class SAC(object):
         return action
 
     def learn(self, indx):
-        obs0, act, rwd, obs1, done, eprwd = self.replay_buffer.sample(batch_size=BATCH_SIZE)
+        obs0, act, rwd, obs1, done, eprwd = self.replay_buffer[indx%4].sample(batch_size=BATCH_SIZE)
         feed_dict = {self.OBS0: obs0, self.ACT: act,self.OBS1: obs1, self.RWD: rwd,
                      self.DONE: np.float32(done), self.EPRWD: eprwd}
         
-        if indx is not 0:
+        if indx%50 == 0:
             _,result = self.sess.run([self.target_update, self.merged], feed_dict)
             self.writer.add_summary(result, indx)
         else:
             self.sess.run(self.target_update, feed_dict)
-
-# env = gym.make("Pendulum-v0")
-# env.seed(1)
-# env = env.unwrapped
-
-# agent = SAC(act_dim=env.action_space.shape[0], obs_dim=env.observation_space.shape[env = gym.make("Pendulum-v0")
-# env.seed(1)
-# env = env.unwrapped
-
-# agent = SAC(act_dim=env.action_space.shape[0], obs_dim=env.observation_space.shape[0],
-#             lr_actor=1e-3, lr_value=1e-3, gamma=0.99, tau=0.995)
-
-# nepisode = 1000
-# nstep = 200
-# batch_size = 128
-# iteration = 0
-
-# for i_episode in range(nepisode):
-#     obs0 = env.reset()
-
-#     ep_rwd = 0
-
-#     for t in range(nstep):
-#         act = agent.step(obs0)
-
-#         obs1, rwd, done, _ = env.step(act)
-
-#         agent.replay_buffer.store_transition(obs0, act, rwd/10, obs1, done)
-
-#         obs0 = obs1
-#         ep_rwd += rwd
-
-#         if iteration >= batch_size * 3:
-#             agent.learn()
-
-#         iteration += 1
-
-#     print('Ep: %i' % i_episode, "|Ep_r: %i" % ep_rwd)
-#             lr_actor=1e-3, lr_value=1e-3, gamma=0.99, tau=0.995)
-
-# nepisode = 1000
-# nstep = 200
-# batch_size = 128
-# iteration = 0
-
-# for i_episode in range(nepisode):
-#     obs0 = env.reset()
-
-#     ep_rwd = 0
-
-#     for t in range(nstep):
-#         act = agent.step(obs0)
-
-#         obs1, rwd, done, _ = env.step(act)
-
-#         agent.replay_buffer.store_transition(obs0, act, rwd/10, obs1, done)
-
-#         obs0 = obs1
-#         ep_rwd += rwd
-
-#         if iteration >= batch_size * 3:
-#             agent.learn()
-
-#         iteration += 1
-
-#     print('Ep: %i' % i_episode, "|Ep_r: %i" % ep_rwd)

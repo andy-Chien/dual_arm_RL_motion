@@ -7,12 +7,12 @@ import shutil
 import numpy as np
 import math
 import rospy
-from sac_v9 import SAC
+from sac_v10 import SAC
 from env_v14 import Test
 from manipulator_h_base_module_msgs.msg import P2PPose
 
 MAX_EPISODES = 100000
-MAX_EP_STEPS =  500
+MAX_EP_STEPS =  600
 MEMORY_CAPACITY = 10000
 BATTH_SIZE = 256
 SIDE = ['right_', 'left_']

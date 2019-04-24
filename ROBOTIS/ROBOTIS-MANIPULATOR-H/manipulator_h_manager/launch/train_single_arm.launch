@@ -45,6 +45,10 @@
         <remap from="/robotis/base/get_kinematics_pose"   to="/$(arg side)_$(arg ID)/get_kinematics_pose"	  />
         <remap from="/train_env"                          to="/$(arg side)_$(arg ID)/train_env"/>
         <remap from="/env_reset"                          to="/$(arg side)_$(arg ID)/env_reset"/>
+        <remap from="/get_state"                          to="/$(arg side)_$(arg ID)/get_state"/>
+        <remap from="/move_cmd"                           to="/$(arg side)_$(arg ID)/move_cmd"/>
+        <remap from="/set_goal"                           to="/$(arg side)_$(arg ID)/set_goal"/>
+        <remap from="/set_start"                          to="/$(arg side)_$(arg ID)/set_start"/>
 
     </node>
 
