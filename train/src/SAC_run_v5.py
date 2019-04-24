@@ -19,14 +19,15 @@ SIDE = ['right_', 'left_']
 GOAL_REWARD = 800
 LOAD = False
 SAVE = [False, False]
-COUNTER = 0
+COUNTER = [1, 1]
+EP = [0, 0]
 WORKS = 4
 SUCCESS_ARRAY = np.zeros([2,1000])
 GOAL_RATE = [60, 60]
 ACTION_FLAG = [False, False]
 
 def worker(name, workers):
-    global agent
+    global agent, SUCCESS_ARRAY, ACTION_FLAG, SAVE, COUNTER, EP
     SUCCESS_RATE = 0
     COLLISION = False
 
@@ -49,13 +50,14 @@ def worker(name, workers):
         ep_reward = 0
         done_cnt = 0
 
-        SUCCESS_ARRAY[name, COUNTER%1000] = 0.
+        SUCCESS_ARRAY[name, COUNTER[name]%1000] = 0.
         COLLISION = False
         for j in range(MAX_EP_STEPS):
-            cnt+=1
-            while ACTION_FLAG[name]:
-                time.sleep(0.01)
+            while ACTION_FLAG[name] or COUNTER[name]%WORKS != workers:
+                time.sleep(0.0001)
             ACTION_FLAG[name] = True
+            if workers != 0 or COUNTER[name] <= BATTH_SIZE*30:
+                COUNTER[name]+=1
             a = agent[name].choose_action(s)
             ACTION_FLAG[name] = False
             s_, r, done, collision = env.step(a)
@@ -67,7 +69,7 @@ def worker(name, workers):
             ep_reward += r
             if done_cnt > 32:
                 if not COLLISION:
-                    SUCCESS_ARRAY[name, COUNTER%1000] = 1.
+                    SUCCESS_ARRAY[name, COUNTER[name]%1000] = 1.
                 break
 
         SUCCESS_RATE = 0
@@ -79,26 +81,31 @@ def worker(name, workers):
         else:
             SAVE[name] = False
         agent[name].replay_buffer[workers].store_eprwd(ep_reward*j/100)
-        
+        EP[name] +=1
         if env.is_success:
-            print('Eps:', COUNTER, ' Reward: %i' % int(ep_reward), 'cnt: ',j, 's_rate: ', int(SUCCESS_RATE), 'sssuuucccccceeessssss ', env.success_cnt)
+            print('Eps:', EP[name], ' Reward: %i' % int(ep_reward), 'cnt: ',j, 's_rate: ', int(SUCCESS_RATE), 'sssuuucccccceeessssss ', env.success_cnt)
         else:
-            print('Eps:', COUNTER, ' Reward: %i' % int(ep_reward), 'cnt: ',j, 's_rate: ', int(SUCCESS_RATE))
+            print('Eps:', EP[name], ' Reward: %i' % int(ep_reward), 'cnt: ',j, 's_rate: ', int(SUCCESS_RATE))
         
 
 def train(name):
-    global agent
+    global agent, SAVE, COUNTER
     threads_worker = []
     t1 = time.time()
     for i in range(WORKS):
-        t = threading.Thread(target=train, args=(name, i,))
+        t = threading.Thread(target=worker, args=(name, i,))
         threads_worker.append(t)
     for i in range(WORKS):
         threads_worker[i].start()
 
     while True:
-        if COUNTER >= BATTH_SIZE*10:
-                agent[name].learn(COUNTER)
+        if COUNTER[name] >= BATTH_SIZE*30:
+            while ACTION_FLAG[name] or COUNTER[name]%WORKS != 0:
+                time.sleep(0.001)
+            ACTION_FLAG[name] = True
+            COUNTER[name]+=1
+            agent[name].learn(COUNTER[name])
+            ACTION_FLAG[name] = False
 
         if SAVE[name]:
             print(agent[name].path)
@@ -114,7 +121,7 @@ def train(name):
                 GOAL_RATE[name] += 2
             if GOAL_RATE[name] > 100:
                 break
-        time.sleep(0.0001)
+        time.sleep(0.1)
 
 if __name__ == '__main__':
     rospy.init_node('a')
@@ -123,10 +130,10 @@ if __name__ == '__main__':
     run_flag = np.full((2, WORKS), False, dtype=bool)
     
     env = Test(0, 0)
-    agent[0] = SAC(act_dim=env.act_dim, obs_dim=env.obs_dim,
-            lr_actor=1e-3, lr_value=1e-3, gamma=0.99, tau=0.995, name=SIDE[0])
-    agent[1] = SAC(act_dim=env.act_dim, obs_dim=env.obs_dim,
-            lr_actor=1e-3, lr_value=1e-3, gamma=0.99, tau=0.995, name=SIDE[1])
+    for i in range(2):
+        ag = SAC(act_dim=env.act_dim, obs_dim=env.obs_dim,
+            lr_actor=1e-3, lr_value=1e-3, gamma=0.99, tau=0.995, name=SIDE[i])
+        agent.append(ag)
     env = None
     for i in range(2):
         t = threading.Thread(target=train, args=(i,))

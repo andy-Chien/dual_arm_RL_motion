@@ -88,7 +88,7 @@ class Test(core.Env):
         return self.s_cnt
         
     def get_state_client(self, name):
-        service = name+self.workers+'/get_state'
+        service = name+str(self.workers)+'/get_state'
         try:
             rospy.wait_for_service(service, timeout=1.)
         except rospy.ROSException as e:
@@ -104,7 +104,7 @@ class Test(core.Env):
         return res
 
     def move_cmd_client(self, cmd, name):
-        service = name+self.workers+'/move_cmd'
+        service = name+str(self.workers)+'/move_cmd'
         try:
             rospy.wait_for_service(service, timeout=1.)
         except rospy.ROSException as e:
@@ -120,7 +120,7 @@ class Test(core.Env):
         return res
 
     def set_start_client(self, cmd, rpy, name):
-        service = name+self.workers+'/set_start'
+        service = name+str(self.workers)+'/set_start'
         try:
             rospy.wait_for_service(service, timeout=1.)
         except rospy.ROSException as e:
@@ -136,7 +136,7 @@ class Test(core.Env):
         return res
 
     def set_goal_client(self, cmd, rpy, name):
-        service = name+self.workers+'/set_goal'
+        service = name+str(self.workers)+'/set_goal'
         try:
             rospy.wait_for_service(service, timeout=1.)
         except rospy.ROSException as e:

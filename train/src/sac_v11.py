@@ -121,10 +121,15 @@ class SAC(object):
         self.name = name
         self.replay_buffer = []
 
-        self.replay_buffer[0] = ReplayBuffer(capacity=int(1e6), name=self.name+'buffer1')
-        self.replay_buffer[1] = ReplayBuffer(capacity=int(1e6), name=self.name+'buffer2')
-        self.replay_buffer[2] = ReplayBuffer(capacity=int(1e6), name=self.name+'buffer3')
-        self.replay_buffer[3] = ReplayBuffer(capacity=int(1e6), name=self.name+'buffer4')
+        r1 = ReplayBuffer(capacity=int(1e6), name=self.name+'buffer1')
+        self.replay_buffer.append(r1)
+        r2 = ReplayBuffer(capacity=int(1e6), name=self.name+'buffer2')
+        self.replay_buffer.append(r2)
+        r3 = ReplayBuffer(capacity=int(1e6), name=self.name+'buffer3')
+        self.replay_buffer.append(r3)
+        r4 = ReplayBuffer(capacity=int(1e6), name=self.name+'buffer4')
+        self.replay_buffer.append(r4)
+        
 
         self.OBS0 = tf.placeholder(tf.float32, [None, self.obs_dim], name=self.name+"observations0")
         self.OBS1 = tf.placeholder(tf.float32, [None, self.obs_dim], name=self.name+"observations1")
@@ -186,9 +191,9 @@ class SAC(object):
         tf.summary.scalar(self.name+'total_value_loss', self.total_value_loss)
         tf.summary.scalar(self.name+'ep_reward', self.EPRWD)
         self.merged = tf.summary.merge_all()
-        self.writer = tf.summary.FileWriter('/home/andy/collision_ws/src/Collision_Avoidance/train/logs/'+NAME+'/'+self.name+'/', self.sess.graph)
+        self.writer = tf.summary.FileWriter('/home/yue/SAC_0423/src/Collision_Avoidance/train/logs/'+NAME+'/'+self.name+'/', self.sess.graph)
         self.saver = tf.train.Saver()
-        self.path = '/home/andy/collision_ws/src/Collision_Avoidance/train/weights/'+ NAME +'/'+ self.name
+        self.path = '/home/yue/SAC_0423/src/Collision_Avoidance/train/weights/'+ NAME +'/'+ self.name
         if LOAD:
             self.saver.restore(self.sess, tf.train.latest_checkpoint(self.path))
         else:
