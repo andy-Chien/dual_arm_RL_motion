@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 import gym
 import random
-NAME = 'SAC_v11_1'
+NAME = 'SAC_v11_2'
 EPS = 1e-8
 LOAD = False
 BATCH_SIZE = 256
@@ -36,8 +36,8 @@ class ValueNetwork(object):
 
     def step(self, obs):
         with tf.variable_scope(self.name):
-            h1 = tf.layers.dense(obs, 1024, tf.nn.leaky_relu)
-            h2 = tf.layers.dense(h1, 1024, tf.nn.leaky_relu)
+            h1 = tf.layers.dense(obs, 512, tf.nn.leaky_relu)
+            h2 = tf.layers.dense(h1, 512, tf.nn.leaky_relu)
             # h3 = tf.layers.dense(h2, 1024, tf.nn.leaky_relu)
             # h4 = tf.layers.dense(h3, 1024, tf.nn.leaky_relu)
             value = tf.layers.dense(h2, 1)
@@ -56,8 +56,8 @@ class QValueNetwork(object):
     def step(self, obs, action, reuse):
         with tf.variable_scope(self.name, reuse=reuse):
             input = tf.concat([obs, action], axis=-1)
-            h1 = tf.layers.dense(input, 1024, tf.nn.leaky_relu)
-            h2 = tf.layers.dense(h1, 1024, tf.nn.leaky_relu)
+            h1 = tf.layers.dense(input, 512, tf.nn.leaky_relu)
+            h2 = tf.layers.dense(h1, 512, tf.nn.leaky_relu)
             # h3 = tf.layers.dense(h2, 1024, tf.nn.leaky_relu)
             # h4 = tf.layers.dense(h3, 1024, tf.nn.leaky_relu)
             q_value = tf.layers.dense(h2, 1)
@@ -76,11 +76,11 @@ class ActorNetwork(object):
 
     def step(self, obs, log_std_min=-20, log_std_max=2):
         with tf.variable_scope(self.name, reuse=tf.AUTO_REUSE):
-            h1 = tf.layers.dense(obs, 1024, tf.nn.leaky_relu)
-            h2 = tf.layers.dense(h1, 1024, tf.nn.leaky_relu)
-            h3 = tf.layers.dense(h2, 1024, tf.nn.leaky_relu)
-            h4 = tf.layers.dense(h3, 1024, tf.nn.leaky_relu)
-            h5 = tf.layers.dense(h4, 1024, tf.nn.leaky_relu)
+            h1 = tf.layers.dense(obs, 512, tf.nn.leaky_relu)
+            h2 = tf.layers.dense(h1, 512, tf.nn.leaky_relu)
+            h3 = tf.layers.dense(h2, 512, tf.nn.leaky_relu)
+            h4 = tf.layers.dense(h3, 512, tf.nn.leaky_relu)
+            h5 = tf.layers.dense(h4, 512, tf.nn.leaky_relu)
             mu = tf.layers.dense(h5, self.act_dim, None)
             log_std = tf.layers.dense(h5, self.act_dim, tf.tanh)
             log_std = log_std_min + 0.5 * (log_std_max - log_std_min) * (log_std + 1)
@@ -111,7 +111,9 @@ class ActorNetwork(object):
 
 
 class SAC(object):
-    def __init__(self, act_dim, obs_dim, lr_actor, lr_value, gamma, tau, alpha=0.2, name=None):
+    def __init__(self, act_dim, obs_dim, lr_actor, lr_value, gamma, tau, buffers, alpha=0.2, name=None):
+        # tf.reset_default_graph()
+
         self.act_dim = act_dim
         self.obs_dim = obs_dim
         self.lr_actor = lr_actor
@@ -120,16 +122,11 @@ class SAC(object):
         self.tau = tau
         self.name = name
         self.replay_buffer = []
+        self.buffers = buffers
 
-        r1 = ReplayBuffer(capacity=int(1e6), name=self.name+'buffer1')
-        self.replay_buffer.append(r1)
-        r2 = ReplayBuffer(capacity=int(1e6), name=self.name+'buffer2')
-        self.replay_buffer.append(r2)
-        r3 = ReplayBuffer(capacity=int(1e6), name=self.name+'buffer3')
-        self.replay_buffer.append(r3)
-        r4 = ReplayBuffer(capacity=int(1e6), name=self.name+'buffer4')
-        self.replay_buffer.append(r4)
-        
+        for i in range(buffers):
+            b = ReplayBuffer(capacity=int(1e6), name=self.name+'buffer'+str(i))
+            self.replay_buffer.append(b)
 
         self.OBS0 = tf.placeholder(tf.float32, [None, self.obs_dim], name=self.name+"observations0")
         self.OBS1 = tf.placeholder(tf.float32, [None, self.obs_dim], name=self.name+"observations1")
@@ -190,6 +187,7 @@ class SAC(object):
         tf.summary.scalar(self.name+'value_loss', self.value_loss)
         tf.summary.scalar(self.name+'total_value_loss', self.total_value_loss)
         tf.summary.scalar(self.name+'ep_reward', self.EPRWD)
+        tf.summary.scalar(self.name+'rwd', self.RWD[0])
         self.merged = tf.summary.merge_all()
         self.writer = tf.summary.FileWriter('/home/yue/SAC_0423/src/Collision_Avoidance/train/logs/'+NAME+'/'+self.name+'/', self.sess.graph)
         self.saver = tf.train.Saver()
@@ -206,7 +204,7 @@ class SAC(object):
         return action
 
     def learn(self, indx):
-        obs0, act, rwd, obs1, done, eprwd = self.replay_buffer[indx%4].sample(batch_size=BATCH_SIZE)
+        obs0, act, rwd, obs1, done, eprwd = self.replay_buffer[indx%self.buffers].sample(batch_size=BATCH_SIZE)
         feed_dict = {self.OBS0: obs0, self.ACT: act,self.OBS1: obs1, self.RWD: rwd,
                      self.DONE: np.float32(done), self.EPRWD: eprwd}
         

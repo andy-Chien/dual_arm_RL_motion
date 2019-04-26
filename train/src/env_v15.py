@@ -23,7 +23,10 @@ class Test(core.Env):
     def __init__(self, name, workers):
         self.__name = self.NAME[name%2]
         self.__obname = self.NAME[name%2 + 1]
-        self.workers = workers
+        if workers == 0:
+            self.workers = 'arm'
+        else:
+            self.workers = str(workers)
 
         high = np.array([1.,1.,1.,1.,1.,1.,1.,1.,  #8
                          1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,     #7
@@ -88,7 +91,7 @@ class Test(core.Env):
         return self.s_cnt
         
     def get_state_client(self, name):
-        service = name+str(self.workers)+'/get_state'
+        service = name+self.workers+'/get_state'
         try:
             rospy.wait_for_service(service, timeout=1.)
         except rospy.ROSException as e:
@@ -104,7 +107,7 @@ class Test(core.Env):
         return res
 
     def move_cmd_client(self, cmd, name):
-        service = name+str(self.workers)+'/move_cmd'
+        service = name+self.workers+'/move_cmd'
         try:
             rospy.wait_for_service(service, timeout=1.)
         except rospy.ROSException as e:
@@ -120,7 +123,7 @@ class Test(core.Env):
         return res
 
     def set_start_client(self, cmd, rpy, name):
-        service = name+str(self.workers)+'/set_start'
+        service = name+self.workers+'/set_start'
         try:
             rospy.wait_for_service(service, timeout=1.)
         except rospy.ROSException as e:
@@ -136,7 +139,7 @@ class Test(core.Env):
         return res
 
     def set_goal_client(self, cmd, rpy, name):
-        service = name+str(self.workers)+'/set_goal'
+        service = name+self.workers+'/set_goal'
         try:
             rospy.wait_for_service(service, timeout=1.)
         except rospy.ROSException as e:
@@ -153,7 +156,7 @@ class Test(core.Env):
 
     def set_object(self, name, pos, ori):
         msg = ModelState()
-        msg.model_name = name
+        msg.model_name = name+self.workers
         msg.pose.position.x = pos[0]
         msg.pose.position.y = pos[1]
         msg.pose.position.z = pos[2]
@@ -238,7 +241,7 @@ class Test(core.Env):
     def set_old(self):
         self.start = self.np_random.uniform(low=0., high=self.range_cnt, size=(8,))
         rpy = self.np_random.uniform(low=-1*self.rpy_range, high=self.rpy_range, size=(3,))
-       
+        
         self.start[0] = 0
         # self.start[3] = self.range_cnt/2
         self.start = np.append(self.start, self.range_cnt)
@@ -300,8 +303,8 @@ class Test(core.Env):
 
         if not self.collision and math.fabs(s[7])<0.9:
             self.state = s
-
-        self.set_object(self.__name, (self.goal[0]-0.08, self.goal[1], self.goal[2]+1.45086), (0, 0, 0, 0))
+        if self.workers == 'arm':
+            self.set_object(self.__name, (self.goal[0]-0.08, self.goal[1], self.goal[2]+1.45086), (0, 0, 0, 0))
         return self.state, reward, terminal, self.collision
 
     def _terminal(self, s, ik_success, alarm):
@@ -315,10 +318,10 @@ class Test(core.Env):
                 if not self.done:
                     self.done = True
                     self.s_cnt += 1
-                    self.range_cnt = self.range_cnt + 0.003 if self.range_cnt < 0.95 else 0.95
-                    self.rpy_range = self.rpy_range + 0.001 if self.rpy_range < 0.8 else 0.8
-                    self.goal_err = self.goal_err*0.999 if self.goal_err > 0.01 else 0.01
-                    self.ori_err = self.ori_err*0.999 if self.ori_err > 0.1 else 0.1
+                    self.range_cnt = self.range_cnt + 0.01 if self.range_cnt < 0.95 else 0.95
+                    self.rpy_range = self.rpy_range + 0.004 if self.rpy_range < 0.8 else 0.8
+                    self.goal_err = self.goal_err*0.993 if self.goal_err > 0.01 else 0.01
+                    self.ori_err = self.ori_err*0.993 if self.ori_err > 0.2 else 0.2
                 return True
             else:
                 return False
