@@ -220,6 +220,7 @@ bool BaseModule::set_goal_callback(train::set_goal::Request &req, train::set_goa
   is_train = true;
   bool ik_success = false;
   bool setIk_success = false;
+  bool limit_success = false;
   Eigen::Vector3d positoin;
   Eigen::Matrix3d rotation;
   double phi;
@@ -241,16 +242,16 @@ bool BaseModule::set_goal_callback(train::set_goal::Request &req, train::set_goa
   positoin += manipulator_->get_d4()*rotation.block(0,2,3,1);
   phi = 0;
   slide_->goal_slide_pos = 0;
-  ik_success = manipulator_->inverseKinematics(END_LINK, positoin, rotation, phi, slide_->goal_slide_pos, true);
+  limit_success = manipulator_->limit_check(positoin, rotation);
+  if(limit_success)
+    ik_success = manipulator_->inverseKinematics(END_LINK, positoin, rotation, phi, slide_->goal_slide_pos, true);
   //==============================================================================================================================
   robotis_->is_ik = false;
   this->set_response(res);
+  this->set_response_limit(res);
   if(ik_success)
-  {
-    if(enable_)
-      this->drl_move_arm();
     this->set_goal_pose(res);
-  }
+
   res.success = ik_success;
   return true;
 }
@@ -259,6 +260,7 @@ bool BaseModule::set_start_callback(train::set_start::Request &req, train::set_s
 {
   double dis, mu;
   bool ik_success = false;
+  bool limit_success = false;
   Eigen::Vector3d positoin;
   Eigen::Matrix3d rotation;
   double phi;
@@ -280,7 +282,9 @@ bool BaseModule::set_start_callback(train::set_start::Request &req, train::set_s
   positoin += manipulator_->get_d4()*rotation.block(0,2,3,1);
   phi = 0;
   slide_->goal_slide_pos = 0;
-  ik_success = manipulator_->inverseKinematics(END_LINK, positoin, rotation, phi, slide_->goal_slide_pos, true);
+  limit_success = manipulator_->limit_check(positoin, rotation);
+  if(limit_success)
+    ik_success = manipulator_->inverseKinematics(END_LINK, positoin, rotation, phi, slide_->goal_slide_pos, true);
   //===============================================================================================================================
   robotis_->is_ik = false;
   Eigen::Quaterniond quaternion = robotis_framework::convertRotationToQuaternion(rotation);
@@ -463,44 +467,44 @@ void BaseModule::set_response_limit(T &res)
 template <typename T>
 void BaseModule::set_response_quat(T &res, Eigen::Quaterniond q)
 {
-  // bool setIk_success = false;
-  // int all_steps = 50;
-  // double mov_time = robotis_->smp_time_ * all_steps;
+  bool setIk_success = false;
+  int all_steps = 50;
+  double mov_time = robotis_->smp_time_ * all_steps;
 
-  // robotis_->calc_task_tra_.resize(all_steps, 3);
+  robotis_->calc_task_tra_.resize(all_steps, 3);
 
-  // for (int dim = 0; dim < 3; dim++)
-  // {
-  //   double ini_value = res.state[dim];
-  //   double tar_value;
+  for (int dim = 0; dim < 3; dim++)
+  {
+    double ini_value = res.state[dim];
+    double tar_value;
 
-  //   if (dim == 0)
-  //     tar_value = robotis_->kinematics_pose_msg_.pose.position.x;
-  //   else if (dim == 1)
-  //     tar_value = robotis_->kinematics_pose_msg_.pose.position.y;
-  //   else if (dim == 2)
-  //     tar_value = robotis_->kinematics_pose_msg_.pose.position.z;
+    if (dim == 0)
+      tar_value = robotis_->kinematics_pose_msg_.pose.position.x;
+    else if (dim == 1)
+      tar_value = robotis_->kinematics_pose_msg_.pose.position.y;
+    else if (dim == 2)
+      tar_value = robotis_->kinematics_pose_msg_.pose.position.z;
 
-  //   Eigen::MatrixXd tra = robotis_framework::calcMinimumJerkTra(ini_value, 0.0, 0.0, tar_value, 0.0, 0.0,
-  //                                                               robotis_->smp_time_, mov_time);
+    Eigen::MatrixXd tra = robotis_framework::calcMinimumJerkTra(ini_value, 0.0, 0.0, tar_value, 0.0, 0.0,
+                                                                robotis_->smp_time_, mov_time);
 
-  //   robotis_->calc_task_tra_.block(0, dim, all_steps, 1) = tra;
-  // }
-  // robotis_->calc_slide_tra_ = Eigen::MatrixXd::Zero(all_steps, 1);
+    robotis_->calc_task_tra_.block(0, dim, all_steps, 1) = tra;
+  }
+  robotis_->calc_slide_tra_ = Eigen::MatrixXd::Zero(all_steps, 1);
   // setIk_success = robotis_->setInverseKinematics(0, all_steps, manipulator_->manipulator_link_data_[END_LINK]->orientation_, manipulator_->manipulator_link_data_[END_LINK]->phi_);
-  // setIk_success = robotis_->setInverseKinematics(1, all_steps, manipulator_->manipulator_link_data_[END_LINK]->orientation_, manipulator_->manipulator_link_data_[END_LINK]->phi_);
+  setIk_success = robotis_->setInverseKinematics(1, all_steps, manipulator_->manipulator_link_data_[END_LINK]->orientation_, manipulator_->manipulator_link_data_[END_LINK]->phi_);
   res.quaterniond.resize(4);
-  // Eigen::Quaterniond goal_q;
-  // goal_q.coeffs() = robotis_->ik_target_quaternion.coeffs() - q.coeffs();
-  // goal_q.coeffs() /= goal_q.norm();
-  // res.quaterniond[0] = goal_q.w();
-  // res.quaterniond[1] = goal_q.x();
-  // res.quaterniond[2] = goal_q.y();
-  // res.quaterniond[3] = goal_q.z();
-  res.quaterniond[0] = q.w();
-  res.quaterniond[1] = q.x();
-  res.quaterniond[2] = q.y();
-  res.quaterniond[3] = q.z();
+  Eigen::Quaterniond goal_q;
+  goal_q.coeffs() = robotis_->ik_target_quaternion.coeffs() - q.coeffs();
+  goal_q.coeffs() /= goal_q.norm();
+  res.quaterniond[0] = goal_q.w();
+  res.quaterniond[1] = goal_q.x();
+  res.quaterniond[2] = goal_q.y();
+  res.quaterniond[3] = goal_q.z();
+  // res.quaterniond[0] = q.w();
+  // res.quaterniond[1] = q.x();
+  // res.quaterniond[2] = q.y();
+  // res.quaterniond[3] = q.z();
   return;
 }
 

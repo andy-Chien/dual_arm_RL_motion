@@ -8,14 +8,14 @@ import numpy as np
 import math
 import rospy
 import tensorflow as tf
-from sac_v11 import SAC
-from env_v15 import Test
+from sac_v12 import SAC
+from env_v16 import Test
 from manipulator_h_base_module_msgs.msg import P2PPose
 
 MAX_EPISODES = 100000
 MAX_EP_STEPS =  600
 MEMORY_CAPACITY = 10000
-BATTH_SIZE = 256
+BATTH_SIZE = 512
 SIDE = ['right_', 'left_']
 SIDE_ = ['R', 'L']
 GOAL_REWARD = 800
@@ -24,8 +24,8 @@ SAVE = [False, False]
 COUNTER = [1, 1]
 EP = [0, 0]
 WORKS = 4
-SUCCESS_ARRAY = np.zeros([2,1000])
-GOAL_RATE = [60, 60]
+SUCCESS_ARRAY = np.zeros([2,500])
+GOAL_RATE = [40, 40]
 ACTION_FLAG = [False, False]
 
 def worker(name, workers, agent):
@@ -56,8 +56,9 @@ def worker(name, workers, agent):
         
         ep_reward = 0
         done_cnt = 0
-
-        SUCCESS_ARRAY[name, COUNTER[name]%1000] = 0.
+        EP[name] += 1
+        ep = EP[name]
+        SUCCESS_ARRAY[name, ep%500] = 0.
         COLLISION = False
         for j in range(MAX_EP_STEPS):
             WORKER_EVENT[name].wait()
@@ -71,7 +72,7 @@ def worker(name, workers, agent):
             s = s_
             ep_reward += r
 
-            if COUNTER[name] >= BATTH_SIZE*10 and workers == 1:
+            if COUNTER[name] >= BATTH_SIZE*16 and workers == 1:
                 WORKER_EVENT[name].clear()
                 agent.learn(cnt)
                 WORKER_EVENT[name].set()
@@ -79,26 +80,26 @@ def worker(name, workers, agent):
                 # LEARN_EVENT[name].set()
             if done_cnt > 10:
                 if not COLLISION:
-                    SUCCESS_ARRAY[name, COUNTER[name]%1000] = 1.
+                    SUCCESS_ARRAY[name, ep%500] = 1.
                 break
 
         SUCCESS_RATE = 0
         for z in SUCCESS_ARRAY[name]:
-            SUCCESS_RATE += z/10
-        if SUCCESS_RATE >= GOAL_RATE[name]:
+            SUCCESS_RATE += z/5
+        if SUCCESS_RATE >= GOAL_RATE[name] and cnt > 300000:
             SAVE[name] = True
         else:
             SAVE[name] = False
         agent.replay_buffer[workers].store_eprwd(ep_reward*j/100)
-        EP[name] +=1
+        
         if workers == 0 and SAVE[name]:
-            SUCCESS_ARRAY = np.zeros([2,1000])
+            SUCCESS_ARRAY[name] = np.zeros([500])
             save(agent, name)
             print('Running time: ', time.time() - t1)
         if env.is_success:
-            print(SIDE_[name], workers, EP[name], ' Reward: %i' % int(ep_reward), 'cnt: ',j, 's_rate: ', int(SUCCESS_RATE), 'sssuuucccccceeessssss ', env.success_cnt)
+            print(SIDE_[name]+str(workers), ep, ' Reward: %i' % int(ep_reward), 'cnt: ',j, 's_rate: ', int(SUCCESS_RATE), 'sssuuucccccceeessssss ', env.success_cnt)
         else:
-            print(SIDE_[name], workers, EP[name], ' Reward: %i' % int(ep_reward), 'cnt: ',j, 's_rate: ', int(SUCCESS_RATE))
+            print(SIDE_[name]+str(workers), ep, ' Reward: %i' % int(ep_reward), 'cnt: ',j, 's_rate: ', int(SUCCESS_RATE))
 
 def save(agent, name):
     print(agent.path)

@@ -14,9 +14,9 @@ from gazebo_msgs.msg import ModelState
 # from CheckCollision_tensor import CheckCollision
 # from vacuum_cmd_msg.srv import VacuumCmd
 class Test(core.Env):
-    ACTION_VEC_TRANS = 1/240
-    ACTION_ORI_TRANS = 1/80
-    ACTION_PHI_TRANS = 1/80
+    ACTION_VEC_TRANS = 1/180
+    ACTION_ORI_TRANS = 1/60
+    ACTION_PHI_TRANS = 1/60
 
     NAME = ['/right_', '/left_', '/right_']
 
@@ -45,7 +45,7 @@ class Test(core.Env):
         self.observation_space = spaces.Box(low=low, high=high, dtype=np.float32)
         self.action_space = spaces.Discrete(3)
         self.act_dim=8
-        self.obs_dim=52
+        self.obs_dim=61
         self.state = []
         self.action = []
         self.cmd = []
@@ -73,6 +73,7 @@ class Test(core.Env):
         self.goal_err = 0.08
         self.ori_err = 0.4
         self.quat_inv = False
+        self.goal_angle = []
         self.set_mode_pub = rospy.Publisher(
             '/gazebo/set_model_state',
             ModelState,
@@ -196,7 +197,7 @@ class Test(core.Env):
         return s
 
     def reset(self):
-        self.goal = self.set_goal()
+        self.goal, self.goal_angle = self.set_goal()
         self.old, self.joint_pos[:15], self.joint_pos[15:30], self.joint_angle, self.limit, self.goal_quat, self.quat_inv = self.set_old()
         linkPosM, linkPosS = self.collision_init()
         alarm, Link_dis = self.cc.checkCollision(linkPosM, linkPosS)
@@ -207,8 +208,8 @@ class Test(core.Env):
             return self.reset()
         self.state = np.append(self.old, np.subtract(self.goal[:3], self.old[:3]))
         # self.state = np.append(self.state, self.goal_quat)
-        self.state = np.append(self.state, self.goal[3:7])
-        self.state = np.append(self.state, -1*self.goal[3:7])
+        self.state = np.append(self.state, np.subtract(self.goal[3:7], self.old[3:7]))
+        self.state = np.append(self.state, np.subtract(-1*self.goal[3:7], self.old[3:7]))
         self.state = np.append(self.state, Link_dis)
         self.state = np.append(self.state, self.joint_angle)
         self.state = np.append(self.state, self.limit)
@@ -218,6 +219,7 @@ class Test(core.Env):
         self.state = np.append(self.state, self.dis_pos)
         self.state = np.append(self.state, self.dis_ori)
         self.state = np.append(self.state, self.joint_pos[6:12])
+        self.state = np.append(self.state, self.goal_angle)
         self.collision = False
         self.done = False
         return self.state
@@ -234,7 +236,7 @@ class Test(core.Env):
         if not res.success:
             return self.set_goal()
         if np.linalg.norm(goal_pos[:2])>0.2:
-            return goal_pos[:7]
+            return goal_pos[:7], res.joint_angle
         else:
             return self.set_goal()
 
@@ -286,8 +288,8 @@ class Test(core.Env):
             alarm, Link_dis = self.cc.checkCollision(linkPosM, linkPosS)
             s = np.append(self.old, np.subtract(self.goal[:3], self.old[:3]))
             # s = np.append(s, self.goal_quat)\
-            s = np.append(s, self.goal[3:7])
-            s = np.append(s, -1*self.goal[3:7])
+            s = np.append(s, np.subtract(self.goal[3:7], self.old[3:7]))
+            s = np.append(s, np.subtract(-1*self.goal[3:7], self.old[3:7]))
             s = np.append(s, Link_dis)
             s = np.append(s, self.joint_angle)
             s = np.append(s, self.limit)
@@ -297,11 +299,12 @@ class Test(core.Env):
             s = np.append(s, self.dis_pos)
             s = np.append(s, self.dis_ori)
             s = np.append(s, self.joint_pos[6:12])
+            s = np.append(s, self.goal_angle)
    
         terminal = self._terminal(s, res.success, alarm)
         reward = self.get_reward(s, res.success, terminal)
 
-        if not self.collision and math.fabs(s[7])<0.9:
+        if (not self.collision) and math.fabs(s[7])<0.9:
             self.state = s
         if self.workers == 'arm':
             self.set_object(self.__name, (self.goal[0]-0.08, self.goal[1], self.goal[2]+1.45086), (0, 0, 0, 0))
@@ -320,7 +323,7 @@ class Test(core.Env):
                     self.s_cnt += 1
                     self.range_cnt = self.range_cnt + 0.01 if self.range_cnt < 0.95 else 0.95
                     self.rpy_range = self.rpy_range + 0.004 if self.rpy_range < 0.8 else 0.8
-                    self.goal_err = self.goal_err*0.993 if self.goal_err > 0.01 else 0.01
+                    self.goal_err = self.goal_err*0.993 if self.goal_err > 0.015 else 0.015
                     self.ori_err = self.ori_err*0.993 if self.ori_err > 0.2 else 0.2
                 return True
             else:
@@ -349,7 +352,7 @@ class Test(core.Env):
         cos_vec = np.dot(self.action[:3],  self.state[8:11])/(np.linalg.norm(self.action[:3]) *np.linalg.norm(self.state[8:11]))
         
         reward += (cos_vec*self.dis_pos - self.dis_pos)
-        reward -= 1.2
+        reward -= 1.8
         return reward
         #==================================================================================
 
