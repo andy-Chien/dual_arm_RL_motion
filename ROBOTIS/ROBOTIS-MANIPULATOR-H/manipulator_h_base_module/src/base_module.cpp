@@ -257,48 +257,49 @@ bool BaseModule::set_goal_callback(train::set_goal::Request &req, train::set_goa
   res.success = ik_success;
   for (int i=1; i<=MAX_JOINT_ID; i++)
     manipulator_->manipulator_link_data_[i]->joint_angle_ = angle_tmp[i];
+  manipulator_->forwardKinematics(7);
   return true;
 }
 
 bool BaseModule::set_start_callback(train::set_start::Request &req, train::set_start::Response &res)
 {
   double dis, mu;
-  bool ik_success = false;
+  bool ik_success = true;
   bool limit_success = false;
   Eigen::Vector3d positoin;
   Eigen::Matrix3d rotation;
   double phi;
   
   robotis_->is_ik = true;
-  for (int i=1; i<=MAX_JOINT_ID; i++)
-  {
-    dis = manipulator_->manipulator_link_data_[i]->train_limit_max_ - manipulator_->manipulator_link_data_[i]->train_limit_min_;
-    mu = (manipulator_->manipulator_link_data_[i]->train_limit_max_ + manipulator_->manipulator_link_data_[i]->train_limit_min_)/2;
-    req.action[i] = req.action[i] * fabs(dis) + (mu - req.action[8]*fabs(dis)/2);
-  }
-  manipulator_->manipulator_link_data_[0]->slide_position_ = req.action[0];
-  for (int i=1; i<=MAX_JOINT_ID; i++)
-    manipulator_->manipulator_link_data_[i]->joint_angle_ = req.action[i];
-  manipulator_->forwardKinematics(7);
-  //==========================================================================================================================
-  positoin = manipulator_->manipulator_link_data_[6]->position_;
-  rotation = robotis_framework::convertRPYToRotation(req.rpy[0]*M_PI, req.rpy[1]*M_PI, req.rpy[2]*M_PI);
-  positoin += manipulator_->get_d4()*rotation.block(0,2,3,1);
-  phi = 0;
-  slide_->goal_slide_pos = 0;
-  limit_success = manipulator_->limit_check(positoin, rotation);
-  if(limit_success)
-    ik_success = manipulator_->inverseKinematics(END_LINK, positoin, rotation, phi, slide_->goal_slide_pos, true);
-  //===============================================================================================================================
-  robotis_->is_ik = false;
+  // for (int i=1; i<=MAX_JOINT_ID; i++)
+  // {
+  //   dis = manipulator_->manipulator_link_data_[i]->train_limit_max_ - manipulator_->manipulator_link_data_[i]->train_limit_min_;
+  //   mu = (manipulator_->manipulator_link_data_[i]->train_limit_max_ + manipulator_->manipulator_link_data_[i]->train_limit_min_)/2;
+  //   req.action[i] = req.action[i] * fabs(dis) + (mu - req.action[8]*fabs(dis)/2);
+  // }
+  // manipulator_->manipulator_link_data_[0]->slide_position_ = req.action[0];
+  // for (int i=1; i<=MAX_JOINT_ID; i++)
+  //   manipulator_->manipulator_link_data_[i]->joint_angle_ = req.action[i];
+  // manipulator_->forwardKinematics(7);
+  // //==========================================================================================================================
+  // positoin = manipulator_->manipulator_link_data_[6]->position_;
+  // rotation = robotis_framework::convertRPYToRotation(req.rpy[0]*M_PI, req.rpy[1]*M_PI, req.rpy[2]*M_PI);
+  // positoin += manipulator_->get_d4()*rotation.block(0,2,3,1);
+  // phi = 0;
+  // slide_->goal_slide_pos = 0;
+  // limit_success = manipulator_->limit_check(positoin, rotation);
+  // if(limit_success)
+  //   ik_success = manipulator_->inverseKinematics(END_LINK, positoin, rotation, phi, slide_->goal_slide_pos, true);
+  // //===============================================================================================================================
+  // robotis_->is_ik = false;
   Eigen::Quaterniond quaternion = robotis_framework::convertRotationToQuaternion(rotation);
   this->set_response(res);
   this->set_response_quat(res, quaternion);
   this->set_response_limit(res);
   res.success = ik_success;
   res.quat_inv = robotis_->is_inv;
-  if(ik_success && enable_)
-      this->drl_move_arm();
+  // if(ik_success && enable_)
+  //     this->drl_move_arm();
   return true;
 }
 
