@@ -49,6 +49,38 @@
       </link>
     </model>
 
+    <model name="/right_qarm">
+      <pose>0.3 -0.1 13  0 0 0</pose>
+      <static>false</static>
+      <link name="/left_arm">
+        <visual name="visual">
+          <pose>0 0 0 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.005</radius>
+              <length>0.2</length>
+            </cylinder>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+
+    <model name="/left_qarm">
+      <pose>0.3 -0.1 13  0 0 0</pose>
+      <static>false</static>
+      <link name="/left_arm">
+        <visual name="visual">
+          <pose>0 0 0 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.005</radius>
+              <length>0.2</length>
+            </cylinder>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+
 
 
     <!-- Focus camera on tall pendulum -->

@@ -223,6 +223,7 @@ bool BaseModule::set_goal_callback(train::set_goal::Request &req, train::set_goa
   bool limit_success = false;
   Eigen::Vector3d positoin;
   Eigen::Matrix3d rotation;
+  double angle_tmp[8] = {0};
   double phi;
   
   robotis_->is_ik = true;
@@ -233,6 +234,8 @@ bool BaseModule::set_goal_callback(train::set_goal::Request &req, train::set_goa
     req.action[i] = req.action[i] * fabs(dis) + (mu - req.action[8]*fabs(dis)/2);
   }
   manipulator_->manipulator_link_data_[0]->slide_position_ = req.action[0];
+  for (int i=1; i<=MAX_JOINT_ID; i++)
+    angle_tmp[i] = manipulator_->manipulator_link_data_[i]->joint_angle_;
   for (int i=1; i<=MAX_JOINT_ID; i++)
     manipulator_->manipulator_link_data_[i]->joint_angle_ = req.action[i];
   manipulator_->forwardKinematics(7);
@@ -251,8 +254,9 @@ bool BaseModule::set_goal_callback(train::set_goal::Request &req, train::set_goa
   this->set_response_limit(res);
   if(ik_success)
     this->set_goal_pose(res);
-
   res.success = ik_success;
+  for (int i=1; i<=MAX_JOINT_ID; i++)
+    manipulator_->manipulator_link_data_[i]->joint_angle_ = angle_tmp[i];
   return true;
 }
 
@@ -493,7 +497,7 @@ void BaseModule::set_response_quat(T &res, Eigen::Quaterniond q)
   robotis_->calc_slide_tra_ = Eigen::MatrixXd::Zero(all_steps, 1);
   // setIk_success = robotis_->setInverseKinematics(0, all_steps, manipulator_->manipulator_link_data_[END_LINK]->orientation_, manipulator_->manipulator_link_data_[END_LINK]->phi_);
   setIk_success = robotis_->setInverseKinematics(1, all_steps, manipulator_->manipulator_link_data_[END_LINK]->orientation_, manipulator_->manipulator_link_data_[END_LINK]->phi_);
-  res.quaterniond.resize(4);
+  res.quaterniond.resize(8);
   Eigen::Quaterniond goal_q;
   goal_q.coeffs() = robotis_->ik_target_quaternion.coeffs() - q.coeffs();
   goal_q.coeffs() /= goal_q.norm();
@@ -501,6 +505,12 @@ void BaseModule::set_response_quat(T &res, Eigen::Quaterniond q)
   res.quaterniond[1] = goal_q.x();
   res.quaterniond[2] = goal_q.y();
   res.quaterniond[3] = goal_q.z();
+  goal_q.coeffs() = robotis_->inv_target_quaternion.coeffs() - q.coeffs();
+  goal_q.coeffs() /= goal_q.norm();
+  res.quaterniond[4] = goal_q.w();
+  res.quaterniond[5] = goal_q.x();
+  res.quaterniond[6] = goal_q.y();
+  res.quaterniond[7] = goal_q.z();
   // res.quaterniond[0] = q.w();
   // res.quaterniond[1] = q.x();
   // res.quaterniond[2] = q.y();

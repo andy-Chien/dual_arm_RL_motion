@@ -65,7 +65,7 @@ public:
   bool ik_solve_;
   Eigen::MatrixXd ik_target_position_;
   Eigen::MatrixXd ik_start_rotation_, ik_target_rotation_;
-  Eigen::Quaterniond ik_target_quaternion;
+  Eigen::Quaterniond ik_target_quaternion, inv_target_quaternion;
   double ik_start_phi_, ik_target_phi_;   //new
   int ik_id_start_, ik_id_end_;   
   double slide_pos_;

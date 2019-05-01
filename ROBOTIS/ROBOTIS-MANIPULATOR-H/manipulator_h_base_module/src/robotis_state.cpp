@@ -50,6 +50,7 @@ RobotisState::RobotisState()
   ik_start_rotation_  = robotis_framework::convertRPYToRotation(0.0, 0.0, 0.0);
   ik_target_rotation_ = robotis_framework::convertRPYToRotation(0.0, 0.0, 0.0);
   ik_target_quaternion = robotis_framework::convertRotationToQuaternion(ik_target_rotation_);
+  inv_target_quaternion = robotis_framework::convertRotationToQuaternion(ik_target_rotation_);
 
   ik_start_phi_ = 0;
   ik_target_phi_ = 0;
@@ -114,6 +115,7 @@ bool RobotisState::setInverseKinematics(int cnt, int all_steps, Eigen::MatrixXd 
   double count = (double) cnt / (double) all_steps;
 
   ik_target_quaternion = slerp(count, start_quaternion, target_quaternion, is_inv);
+  inv_target_quaternion = slerp(count, start_quaternion, target_quaternion, true);
 
   ik_target_phi_ = start_phi + count * (kinematics_pose_msg_.phi - start_phi);
 
@@ -155,16 +157,6 @@ Eigen::Quaterniond RobotisState::slerp(double t, Eigen::Quaterniond& self, Eigen
   Eigen::Quaterniond q;
   q.coeffs() = (scale0 * self.coeffs()) + (scale1 * other.coeffs());
   q.coeffs() /= q.norm();
-  // Eigen::Quaterniond qq = q;
-  
-  // qq.coeffs() *= -1;
-  // d = 180*acos(other.dot(q))/M_PI;
-  // double dd = 180*acos(other.dot(qq))/M_PI; 
-  // double a = (q.coeffs()-other.coeffs()).norm();
-  // double b = (qq.coeffs()-other.coeffs()).norm();
-  // // d = fabs(q.coeffs().outer(other.coeffs()));
-  // // double dd = fabs(qq.coeffs().outer(other.coeffs()));
-  // std::cout<<d<<" "<<dd<<" "<<a<<" "<<b<<" "<<a+b-2<<std::endl;
   return q;
 }
 

@@ -9,7 +9,7 @@ import math
 import rospy
 import tensorflow as tf
 from sac_v12 import SAC
-from env_v16 import Test
+from env_v17 import Test
 from manipulator_h_base_module_msgs.msg import P2PPose
 
 MAX_EPISODES = 100000
@@ -22,6 +22,7 @@ GOAL_REWARD = 800
 LOAD = False
 SAVE = [False, False]
 COUNTER = [1, 1]
+TRAIN_CNT = [0, 0]
 EP = [0, 0]
 WORKS = 4
 SUCCESS_ARRAY = np.zeros([2,500])
@@ -44,8 +45,7 @@ def worker(name, workers, agent):
         RUN_FLAG[workers].set()
     RUN_FLAG[workers].wait()
     t1 = time.time()
-    cnt=0 
-    while not COORD.should_stop():
+    while (not COORD.should_stop()) and (not rospy.is_shutdown()):
         if RUN_FLAG[workers].is_set():
             RUN_FLAG[workers].clear()
         else:
@@ -62,7 +62,7 @@ def worker(name, workers, agent):
         COLLISION = False
         for j in range(MAX_EP_STEPS):
             WORKER_EVENT[name].wait()
-            COUNTER[name]+=1
+            
             a = agent.choose_action(s)
             s_, r, done, collision = env.step(a)
             agent.replay_buffer[workers].store_transition(s, a, r, s_, done)
@@ -72,11 +72,14 @@ def worker(name, workers, agent):
             s = s_
             ep_reward += r
 
-            if COUNTER[name] >= BATTH_SIZE*16 and workers == 1:
+            COUNTER[name]+=1
+            if COUNTER[name] >= BATTH_SIZE*32 and COUNTER[name]%(8*WORKS) == 0:
                 WORKER_EVENT[name].clear()
-                agent.learn(cnt)
+                for _ in range(8):
+                    agent.learn(TRAIN_CNT[name])
+                    TRAIN_CNT[name]+=1
                 WORKER_EVENT[name].set()
-                cnt+=1
+                
                 # LEARN_EVENT[name].set()
             if done_cnt > 10:
                 if not COLLISION:
@@ -86,7 +89,7 @@ def worker(name, workers, agent):
         SUCCESS_RATE = 0
         for z in SUCCESS_ARRAY[name]:
             SUCCESS_RATE += z/5
-        if SUCCESS_RATE >= GOAL_RATE[name] and cnt > 300000:
+        if SUCCESS_RATE >= GOAL_RATE[name]:
             SAVE[name] = True
         else:
             SAVE[name] = False

@@ -74,6 +74,7 @@ class Test(core.Env):
         self.ori_err = 0.4
         self.quat_inv = False
         self.goal_angle = []
+        self.object_pub = 0
         self.set_mode_pub = rospy.Publisher(
             '/gazebo/set_model_state',
             ModelState,
@@ -207,9 +208,9 @@ class Test(core.Env):
         if alarm_cnt>0:
             return self.reset()
         self.state = np.append(self.old, np.subtract(self.goal[:3], self.old[:3]))
-        # self.state = np.append(self.state, self.goal_quat)
-        self.state = np.append(self.state, np.subtract(self.goal[3:7], self.old[3:7]))
-        self.state = np.append(self.state, np.subtract(-1*self.goal[3:7], self.old[3:7]))
+        self.state = np.append(self.state, self.goal_quat)
+        # self.state = np.append(self.state, np.subtract(self.goal[3:7], self.old[3:7]))
+        # self.state = np.append(self.state, np.subtract(-1*self.goal[3:7], self.old[3:7]))
         self.state = np.append(self.state, Link_dis)
         self.state = np.append(self.state, self.joint_angle)
         self.state = np.append(self.state, self.limit)
@@ -247,7 +248,8 @@ class Test(core.Env):
         self.start[0] = 0
         # self.start[3] = self.range_cnt/2
         self.start = np.append(self.start, self.range_cnt)
-        res = self.set_start_client(self.start, rpy, self.__name)
+        # res = self.set_start_client(self.start, rpy, self.__name)
+        res = self.get_state_client(self.__name)
         res_ = self.get_state_client(self.__obname)
         old_pos = np.array(res.state)
         if not res.success:
@@ -287,9 +289,9 @@ class Test(core.Env):
             linkPosM, linkPosS = self.collision_init()
             alarm, Link_dis = self.cc.checkCollision(linkPosM, linkPosS)
             s = np.append(self.old, np.subtract(self.goal[:3], self.old[:3]))
-            # s = np.append(s, self.goal_quat)\
-            s = np.append(s, np.subtract(self.goal[3:7], self.old[3:7]))
-            s = np.append(s, np.subtract(-1*self.goal[3:7], self.old[3:7]))
+            s = np.append(s, self.goal_quat)
+            # s = np.append(s, np.subtract(self.goal[3:7], self.old[3:7]))
+            # s = np.append(s, np.subtract(-1*self.goal[3:7], self.old[3:7]))
             s = np.append(s, Link_dis)
             s = np.append(s, self.joint_angle)
             s = np.append(s, self.limit)
@@ -307,7 +309,12 @@ class Test(core.Env):
         if (not self.collision) and math.fabs(s[7])<0.9:
             self.state = s
         if self.workers == 'arm':
-            self.set_object(self.__name, (self.goal[0]-0.08, self.goal[1], self.goal[2]+1.45086), (0, 0, 0, 0))
+            if self.object_pub == 0:
+                self.set_object(self.__name, (self.goal[0]-0.08, self.goal[1], self.goal[2]+1.45086), (0, 0, 0, 0))
+                self.object_pub = 1
+            else:
+                self.set_object(self.__name+'q', (self.goal[0]-0.08, self.goal[1], self.goal[2]+1.45086), self.goal[3:7])
+                self.object_pub = 0
         return self.state, reward, terminal, self.collision
 
     def _terminal(self, s, ik_success, alarm):
