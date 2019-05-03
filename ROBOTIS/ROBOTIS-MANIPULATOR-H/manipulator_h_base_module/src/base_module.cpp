@@ -766,7 +766,6 @@ void BaseModule::p2pPoseMsgCallback(const manipulator_h_base_module_msgs::P2PPos
   {
     ROS_INFO("[end] send trajectory (ik failed)");
     publishStatusMsg(robotis_controller_msgs::StatusMsg::STATUS_INFO, "End Trajectory (p2p IK Failed)");
-    return;
   }
   robotis_->is_ik = false;
   return;

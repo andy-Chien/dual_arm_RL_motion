@@ -63,8 +63,8 @@ ManipulatorKinematicsDynamics::ManipulatorKinematicsDynamics(TreeSelect tree)
     manipulator_link_data_[1]->center_of_mass_    = robotis_framework::getTransitionXYZ(0.0, 0.0, 0.0);
     manipulator_link_data_[1]->joint_limit_max_   =  170 * M_PI/180;
     manipulator_link_data_[1]->joint_limit_min_   = -170 * M_PI/180;
-    manipulator_link_data_[1]->train_limit_max_   =  150 * M_PI/180;
-    manipulator_link_data_[1]->train_limit_min_   = -150 * M_PI/180;
+    manipulator_link_data_[1]->train_limit_max_   =  90 * M_PI/180;
+    manipulator_link_data_[1]->train_limit_min_   = -90 * M_PI/180;
     manipulator_link_data_[1]->inertia_           = robotis_framework::getInertiaXYZ(1.0, 0.0, 0.0, 1.0, 0.0, 1.0);
 
     manipulator_link_data_[2]->name_    = "joint2";
@@ -928,10 +928,12 @@ bool ManipulatorKinematicsDynamics::InverseKinematics_p2p( Eigen::VectorXd goal_
         Lec,  pi/2, Lsc,            0,
         0,    0,    0,              0;
   
-  theta_1 = atan2(-RL_prm *eRc(0) , -(eRc(2)-slide_position));   
+  theta_1 = atan2(-RL_prm *eRc(0) , -(eRc(2)-slide_position));
   theta_2 = asin((d1 - RL_prm *eRc(1)) / Lsc);        
   theta_3 = Phi;
   theta_4 = -(theta_e + atan(a1/d2));
+
+  double theta1_tmp = theta_1;
  
   Angle << 0, theta_1, theta_2, theta_3, theta_4;
   T = Eigen::MatrixXd::Identity(4,4);
@@ -992,22 +994,35 @@ bool ManipulatorKinematicsDynamics::InverseKinematics_p2p( Eigen::VectorXd goal_
         JointAngle(3) = pi + theta_3;
         t_3 = pi;
     }
-    Angle.resize(6,1);
-    Angle << 0, JointAngle(1), JointAngle(2), t_3, theta_4, 0;
-    // std::cout<<Angle<<std::endl;
-    T = Eigen::MatrixXd::Identity(4,4);
-    for ( int i=0; i<6; i++ )
+    if(i==1)
     {
-      DH_row = DHTABLE.row(i);
-      A = Trans( Angle(i), DH_row );
-      T = T*A;
+      Angle.resize(JointAngle.size());
+      Angle = JointAngle;
     }
-    R05_notheta3 = T;
+    else
+    {
+      double dis1 = fabs(Angle(1) - theta1_tmp);
+      double dis2 = fabs(JointAngle(1) - theta1_tmp);
+      if(dis1<dis2)
+        JointAngle = Angle;
+    }
+    
+    // Angle.resize(6,1);
+    // Angle << 0, JointAngle(1), JointAngle(2), t_3, theta_4, 0;
+    // // std::cout<<Angle<<std::endl;
+    // T = Eigen::MatrixXd::Identity(4,4);
+    // for ( int i=0; i<6; i++ )
+    // {
+    //   DH_row = DHTABLE.row(i);
+    //   A = Trans( Angle(i), DH_row );
+    //   T = T*A;
+    // }
+    // R05_notheta3 = T;
 
     // std::cout<<R05_notheta3<<std::endl;
 
-    if((R05_notheta3(2,3) <= 0.000001 && theta_1_flag) || (R05_notheta3(2,3) > 0.000001 && !theta_1_flag))
-      break;
+    // if((R05_notheta3(2,3) <= 0.000001 && theta_1_flag) || (R05_notheta3(2,3) > 0.000001 && !theta_1_flag))
+    //   break;
   }
 
   JointAngle(4) = theta_4;
