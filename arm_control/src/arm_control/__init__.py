@@ -1,2 +1,2 @@
-from arm_task import ArmTask
-from suction import SuctionTask
+from arm_control.arm_task import ArmTask
+from arm_control.suction import SuctionTask

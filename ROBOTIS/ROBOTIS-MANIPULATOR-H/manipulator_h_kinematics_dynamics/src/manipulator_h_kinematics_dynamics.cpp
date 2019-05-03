@@ -440,9 +440,9 @@ bool ManipulatorKinematicsDynamics::inverseKinematics(int to, Eigen::MatrixXd ta
   for (int id = 0; id < idx.size(); id++)
     Old_JointAngle[idx[id]] = manipulator_link_data_[idx[id]]->joint_angle_;
   if(is_p2p)
-    ik_success = InverseKinematics_p2p(tar_position, tar_orientation, tar_phi, tar_slide_pos, Old_JointAngle, true);
-  else
     ik_success = InverseKinematics_p2p(tar_position, tar_orientation, tar_phi, tar_slide_pos, Old_JointAngle, false);
+  else
+    ik_success = InverseKinematics_p2p(tar_position, tar_orientation, tar_phi, tar_slide_pos, Old_JointAngle, true);
 
     // ik_success = InverseKinematics_7(tar_position, tar_orientation, tar_phi, tar_slide_pos, Old_JointAngle, is_p2p);
 

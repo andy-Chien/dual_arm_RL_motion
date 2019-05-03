@@ -134,7 +134,6 @@ if __name__ == '__main__':
     rospy.init_node('a')
     threads = []
     # RUN_FLAG = []
-    LEARN_EVENT = [threading.Event(), threading.Event()]
     WORKER_EVENT = [threading.Event(), threading.Event()]
     COORD = tf.train.Coordinator()
 
@@ -142,7 +141,6 @@ if __name__ == '__main__':
         t = threading.Thread(target=train, args=(i,))
         threads.append(t)
         WORKER_EVENT[i].set()
-        LEARN_EVENT[i].clear()
 
     for i in threads:
         i.start()

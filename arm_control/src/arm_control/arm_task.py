@@ -1,13 +1,13 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #-*- coding: utf-8 -*-
 
 """Use to generate arm task and run."""
 
 import rospy
-import tf
+import transformations
 # import object_distribtion
 
-from math import radians, degrees, sin, cos, pi
+from math import radians, degrees, sin, cos, pi, acos, asin
 from numpy import multiply
 
 import numpy as np
@@ -46,7 +46,7 @@ class ArmTask:
         self.__speed = 50
 
     def __set_pubSub(self):
-        print "[Arm] name space : " + str(self.name) 
+        print("[Arm] name space : " + str(self.name))
         self.__set_mode_pub = rospy.Publisher(
             str(self.name) + '/set_mode_msg',
             String,
@@ -68,7 +68,7 @@ class ArmTask:
         self.__joint_pub = rospy.Publisher(
             str(self.name) + '/joint_pose_msg',
             JointPose,
-            # latch=True,
+            # latch=True,transformations
             queue_size=1
         )
         self.__p2p_pub = rospy.Publisher(
@@ -100,12 +100,12 @@ class ArmTask:
 
     def __status_callback(self, msg):
         if 'IK Failed' in msg.status_msg:
-            rospy.logwarn('ik fail')
+            # rospy.logwarn('ik fail')
             self.__ik_fail = True
 
         elif 'End Trajectory' in msg.status_msg:
             self.__is_busy = False
-            print('Arm task receive End Trajectory')
+            # print('Arm task receive End Trajectory')
 
     def __stop_callback(self, msg):
         if msg.data:
@@ -117,6 +117,10 @@ class ArmTask:
     @property
     def is_busy(self):
         return self.__is_busy
+
+    @is_busy.setter
+    def is_busy(self, state):
+        self.__is_busy = state
 
     @property
     def wait(self):
@@ -188,7 +192,7 @@ class ArmTask:
 
     def euler2quaternion(self, euler):
         roll, pitch, yaw = euler
-        quaternion = tf.transformations.quaternion_from_euler(-pitch+pi, -yaw, roll-pi, 'ryxz')
+        quaternion = transformations.quaternion_from_euler(-pitch+pi, -yaw, roll-pi, 'ryxz')
         return (quaternion)
 
     def ikMove(self, mode='line', pos=_POS, euler=_ORI, phi=_PHI):
@@ -222,6 +226,31 @@ class ArmTask:
         elif mode == 'p2p':
             self.__p2p_pub.publish(msg)
 
+    def ikMove_quat(self, mode, pos, quaternion, phi):
+        """Publish msg of ik cmd (deg) to manager node."""
+        self.__is_busy = True
+        self.__ik_fail = False
+
+        msg = KinematicsPose()
+        msg.name = 'arm'
+        msg.pose.position.x = pos[0]
+        msg.pose.position.y = pos[1]
+        msg.pose.position.z = pos[2]
+
+        msg.pose.orientation.x = quaternion[1]
+        msg.pose.orientation.y = quaternion[2]
+        msg.pose.orientation.z = quaternion[3]
+        msg.pose.orientation.w = quaternion[0]
+
+        msg.speed = 50
+        msg.phi = phi
+       
+        #rospy.loginfo('Sent:{}'.format(cmd))
+
+        if mode == 'line':
+            self.__line_pub.publish(msg)
+        elif mode == 'p2p':
+            self.__p2p_pub.publish(msg)
 
     def quaternion2euler(self, ori):
         quaternion = (
@@ -230,7 +259,7 @@ class ArmTask:
             ori.z,
             ori.w
         )
-        pitch, yaw, roll = tf.transformations.euler_from_quaternion(quaternion, 'ryxz')
+        pitch, yaw, roll = transformations.euler_from_quaternion(quaternion, 'ryxz')
         # euler = roll+pi ,-pitch+pi, -yaw
         euler = -roll, -pitch, yaw
         return euler
@@ -250,8 +279,8 @@ class ArmTask:
             )
             res = get_endpos('arm')
             return res
-        except rospy.ServiceException, e:
-            print "Service call failed: %s" % e
+        except rospy.ROSException as e:
+            print("Service call failed: %s" % e)
     
     def get_joint(self):
         rospy.wait_for_service(self.name + '/get_joint_pose')
@@ -266,8 +295,8 @@ class ArmTask:
                 
             res = joint(name)
             return res
-        except rospy.ServiceException, e:
-            print "Service call failed: %s" % e
+        except rospy.ROSException as e:
+            print("Service call failed: %s" % e)
 
     def noa_move_suction(self, mode='p2p', suction_angle=_suction_angle, n=0, o=0, a=0):
         suction_angle = suction_angle * pi/180
@@ -364,11 +393,12 @@ class ArmTask:
             degrees(phi)
         )
 
-    def move_to_vector_point(sef, mode='p2p', pos=_POS, vector=[1,0,0], phi=0): # This funthion will move arm and return suction angle 
+    def move_to_vector_point(self, mode='p2p', pos=_POS, vector=[1,0,0], phi=0): # This funthion will move arm and return suction angle 
     # Only for left arm Euler (0 0 30)
-        goal_vec = -vector
+        goal_vec = -1*vector
         a = 0.866
         b = 0.5
+        euler = [0.,0.,0.]
         x, y, z = goal_vec[0], goal_vec[1], goal_vec[2]
         roll_angle = 0.0
         suc_angle = -acos((b*y - a*z) / (a*a + b*b))

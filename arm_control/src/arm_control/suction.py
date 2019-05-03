@@ -34,7 +34,7 @@ class SuctionTask:
         self.name    = _name
         self.fail_cnt = 0
         self.gripped = False
-        print 'name = ', self.name
+        print('name = ', self.name)
         if 'gazebo' in self.name:
             if 'right' in self.name:
                 self.suction_pub = rospy.Publisher(
@@ -48,7 +48,7 @@ class SuctionTask:
                     self.is_grip_callback,
                     queue_size=1
                 )
-                print 'nameeeee = ', self.name
+                print('nameeeee = ', self.name)
             elif 'left' in self.name :
                 self.suction_pub = rospy.Publisher(
                     '/mobile_dual_arm/l_suction_joint_position/command',
@@ -87,8 +87,8 @@ class SuctionTask:
                         Empty
                     )
                     client()
-                except rospy.ServiceException, e:
-                    print "Service call (Vacuum) failed: %s" % e
+                except rospy.ROSException as e:
+                    print("Service call (Vacuum) failed: %s" % e)
         else:
             suction_service = self.name + '/suction_cmd'
             try:
@@ -103,9 +103,9 @@ class SuctionTask:
                     VacuumCmd
                 )
                 res = client(cmd)
-                print res
-            except rospy.ServiceException, e:
-                print "Service call (Vacuum) failed: %s" % e
+                print(res)
+            except rospy.ROSException as e:
+                print("Service call (Vacuum) failed: %s" % e)
 
     def gripper_vaccum_on(self):
         self.robot_cmd_client('vacuumOn')
@@ -180,30 +180,30 @@ class SuctionTask:
         return self.gripped
 
 
-if __name__ == '__main__':
-    rospy.init_node('test_gripper')
-    print('test_gripper')
+# if __name__ == '__main__':
+#     rospy.init_node('test_gripper')
+#     print('test_gripper')
 
-    SuctionTask.switch_mode(True)
-    right_gripper = SuctionTask(_name='right')
-    left_gripper = SuctionTask(_name='left')
+#     SuctionTask.switch_mode(True)
+#     right_gripper = SuctionTask(_name='right')
+#     left_gripper = SuctionTask(_name='left')
 
-    while not rospy.is_shutdown():
-        for gripper in [right_gripper, left_gripper]:
-            gripper.gripper_vaccum_on()
-            print('is grip: {}'.format(gripper.gripped))
-            rospy.sleep(2)
+#     while not rospy.is_shutdown():
+#         for gripper in [right_gripper, left_gripper]:
+#             gripper.gripper_vaccum_on()
+#             print('is grip: {}'.format(gripper.gripped))
+#             rospy.sleep(2)
 
-            gripper.gripper_vaccum_off()
+#             gripper.gripper_vaccum_off()
 
-            gripper.gripper_suction_up()
-            rospy.sleep(2)
+#             gripper.gripper_suction_up()
+#             rospy.sleep(2)
 
-            gripper.gripper_suction_down()
-            rospy.sleep(2)
+#             gripper.gripper_suction_down()
+#             rospy.sleep(2)
 
-            gripper.gripper_suction_deg(-90)
-            rospy.sleep(2)
+#             gripper.gripper_suction_deg(-90)
+#             rospy.sleep(2)
 
     # right_gripper.gripper_vaccum_on()
     # right_gripper.gripper_vaccum_off()
@@ -216,4 +216,4 @@ if __name__ == '__main__':
     # right_gripper.gripper_suction_down()
     # right_gripper.gripper_suction_deg(0)
 
-    SuctionTask.switch_mode(False)
+    # SuctionTask.switch_mode(False)
