@@ -201,7 +201,7 @@ bool BaseModule::move_cmd_callback(train::move_cmd::Request &req, train::move_cm
   slide_->goal_slide_pos = 0;
   limit_success = manipulator_->limit_check(target_positoin, target_rotation);
   if(limit_success)
-    ik_success = manipulator_->inverseKinematics(END_LINK, target_positoin, target_rotation, target_phi, slide_->goal_slide_pos, true);
+    ik_success = manipulator_->inverseKinematics(END_LINK, target_positoin, target_rotation, target_phi, slide_->goal_slide_pos, false);
   robotis_->is_ik = false;
   
   if (ik_success && enable_)

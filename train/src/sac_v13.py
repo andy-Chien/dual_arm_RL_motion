@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 import gym
 import random
-NAME = 'SAC_v13_1'
+NAME = 'SAC_v13_3'
 EPS = 1e-8
 LOAD = False
 BATCH_SIZE = 512
@@ -36,8 +36,8 @@ class ValueNetwork(object):
 
     def step(self, obs):
         with tf.variable_scope(self.name):
-            h1 = tf.layers.dense(obs, 512, tf.nn.leaky_relu)
-            h2 = tf.layers.dense(h1, 512, tf.nn.leaky_relu)
+            h1 = tf.layers.dense(obs, 512, tf.nn.leaky_relu, name='h1')
+            h2 = tf.layers.dense(h1, 512, tf.nn.leaky_relu, name='h2')
             # h3 = tf.layers.dense(h2, 1024, tf.nn.leaky_relu)
             # h4 = tf.layers.dense(h3, 1024, tf.nn.leaky_relu)
             value = tf.layers.dense(h2, 1)
@@ -56,8 +56,8 @@ class QValueNetwork(object):
     def step(self, obs, action, reuse):
         with tf.variable_scope(self.name, reuse=reuse):
             input = tf.concat([obs, action], axis=-1)
-            h1 = tf.layers.dense(input, 512, tf.nn.leaky_relu)
-            h2 = tf.layers.dense(h1, 512, tf.nn.leaky_relu)
+            h1 = tf.layers.dense(input, 512, tf.nn.leaky_relu, name='h1')
+            h2 = tf.layers.dense(h1, 512, tf.nn.leaky_relu, name='h2')
             # h3 = tf.layers.dense(h2, 1024, tf.nn.leaky_relu)
             # h4 = tf.layers.dense(h3, 1024, tf.nn.leaky_relu)
             q_value = tf.layers.dense(h2, 1)
@@ -76,13 +76,13 @@ class ActorNetwork(object):
 
     def step(self, obs, log_std_min=-20, log_std_max=2):
         with tf.variable_scope(self.name, reuse=tf.AUTO_REUSE):
-            h1 = tf.layers.dense(obs, 512, tf.nn.leaky_relu)
-            h2 = tf.layers.dense(h1, 512, tf.nn.leaky_relu)
-            h3 = tf.layers.dense(h2, 512, tf.nn.leaky_relu)
-            h4 = tf.layers.dense(h3, 512, tf.nn.leaky_relu)
+            h1 = tf.layers.dense(obs, 512, tf.nn.leaky_relu, name='h1')
+            h2 = tf.layers.dense(h1, 512, tf.nn.leaky_relu, name='h2')
+            h3 = tf.layers.dense(h2, 512, tf.nn.leaky_relu, name='h3')
+            h4 = tf.layers.dense(h3, 512, tf.nn.leaky_relu, name='h4')
             # h5 = tf.layers.dense(h4, 512, tf.nn.leaky_relu)
-            mu = tf.layers.dense(h4, self.act_dim, None)
-            log_std = tf.layers.dense(h4, self.act_dim, tf.tanh)
+            mu = tf.layers.dense(h4, self.act_dim, None, name='mu')
+            log_std = tf.layers.dense(h4, self.act_dim, tf.tanh, name='log_std')
             log_std = log_std_min + 0.5 * (log_std_max - log_std_min) * (log_std + 1)
 
             std = tf.exp(log_std)
@@ -190,7 +190,7 @@ class SAC(object):
         tf.summary.scalar(self.name+'rwd', self.RWD[0])
         self.merged = tf.summary.merge_all()
         self.writer = tf.summary.FileWriter('/home/andy/collision_ws/src/Collision_Avoidance/train/logs/'+NAME+'/'+self.name+'/', self.sess.graph)
-        self.saver = tf.train.Saver([])
+        self.saver = tf.train.Saver()
         self.path = '/home/andy/collision_ws/src/Collision_Avoidance/train/weights/'+ NAME +'/'+ self.name
 
         self.sess.run(tf.global_variables_initializer())

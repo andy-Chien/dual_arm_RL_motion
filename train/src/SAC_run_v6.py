@@ -9,7 +9,7 @@ import math
 import rospy
 import tensorflow as tf
 from sac_v13 import SAC
-from env_v17 import Test
+from env_v19 import Test
 from manipulator_h_base_module_msgs.msg import P2PPose
 
 MAX_EPISODES = 100000
