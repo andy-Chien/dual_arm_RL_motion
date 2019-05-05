@@ -18,6 +18,7 @@
         <param name="gazebo"          value="$(arg en_sim)" />
         <param name="link_file_path"  value="$(find manipulator_h_kinematics_dynamics)/config/link_param_$(arg side).yaml" />
         <param name="robot_file_path" value="$(find manipulator_h_manager)/config/ROBOTIS_$(arg side).robot" />
+        <param name="inv_link_file_path"  value="$(find manipulator_h_kinematics_dynamics)/config/link_param_inv.yaml" />
 
         <!-- <remap from="/robotis/base/joint_pose_msg"  	  to="/$(arg side)_$(arg ID)/joint_pose_msg"	    /> -->
         <!-- <remap from="/robotis/base/p2p_pose_msg"  	  to="/$(arg side)_$(arg ID)/p2p_pose_msg"        /> -->

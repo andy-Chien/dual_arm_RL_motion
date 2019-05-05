@@ -198,6 +198,36 @@ void ManipulatorKinematicsDynamics::load_LinkParam()
         DHTABLE(link_num , 2) = param["d"];
         DHTABLE(link_num , 3) = param["theta"] * M_PI / 180.0;
     }
+//================================================================================================
+    file_path  = nh_private.param<std::string>("inv_link_file_path", "");
+    
+    // YAML::Node doc;
+    try
+    {
+        // load yaml
+        doc = YAML::LoadFile(file_path.c_str());
+    }
+    catch (const std::exception &e)
+    {
+        std::cout << "Fail to load yaml file." << std::endl;
+        return;
+    }
+
+    INV_DHTABLE.resize(6, 4);
+
+    // parse dh links
+    _dh_links = doc["dh_links"];
+    for (YAML::iterator _it = _dh_links.begin(); _it != _dh_links.end(); ++_it)
+    {
+        int link_num = _it->first.as<int>();
+
+        std::map<std::string, double> param = _it->second.as<std::map<std::string, double> >();
+        INV_DHTABLE(link_num , 0) = param["a"];
+        INV_DHTABLE(link_num , 1) = param["alpha"] * M_PI / 180.0;
+        INV_DHTABLE(link_num , 2) = param["d"];
+        INV_DHTABLE(link_num , 3) = param["theta"] * M_PI / 180.0;
+    }
+//==================================================================================================
     d1 = DHTABLE(1,2);
     d2 = DHTABLE(3,2);
     d3 = DHTABLE(5,2);
@@ -934,36 +964,57 @@ bool ManipulatorKinematicsDynamics::InverseKinematics_p2p( Eigen::VectorXd goal_
   theta_4 = -(theta_e + atan(a1/d2));
 
   double theta1_tmp = theta_1;
- 
-  Angle << 0, theta_1, theta_2, theta_3, theta_4;
-  T = Eigen::MatrixXd::Identity(4,4);
-  for ( int i=0; i<5; i++ )
+  double theta7_tmp;
+  for(int i=0; i<2; i++)
   {
-    DH_row = DH.row(i);
-    A = Trans( Angle(i), DH_row );
-    T = T*A;
+    if(i==0)
+      Angle << 0, theta_1, theta_2, 0, theta_4;
+    else
+      Angle(3) = Phi;
+    T = Eigen::MatrixXd::Identity(4,4);
+    for ( int i=0; i<5; i++ )
+    {
+      DH_row = DH.row(i);
+      A = Trans( Angle(i), DH_row );
+      T = T*A;
+    }
+    R03 = T;
+
+  
+    theta_4 = M_PI - acos((Lse*Lse + Lew*Lew - Lsw*Lsw) / (2*Lse*Lew)) + atan(a1/d2) + atan(a2/d3);
+    
+    DH_row = DHTABLE.row(4);
+    A = Trans(theta_4, DH_row);   
+    R04 = R03 * A;
+
+    theta_1 = atan((-RL_prm *R03(0,1)) / -R03(2,1));
+    theta_2 = asin(-RL_prm *R03(1,1));
+    theta_3 = atan( (RL_prm *R03(1,2)) / (RL_prm *R03(1,0)));
+
+    R47 = R04.inverse() * R07;
+
+    theta_5 = atan(-R47(1,2) / -R47(0,2));
+    theta_6 = acos(R47(2,2));
+    theta_7 = atan(-R47(2,1) / R47(2,0));
+    if(i==0)
+    {
+      JointAngle << theta_7, theta_6, theta_5, theta_4, theta_3, theta_2, 0, 0;
+      T = Eigen::MatrixXd::Identity(4,4);
+      for ( int i=0; i<6; i++ )
+      {
+        DH_row = INV_DHTABLE.row(i);
+        A = Trans( JointAngle(i), DH_row );
+        T = T*A;
+      }
+      
+      if(T(2,2)<=0)
+        theta7_tmp = theta_7;
+      else if(theta_7>=0)  
+        theta7_tmp = theta_7 - pi;
+      else                                 
+        theta7_tmp = pi + theta_7;
+    }
   }
-  R03 = T;
-
- 
-  theta_4 = M_PI - acos((Lse*Lse + Lew*Lew - Lsw*Lsw) / (2*Lse*Lew)) + atan(a1/d2) + atan(a2/d3);
-  
-  DH_row = DHTABLE.row(4);
-  A = Trans(theta_4, DH_row);   
-  R04 = R03 * A;
-
-  JointAngle << 0, 0, 0, 0, 0, 0, 0, 0;
-
-  theta_1 = atan((-RL_prm *R03(0,1)) / -R03(2,1));
-  theta_2 = asin(-RL_prm *R03(1,1));
-  theta_3 = atan( (RL_prm *R03(1,2)) / (RL_prm *R03(1,0)));
-
-  R47 = R04.inverse() * R07;
-
-  theta_5 = atan(-R47(1,2) / -R47(0,2));
-  theta_6 = acos(R47(2,2));
-  theta_7 = atan(-R47(2,1) / R47(2,0));
-  
   for ( int i = 1; i>= -1; i-=2 )
   { 
     bool theta_1_flag = false;
@@ -1034,29 +1085,42 @@ bool ManipulatorKinematicsDynamics::InverseKinematics_p2p( Eigen::VectorXd goal_
     bool theta_5_flag = false;
     if(-R47(0,2)*i>=0)
     {
-        JointAngle(5) = theta_5;
-        theta_5_flag = true;
+      JointAngle(5) = theta_5;
+      theta_5_flag = true;
     }
     else if(theta_5>=0)  
-        JointAngle(5) = theta_5 - pi;
+      JointAngle(5) = theta_5 - pi;
     else
-        JointAngle(5) = pi + theta_5; 
+      JointAngle(5) = pi + theta_5; 
     
     if (i == 1)
-        JointAngle(6) = theta_6;
+      JointAngle(6) = theta_6;
     else
-        JointAngle(6) = -theta_6;
+      JointAngle(6) = -theta_6;
     
             
     if(R47(2,0)*i>=0)
-        JointAngle(7) = theta_7;
+      JointAngle(7) = theta_7;
     else if(theta_7>=0)
-        JointAngle(7) = theta_7 - pi;
+      JointAngle(7) = theta_7 - pi;
     else
-        JointAngle(7) = pi + theta_7;
+      JointAngle(7) = pi + theta_7;
 
-    if((R47(0,3)>=0.000001 && theta_5_flag) || (R47(0,3)<0.000001 && !theta_5_flag))
-      break;
+    if(i==1)
+    {
+      Angle.resize(JointAngle.size());
+      Angle = JointAngle;
+    }
+    else
+    {
+      double dis1 = fabs(Angle(7) - theta7_tmp);
+      double dis2 = fabs(JointAngle(1) - theta7_tmp);
+      if(dis1<dis2)
+        JointAngle = Angle;
+    }
+
+    // if((R47(0,3)>=0.000001 && theta_5_flag) || (R47(0,3)<0.000001 && !theta_5_flag))
+    //   break;
   }
 
   Eigen::VectorXd testPos = forwardKinematics_7(7,JointAngle);

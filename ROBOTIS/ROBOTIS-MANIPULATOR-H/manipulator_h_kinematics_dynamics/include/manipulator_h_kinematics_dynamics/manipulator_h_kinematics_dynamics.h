@@ -40,6 +40,7 @@ class ManipulatorKinematicsDynamics
 {
 private:
   Eigen::MatrixXd DHTABLE;
+  Eigen::MatrixXd INV_DHTABLE;
   double d1,d2,d3,d4,a1,a2;
   double Lse, Lew;
   double RL_prm;
