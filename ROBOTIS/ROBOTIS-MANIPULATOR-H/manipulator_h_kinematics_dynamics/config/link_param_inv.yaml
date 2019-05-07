@@ -1,8 +1,8 @@
 # dh links table [deg]
 dh_links:
-  1: {a: 0,      alpha:  90, d:      0, theta:  90}  # link 1
-  0: {a: 0,      alpha: -90, d:  -0.24, theta:   0}  # link 0
-  2: {a: -0.03,  alpha: -90, d: -0.263, theta: -90}  # link 2
-  3: {a: 0.03,   alpha:  90, d:      0, theta:   0}  # link 3
-  4: {a: 0,      alpha: -90, d:  -0.29, theta:   0}  # link 4
+  0: {a: 0,      alpha:  90, d:   0.24, theta:   0}  # link 1
+  1: {a: 0,      alpha: -90, d:      0, theta:   0}  # link 0
+  2: {a: -0.03,  alpha:  90, d:  0.263, theta:   0}  # link 2
+  3: {a: 0.03,   alpha: -90, d:      0, theta:   0}  # link 3
+  4: {a: 0,      alpha:  90, d:   0.29, theta:   0}  # link 4
   5: {a: -0.2685,alpha:   0, d:      0, theta:   0}  # link 1
