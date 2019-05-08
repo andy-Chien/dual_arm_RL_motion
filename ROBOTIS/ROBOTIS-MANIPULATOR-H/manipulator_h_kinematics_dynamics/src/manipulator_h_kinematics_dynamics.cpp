@@ -917,6 +917,8 @@ bool ManipulatorKinematicsDynamics::InverseKinematics_p2p( Eigen::VectorXd goal_
   double theta_1, theta_2, theta_3, theta_4, theta_5, theta_6, theta_7;
   double Deviation, D_Joint_1, D_Joint_2, D_Joint_1_2, D_Joint_2_2;
   double Lsw, Lec, Lsc;
+  double theta1_start = manipulator_link_data_[1]->joint_angle_;
+  double theta5_start = manipulator_link_data_[5]->joint_angle_;
   
   Eigen::VectorXd Angle(5, 1);
   Eigen::VectorXd Oc(3, 1);
@@ -942,11 +944,11 @@ bool ManipulatorKinematicsDynamics::InverseKinematics_p2p( Eigen::VectorXd goal_
   R07.block(0,3,3,1) = goal_position;
   Oc << goal_position(0)-d4*R07(0,2), goal_position(1)-d4*R07(1,2), goal_position(2)-d4*R07(2,2);
 
-  DHTABLE(0,2) = slide_position;       
-          
+  DHTABLE(0,2) = slide_position;
+
   Ps << 0, d1*cos(DHTABLE(0,3)), slide_position;   
-  Vsw = Oc - Ps;     
-  Lsw = Vsw.norm();  
+  Vsw = Oc - Ps;
+  Lsw = Vsw.norm();
   theta_e = acos((Lse*Lse + Lsw*Lsw - Lew*Lew) / (2*Lse*Lsw));  
   eRc = Ps + (Vsw * Lse * cos(theta_e) / Lsw);    //Phi旋轉中心位置
   Lsc = Lse * cos(theta_e); 
@@ -1033,8 +1035,15 @@ bool ManipulatorKinematicsDynamics::InverseKinematics_p2p( Eigen::VectorXd goal_
     {
       double dis1 = fabs(Angle(1) - theta1_tmp);
       double dis2 = fabs(JointAngle(1) - theta1_tmp);
-      if(dis1<dis2)
+      double dis3 = fabs(Angle(1) - theta1_start);
+      double dis4 = fabs(JointAngle(1) - theta1_start);
+      if(fabs(2*M_PI-dis1)<0.00001)
+        dis1 = 0;
+      if(fabs(2*M_PI-dis2)<0.00001)
+        dis2 = 0;
+      if((dis1<dis2 && dis4>M_1_PI) || dis3<M_1_PI)
         JointAngle = Angle;
+      // std::cout<<"dis "<<dis1<<" "<<dis2<<" "<<dis3<<" "<<dis4<<std::endl;
     }
     
     // Angle.resize(6,1);
@@ -1089,16 +1098,22 @@ bool ManipulatorKinematicsDynamics::InverseKinematics_p2p( Eigen::VectorXd goal_
     {
       Angle.resize(JointAngle.size());
       Angle = JointAngle;
-      T = Eigen::MatrixXd::Identity(4,4);
-      for ( int k=0; k<6; k++ )
-      {
-        DH_row = INV_DHTABLE.row(k);
-        A = Trans( JointAngle(7-k), DH_row );
-        T = T*A;
-        std::cout<<k<<" "<<T(0,3)<<" "<<T(1,3)<<" "<<T(2,3)<<std::endl;
-      }
-      theta7_tmp = atan2(T(1,3), -T(0,3));
-      std::cout<<"theta7_tmp "<<theta7_tmp<<std::endl;
+      // Eigen::VectorXd testangle(JointAngle.size());
+      // testangle << Angle(7), Angle(6), Angle(5), Angle(4), Angle(3), Angle(2);
+      // // if(Angle(5)>M_PI/2)
+      // //   testangle(2) = M_PI;
+      // // if(Angle(3)>M_PI/2)
+      // //   testangle(4) = M_PI;
+      // T = Eigen::MatrixXd::Identity(4,4);
+      // for ( int k=0; k<6; k++ )
+      // {
+      //   DH_row = INV_DHTABLE.row(k);
+      //   A = Trans( testangle(k), DH_row );
+      //   T = T*A;
+      //   std::cout<<k<<" "<<T(0,3)<<" "<<T(1,3)<<" "<<T(2,3)<<std::endl;
+      // }
+      // theta7_tmp = atan2(T(1,3), -T(0,3));
+      // std::cout<<"theta7_tmp "<<theta7_tmp<<std::endl;
       // if(T(0,3)<=0)
       //   theta7_tmp = theta_7;
       // else if(theta_7>=0)  
@@ -1108,10 +1123,20 @@ bool ManipulatorKinematicsDynamics::InverseKinematics_p2p( Eigen::VectorXd goal_
     }
     else
     {
-      double dis1 = fabs(Angle(7) - theta7_tmp);
-      double dis2 = fabs(JointAngle(7) - theta7_tmp);
-      if(dis1<dis2)
+      // double dis1 = fabs(Angle(7) - theta7_tmp);
+      // double dis2 = fabs(JointAngle(7) - theta7_tmp);
+      double dis3 = fabs(Angle(5) - theta5_start/2);
+      double dis4 = fabs(JointAngle(5) - theta5_start/2);
+      // if((2*M_PI-dis1)<0.00001)
+      //   dis1 = 0;
+      // if((2*M_PI-dis2)<0.00001)
+      //   dis2 = 0;
+      // // double dis4 = fabs(JointAngle(5) - theta5_start);
+      // if((dis1<dis2 && dis4>M_1_PI) || dis3<M_1_PI)
+      //   JointAngle = Angle;
+      if(dis3<dis4)
         JointAngle = Angle;
+      // std::cout<<"dis "<<dis1<<" "<<dis2<<" "<<dis3<<" "<<dis4<<std::endl;
     }
 
     // if((R47(0,3)>=0.000001 && theta_5_flag) || (R47(0,3)<0.000001 && !theta_5_flag))
