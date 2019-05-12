@@ -247,7 +247,7 @@ bool BaseModule::set_goal_callback(train::set_goal::Request &req, train::set_goa
   positoin = manipulator_->manipulator_link_data_[6]->position_;
   rotation = robotis_framework::convertRPYToRotation(req.rpy[0]*M_PI, req.rpy[1]*M_PI, req.rpy[2]*M_PI);
   positoin += manipulator_->get_d4()*rotation.block(0,2,3,1);
-  phi = 0;
+  phi = req.rpy[3]*M_PI/2;
   slide_->goal_slide_pos = 0;
   limit_success = manipulator_->limit_check(positoin, rotation);
   if(limit_success)
@@ -289,7 +289,7 @@ bool BaseModule::set_start_callback(train::set_start::Request &req, train::set_s
   positoin = manipulator_->manipulator_link_data_[6]->position_;
   rotation = robotis_framework::convertRPYToRotation(req.rpy[0]*M_PI, req.rpy[1]*M_PI, req.rpy[2]*M_PI);
   positoin += manipulator_->get_d4()*rotation.block(0,2,3,1);
-  phi = 0;
+  phi = req.rpy[3]*M_PI/2;
   slide_->goal_slide_pos = 0;
   limit_success = manipulator_->limit_check(positoin, rotation);
   if(limit_success)
