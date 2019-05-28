@@ -124,7 +124,7 @@ def train(name):
     print(threading.current_thread())
     env = Test(name, 0)
     agent = SAC(act_dim=env.act_dim, obs_dim=env.obs_dim,
-            lr_actor=1e-3, lr_value=1e-3, gamma=0.99, tau=0.995, buffers = WORKS, name=SIDE[name])
+            lr_actor=1e-3, lr_value=1e-3, gamma=0.99, tau=0.995, buffers = WORKS, name=SIDE[name], seed=name)
     env = None
     print('name', name, 'agentID', id(agent))
 

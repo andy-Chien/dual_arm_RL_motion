@@ -2,10 +2,11 @@ import numpy as np
 import tensorflow as tf
 import gym
 import random
-NAME = 'SAC_v13_3'
+NAME = 'SAC_v13_8'
 EPS = 1e-8
 LOAD = False
 BATCH_SIZE = 512
+SEED = [123, 321]
 class ReplayBuffer(object):
     def __init__(self, capacity, name):
         self.name = name
@@ -38,9 +39,9 @@ class ValueNetwork(object):
         with tf.variable_scope(self.name):
             h1 = tf.layers.dense(obs, 512, tf.nn.leaky_relu, name='h1')
             h2 = tf.layers.dense(h1, 512, tf.nn.leaky_relu, name='h2')
-            # h3 = tf.layers.dense(h2, 1024, tf.nn.leaky_relu)
+            h3 = tf.layers.dense(h2, 1024, tf.nn.leaky_relu, name='h3')
             # h4 = tf.layers.dense(h3, 1024, tf.nn.leaky_relu)
-            value = tf.layers.dense(h2, 1)
+            value = tf.layers.dense(h3, 1)
             value = tf.squeeze(value, axis=1)
             return value
 
@@ -58,9 +59,9 @@ class QValueNetwork(object):
             input = tf.concat([obs, action], axis=-1)
             h1 = tf.layers.dense(input, 512, tf.nn.leaky_relu, name='h1')
             h2 = tf.layers.dense(h1, 512, tf.nn.leaky_relu, name='h2')
-            # h3 = tf.layers.dense(h2, 1024, tf.nn.leaky_relu)
+            h3 = tf.layers.dense(h2, 1024, tf.nn.leaky_relu, name='h3')
             # h4 = tf.layers.dense(h3, 1024, tf.nn.leaky_relu)
-            q_value = tf.layers.dense(h2, 1)
+            q_value = tf.layers.dense(h3, 1)
             q_value = tf.squeeze(q_value, axis=1)
             return q_value
 
@@ -80,9 +81,9 @@ class ActorNetwork(object):
             h2 = tf.layers.dense(h1, 512, tf.nn.leaky_relu, name='h2')
             h3 = tf.layers.dense(h2, 512, tf.nn.leaky_relu, name='h3')
             h4 = tf.layers.dense(h3, 512, tf.nn.leaky_relu, name='h4')
-            # h5 = tf.layers.dense(h4, 512, tf.nn.leaky_relu)
-            mu = tf.layers.dense(h4, self.act_dim, None, name='mu')
-            log_std = tf.layers.dense(h4, self.act_dim, tf.tanh, name='log_std')
+            h5 = tf.layers.dense(h4, 512, tf.nn.leaky_relu, name='h5')
+            mu = tf.layers.dense(h5, self.act_dim, None, name='mu')
+            log_std = tf.layers.dense(h5, self.act_dim, tf.tanh, name='log_std')
             log_std = log_std_min + 0.5 * (log_std_max - log_std_min) * (log_std + 1)
 
             std = tf.exp(log_std)
@@ -111,7 +112,7 @@ class ActorNetwork(object):
 
 
 class SAC(object):
-    def __init__(self, act_dim, obs_dim, lr_actor, lr_value, gamma, tau, buffers, alpha=0.2, name=None):
+    def __init__(self, act_dim, obs_dim, lr_actor, lr_value, gamma, tau, buffers, alpha=0.2, name=None, seed=1):
         # tf.reset_default_graph()
 
         self.act_dim = act_dim
@@ -125,7 +126,7 @@ class SAC(object):
         self.buffers = buffers
 
         for i in range(buffers):
-            b = ReplayBuffer(capacity=int(5e6), name=self.name+'buffer'+str(i))
+            b = ReplayBuffer(capacity=int(1e6), name=self.name+'buffer'+str(i))
             self.replay_buffer.append(b)
 
         self.OBS0 = tf.placeholder(tf.float32, [None, self.obs_dim], name=self.name+"observations0")
@@ -179,8 +180,12 @@ class SAC(object):
 
         target_init = [tf.assign(tv, v)
                        for v, tv in zip(tf.global_variables(self.name+'Value'), tf.global_variables(self.name+'Target_Value'))]
-
-        self.sess = tf.Session()
+        
+        gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.4)
+        self.sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
+        # new_graph = tf.Graph()
+        # new_graph.seed = SEED[seed]
+        # self.sess = tf.Session()
         tf.summary.scalar(self.name+'policy_loss', self.policy_loss)
         tf.summary.scalar(self.name+'q_value1_loss', self.q_value1_loss)
         tf.summary.scalar(self.name+'q_value2_loss', self.q_value2_loss)

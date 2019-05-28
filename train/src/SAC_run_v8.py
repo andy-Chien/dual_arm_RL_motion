@@ -9,7 +9,7 @@ import math
 import rospy
 import tensorflow as tf
 from sac_v14 import SAC
-from env_v20 import Test
+from env_v21 import Test
 from manipulator_h_base_module_msgs.msg import P2PPose
 
 MAX_EPISODES = 100000
@@ -52,6 +52,12 @@ def worker(name, workers, agent):
             RUN_FLAG[workers].set()
         RUN_FLAG[workers].wait()
 
+        s_arr = []
+        a_arr = []
+        r_arr = []
+        s__arr = []
+        done_arr = []
+
         s = env.reset()
         
         ep_reward = 0
@@ -61,13 +67,29 @@ def worker(name, workers, agent):
         ep = EP[name]
         SUCCESS_ARRAY[name, ep%500] = 0.
         # COLLISION = False
+        first_fail = True
         for j in range(MAX_EP_STEPS):
             WORKER_EVENT[name].wait()
             
             a = agent.choose_action(s)
-            s_, r, done, success = env.step(a)
+            s_, r, done, success, fail = env.step(a)
             if j>1:
-                agent.replay_buffer[workers].store_transition(s, a, r, s_, done)
+                s_arr.append(s)
+                a_arr.append(a)
+                r_arr.append(r)
+                s__arr.append(s_)
+                done_arr.append(done)
+                # agent.replay_buffer[workers].store_transition(s, a, r, s_, done)
+                if fail:
+                    if first_fail:
+                        first_fail = False
+                        for k in range(50):
+                            if k>=len(r_arr):
+                                break
+                            r_arr[-k-1] -= (2-(k*0.04))
+                #     else:
+                #         r_arr[-1] -= 2
+
             success_cnt += int(success)
             done_cnt += int(done)
             # if collision:
@@ -90,6 +112,15 @@ def worker(name, workers, agent):
                 break
             # if done_cnt-success_cnt > 100:
             #     break
+        
+        for i in range(len(s_arr)):
+            agent.replay_buffer[workers].store_transition(s_arr[i], a_arr[i], r_arr[i], s__arr[i], done_arr[i])
+        s_arr.clear()
+        a_arr.clear()
+        r_arr.clear()
+        s__arr.clear()
+        done_arr.clear()
+       
 
         SUCCESS_RATE = 0
         for z in SUCCESS_ARRAY[name]:

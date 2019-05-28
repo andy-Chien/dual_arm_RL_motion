@@ -198,15 +198,6 @@ class Test(core.Env):
         return s
 
     def reset(self):
-        self.goal, self.goal_angle, self.joint_pos[:15], self.joint_pos[15:30]= self.set_goal()
-        linkPosM, linkPosS = self.collision_init()
-        alarm, Link_dis = self.cc.checkCollision(linkPosM, linkPosS)
-        alarm_cnt = 0
-        for i in alarm:
-            alarm_cnt += i
-        if alarm_cnt>0:
-            return self.reset()
-        # self.joint_pos = joint_pos_tmp
         self.old, self.joint_pos[:15], self.joint_pos[15:30], self.joint_angle, self.limit, self.goal_quat, self.quat_inv = self.set_old()
         linkPosM, linkPosS = self.collision_init()
         alarm, Link_dis = self.cc.checkCollision(linkPosM, linkPosS)
@@ -215,7 +206,16 @@ class Test(core.Env):
             alarm_cnt += i
         if alarm_cnt>0:
             return self.reset()
-        # joint_pos_tmp = self.joint_pos
+        joint_pos_tmp = self.joint_pos
+        self.goal, self.goal_angle, self.joint_pos[:15], self.joint_pos[15:30]= self.set_goal()
+        linkPosM, linkPosS = self.collision_init()
+        alarm, Link_dis = self.cc.checkCollision(linkPosM, linkPosS)
+        alarm_cnt = 0
+        for i in alarm:
+            alarm_cnt += i
+        if alarm_cnt>0:
+            return self.reset()
+        self.joint_pos = joint_pos_tmp
         self.state = np.append(self.old, np.subtract(self.goal[:3], self.old[:3]))
         self.state = np.append(self.state, self.goal_quat)
         # self.state = np.append(self.state, np.subtract(self.goal[3:7], self.old[3:7]))
@@ -291,6 +291,8 @@ class Test(core.Env):
         Link_dis = []
         s = self.state
         self.collision = False
+        rd = np.random.rand()
+        a *= (rd*3+0.5)
         action_vec = a[:3]*self.ACTION_VEC_TRANS
         action_ori = a[3:7]*self.ACTION_ORI_TRANS
         action_phi = a[7]*self.ACTION_PHI_TRANS
@@ -333,7 +335,11 @@ class Test(core.Env):
             else:
                 self.set_object(self.__name+'q', (self.goal[0]-0.08, self.goal[1], self.goal[2]+1.45086), self.goal[3:7])
                 self.object_pub = 0
-        return self.state, reward, terminal, self.success
+        fail = False
+        if not res.success or self.collision:
+            fail = True
+
+        return self.state, reward, terminal, self.success, fail
 
     def _terminal(self, s, ik_success, alarm):
         alarm_cnt = 0
@@ -343,8 +349,8 @@ class Test(core.Env):
             self.collision = True
         if ik_success and not self.collision:
             if self.dis_pos < self.goal_err and self.dis_ori < self.ori_err:
+                self.success = True
                 if not self.done:
-                    self.success = True
                     self.done = True
                     self.s_cnt += 1
                     self.range_cnt = self.range_cnt + 0.004 if self.range_cnt < 0.95 else 0.95
@@ -379,7 +385,7 @@ class Test(core.Env):
 
         cos_vec = np.dot(self.action[:3],  self.state[8:11])/(np.linalg.norm(self.action[:3]) *np.linalg.norm(self.state[8:11]))
         
-        reward += (cos_vec*self.dis_pos - self.dis_pos)
+        reward += (cos_vec*self.dis_pos - self.dis_pos)/2
         reward -= 1.8
         return reward
         #==================================================================================

@@ -478,27 +478,27 @@ void BaseModule::set_response_quat(T &res, Eigen::Quaterniond q)
 {
   bool setIk_success = false;
   int all_steps = 50;
-  double mov_time = robotis_->smp_time_ * all_steps;
+  // double mov_time = robotis_->smp_time_ * all_steps;
 
   robotis_->calc_task_tra_.resize(all_steps, 3);
 
-  for (int dim = 0; dim < 3; dim++)
-  {
-    double ini_value = res.state[dim];
-    double tar_value;
+  // for (int dim = 0; dim < 3; dim++)
+  // {
+  //   double ini_value = res.state[dim];
+  //   double tar_value;
 
-    if (dim == 0)
-      tar_value = robotis_->kinematics_pose_msg_.pose.position.x;
-    else if (dim == 1)
-      tar_value = robotis_->kinematics_pose_msg_.pose.position.y;
-    else if (dim == 2)
-      tar_value = robotis_->kinematics_pose_msg_.pose.position.z;
+  //   if (dim == 0)
+  //     tar_value = robotis_->kinematics_pose_msg_.pose.position.x;
+  //   else if (dim == 1)
+  //     tar_value = robotis_->kinematics_pose_msg_.pose.position.y;
+  //   else if (dim == 2)
+  //     tar_value = robotis_->kinematics_pose_msg_.pose.position.z;
 
-    Eigen::MatrixXd tra = robotis_framework::calcMinimumJerkTra(ini_value, 0.0, 0.0, tar_value, 0.0, 0.0,
-                                                                robotis_->smp_time_, mov_time);
+  //   Eigen::MatrixXd tra = robotis_framework::calcMinimumJerkTra(ini_value, 0.0, 0.0, tar_value, 0.0, 0.0,
+  //                                                               robotis_->smp_time_, mov_time);
 
-    robotis_->calc_task_tra_.block(0, dim, all_steps, 1) = tra;
-  }
+  //   robotis_->calc_task_tra_.block(0, dim, all_steps, 1) = tra;
+  // }
   robotis_->calc_slide_tra_ = Eigen::MatrixXd::Zero(all_steps, 1);
   // setIk_success = robotis_->setInverseKinematics(0, all_steps, manipulator_->manipulator_link_data_[END_LINK]->orientation_, manipulator_->manipulator_link_data_[END_LINK]->phi_);
   setIk_success = robotis_->setInverseKinematics(1, all_steps, manipulator_->manipulator_link_data_[END_LINK]->orientation_, manipulator_->manipulator_link_data_[END_LINK]->phi_);

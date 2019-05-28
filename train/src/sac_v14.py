@@ -2,7 +2,14 @@ import numpy as np
 import tensorflow as tf
 import gym
 import random
-NAME = 'SAC_v13_8'
+NAME = 'SAC_v14_11'
+# SAC_v14_6 is the best no fail
+# SAC_v14_7 1024 and last is 512 no fail
+# SAC_v14_8 all of 512 has fail
+# SAC_v14_9 all of 1024 has fail
+# SAC_v14_10 512 and last is 1024 has fail
+# SAC_v14_11 all of 512 no fail
+
 EPS = 1e-8
 LOAD = False
 BATCH_SIZE = 512
@@ -39,7 +46,7 @@ class ValueNetwork(object):
         with tf.variable_scope(self.name):
             h1 = tf.layers.dense(obs, 512, tf.nn.leaky_relu, name='h1')
             h2 = tf.layers.dense(h1, 512, tf.nn.leaky_relu, name='h2')
-            h3 = tf.layers.dense(h2, 1024, tf.nn.leaky_relu, name='h3')
+            h3 = tf.layers.dense(h2, 512, tf.nn.leaky_relu, name='h3')
             # h4 = tf.layers.dense(h3, 1024, tf.nn.leaky_relu)
             value = tf.layers.dense(h3, 1)
             value = tf.squeeze(value, axis=1)
@@ -59,7 +66,7 @@ class QValueNetwork(object):
             input = tf.concat([obs, action], axis=-1)
             h1 = tf.layers.dense(input, 512, tf.nn.leaky_relu, name='h1')
             h2 = tf.layers.dense(h1, 512, tf.nn.leaky_relu, name='h2')
-            h3 = tf.layers.dense(h2, 1024, tf.nn.leaky_relu, name='h3')
+            h3 = tf.layers.dense(h2, 512, tf.nn.leaky_relu, name='h3')
             # h4 = tf.layers.dense(h3, 1024, tf.nn.leaky_relu)
             q_value = tf.layers.dense(h3, 1)
             q_value = tf.squeeze(q_value, axis=1)
@@ -170,7 +177,7 @@ class SAC(object):
         actor_optimizer = tf.train.AdamOptimizer(learning_rate=self.lr_actor)
         actor_train_op = actor_optimizer.minimize(self.policy_loss, var_list=tf.global_variables(self.name+'Actor'))
         value_optimizer = tf.train.AdamOptimizer(learning_rate=self.lr_value)
-        value_params = tf.global_variables(self.name+'Q_value') + tf.global_variables(self.name+'Value')
+        value_params = tf.global_variables(self.name+'Q_value1') + tf.global_variables(self.name+'Q_value2') + tf.global_variables(self.name+'Value')  #who is Q_value
 
         with tf.control_dependencies([actor_train_op]):
             value_train_op = value_optimizer.minimize(self.total_value_loss, var_list=value_params)
@@ -209,10 +216,13 @@ class SAC(object):
     def learn(self, indx):
         obs0, act, rwd, obs1, done, eprwd = self.replay_buffer[indx%self.buffers].sample(batch_size=BATCH_SIZE)
         feed_dict = {self.OBS0: obs0, self.ACT: act,self.OBS1: obs1, self.RWD: rwd,
-                     self.DONE: np.float32(done), self.EPRWD: eprwd}
+                     self.DONE: np.float32(done)}
+        self.sess.run(self.target_update, feed_dict)
         
         if indx%50 == 0:
-            _,result = self.sess.run([self.target_update, self.merged], feed_dict)
+            obs0, act, rwd, obs1, done, eprwd = self.replay_buffer[indx%self.buffers].sample(batch_size=1)
+            feed_dict = {self.OBS0: obs0, self.ACT: act,self.OBS1: obs1, self.RWD: rwd,
+                     self.DONE: np.float32(done), self.EPRWD: eprwd}
+            result = self.sess.run(self.merged, feed_dict)
             self.writer.add_summary(result, indx)
-        else:
-            self.sess.run(self.target_update, feed_dict)
+            
