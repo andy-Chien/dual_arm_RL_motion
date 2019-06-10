@@ -292,7 +292,7 @@ class Test(core.Env):
         s = self.state
         self.collision = False
         rd = np.random.rand()
-        a *= (rd*3+0.5)
+        a *= (rd*1.5+0.5)
         action_vec = a[:3]*self.ACTION_VEC_TRANS
         action_ori = a[3:7]*self.ACTION_ORI_TRANS
         action_phi = a[7]*self.ACTION_PHI_TRANS

@@ -91,8 +91,8 @@ ManipulatorKinematicsDynamics::ManipulatorKinematicsDynamics(TreeSelect tree)
     manipulator_link_data_[3]->center_of_mass_    = robotis_framework::getTransitionXYZ(0.0, 0.0, 0.0);
     manipulator_link_data_[3]->joint_limit_max_   =  180 * M_PI/180;
     manipulator_link_data_[3]->joint_limit_min_   = -180 * M_PI/180;
-    manipulator_link_data_[3]->train_limit_max_   =  180  * M_PI/180;
-    manipulator_link_data_[3]->train_limit_min_   =  -180  * M_PI/180;//30
+    manipulator_link_data_[3]->train_limit_max_   =  0  * M_PI/180;
+    manipulator_link_data_[3]->train_limit_min_   =  0  * M_PI/180;//30
     manipulator_link_data_[3]->inertia_           = robotis_framework::getInertiaXYZ(1.0, 0.0, 0.0, 1.0, 0.0, 1.0);
 
     manipulator_link_data_[4]->name_    = "joint4";

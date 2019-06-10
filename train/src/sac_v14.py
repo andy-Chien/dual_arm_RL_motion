@@ -2,13 +2,19 @@ import numpy as np
 import tensorflow as tf
 import gym
 import random
-NAME = 'SAC_v14_11'
+NAME = 'SAC_v14_17'
 # SAC_v14_6 is the best no fail
 # SAC_v14_7 1024 and last is 512 no fail
 # SAC_v14_8 all of 512 has fail
 # SAC_v14_9 all of 1024 has fail
 # SAC_v14_10 512 and last is 1024 has fail
 # SAC_v14_11 all of 512 no fail
+# SAC_v14_12 all of 512 has fail
+# SAC_v14_13 all of 512 has fail change rand place
+# SAC_v14_14 all of 512 has fail no rand
+# SAC_v14_15 all of 512 has fail has rand joint3 =0
+# SAC_v14_16 range_cnt += 0.001 and the same
+# SAC_v14_17 range_cnt max 0.95 -> 0.85 and the same
 
 EPS = 1e-8
 LOAD = False

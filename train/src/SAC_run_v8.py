@@ -72,6 +72,8 @@ def worker(name, workers, agent):
             WORKER_EVENT[name].wait()
             
             a = agent.choose_action(s)
+            rd = np.random.rand()
+            a *= (rd*3+0.5)
             s_, r, done, success, fail = env.step(a)
             if j>1:
                 s_arr.append(s)

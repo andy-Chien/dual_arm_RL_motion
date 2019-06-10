@@ -66,7 +66,7 @@ class Test(core.Env):
         # self.dis_pos
         self.cc = CheckCollision()
         self.collision = False
-        self.range_cnt = 0.6
+        self.range_cnt = 0.4+(workers*0.1)
         self.rpy_range = 0.2*(workers+1)
         self.done = True
         self.s_cnt = 0
@@ -291,8 +291,6 @@ class Test(core.Env):
         Link_dis = []
         s = self.state
         self.collision = False
-        rd = np.random.rand()
-        a *= (rd*3+0.5)
         action_vec = a[:3]*self.ACTION_VEC_TRANS
         action_ori = a[3:7]*self.ACTION_ORI_TRANS
         action_phi = a[7]*self.ACTION_PHI_TRANS
@@ -353,8 +351,8 @@ class Test(core.Env):
                 if not self.done:
                     self.done = True
                     self.s_cnt += 1
-                    self.range_cnt = self.range_cnt + 0.004 if self.range_cnt < 0.95 else 0.95
-                    self.rpy_range = self.rpy_range + 0.002 if self.rpy_range < 0.8 else 0.8
+                    self.range_cnt = self.range_cnt + 0.001 if self.range_cnt < 0.85 else 0.85 #0.004
+                    self.rpy_range = self.rpy_range + 0.001 if self.rpy_range < 0.8 else 0.8 #0.002
                     self.goal_err = self.goal_err*0.993 if self.goal_err > 0.015 else 0.015
                     self.ori_err = self.ori_err*0.993 if self.ori_err > 0.2 else 0.2
                 return True
