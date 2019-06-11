@@ -199,6 +199,7 @@ bool BaseModule::move_cmd_callback(train::move_cmd::Request &req, train::move_cm
 
   robotis_->is_ik = true;
   slide_->goal_slide_pos = 0;
+  manipulator_->manipulator_link_data_[0]->mov_speed_ = 400;
   limit_success = manipulator_->limit_check(target_positoin, target_rotation);
   if(limit_success)
     ik_success = manipulator_->inverseKinematics(END_LINK, target_positoin, target_rotation, target_phi, slide_->goal_slide_pos, false);
@@ -214,6 +215,7 @@ bool BaseModule::move_cmd_callback(train::move_cmd::Request &req, train::move_cm
   for (int i=1; i<=MAX_JOINT_ID; i++)
     res.curr_angle[i] = manipulator_->manipulator_link_data_[i]->joint_angle_;
   res.success = ik_success;
+  res.singularity = manipulator_->manipulator_link_data_[0]->singularity_;
   res.quat_inv = robotis_->is_inv;
   return true;
 }
@@ -476,32 +478,17 @@ void BaseModule::set_response_limit(T &res)
 template <typename T>
 void BaseModule::set_response_quat(T &res, Eigen::Quaterniond q)
 {
+  Eigen::VectorXd Old_JointAngle(8);
   bool setIk_success = false;
   int all_steps = 50;
-  // double mov_time = robotis_->smp_time_ * all_steps;
-
   robotis_->calc_task_tra_.resize(all_steps, 3);
 
-  // for (int dim = 0; dim < 3; dim++)
-  // {
-  //   double ini_value = res.state[dim];
-  //   double tar_value;
-
-  //   if (dim == 0)
-  //     tar_value = robotis_->kinematics_pose_msg_.pose.position.x;
-  //   else if (dim == 1)
-  //     tar_value = robotis_->kinematics_pose_msg_.pose.position.y;
-  //   else if (dim == 2)
-  //     tar_value = robotis_->kinematics_pose_msg_.pose.position.z;
-
-  //   Eigen::MatrixXd tra = robotis_framework::calcMinimumJerkTra(ini_value, 0.0, 0.0, tar_value, 0.0, 0.0,
-  //                                                               robotis_->smp_time_, mov_time);
-
-  //   robotis_->calc_task_tra_.block(0, dim, all_steps, 1) = tra;
-  // }
   robotis_->calc_slide_tra_ = Eigen::MatrixXd::Zero(all_steps, 1);
-  // setIk_success = robotis_->setInverseKinematics(0, all_steps, manipulator_->manipulator_link_data_[END_LINK]->orientation_, manipulator_->manipulator_link_data_[END_LINK]->phi_);
-  setIk_success = robotis_->setInverseKinematics(1, all_steps, manipulator_->manipulator_link_data_[END_LINK]->orientation_, manipulator_->manipulator_link_data_[END_LINK]->phi_);
+  
+  for (int id = 0; id <= MAX_JOINT_ID; id++)
+      Old_JointAngle(id) = manipulator_->manipulator_link_data_[id]->joint_angle_;
+  setIk_success = robotis_->setInverseKinematics(1, all_steps, manipulator_->manipulator_link_data_[END_LINK]->orientation_, manipulator_->manipulator_link_data_[END_LINK]->phi_, Old_JointAngle);
+  
   res.quaterniond.resize(8);
   Eigen::Quaterniond goal_q;
   goal_q.coeffs() = robotis_->ik_target_quaternion.coeffs() - q.coeffs();
@@ -516,10 +503,6 @@ void BaseModule::set_response_quat(T &res, Eigen::Quaterniond q)
   res.quaterniond[5] = goal_q.x();
   res.quaterniond[6] = goal_q.y();
   res.quaterniond[7] = goal_q.z();
-  // res.quaterniond[0] = q.w();
-  // res.quaterniond[1] = q.x();
-  // res.quaterniond[2] = q.y();
-  // res.quaterniond[3] = q.z();
   return;
 }
 
@@ -1030,15 +1013,18 @@ void BaseModule::process(std::map<std::string, robotis_framework::Dynamixel *> d
 //    ros::Time time = ros::Time::now();
   if (robotis_->is_moving_ == true && robotis_->cnt_ < robotis_->all_time_steps_)
   {
+    Eigen::VectorXd Old_JointAngle(8);
     if (robotis_->cnt_ == 0)
     {
       robotis_->ik_start_rotation_ = manipulator_->manipulator_link_data_[robotis_->ik_id_end_]->orientation_;
       robotis_->ik_start_phi_ = manipulator_->manipulator_link_data_[robotis_->ik_id_end_]->phi_;
+      for (int id = 0; id <= MAX_JOINT_ID; id++)
+        Old_JointAngle(id) = manipulator_->manipulator_link_data_[id]->joint_angle_;
     }
     if (robotis_->ik_solve_ == true)
     {
       bool setIk_success;
-      setIk_success = robotis_->setInverseKinematics(robotis_->cnt_, robotis_->all_time_steps_, robotis_->ik_start_rotation_, robotis_->ik_start_phi_);
+      setIk_success = robotis_->setInverseKinematics(robotis_->cnt_, robotis_->all_time_steps_, robotis_->ik_start_rotation_, robotis_->ik_start_phi_, Old_JointAngle);
 
       int     max_iter      = 30;
       double  ik_tol        = 1e-3;
@@ -1061,6 +1047,7 @@ void BaseModule::process(std::map<std::string, robotis_framework::Dynamixel *> d
           robotis_->cnt_--;
           // robotis_->cnt_ = (robotis_->cnt_ > 1) ? (robotis_->cnt_-1) : robotis_->cnt_;
           std::cout<<robotis_->cnt_<<std::endl;
+          publishStatusMsg(robotis_controller_msgs::StatusMsg::STATUS_INFO, "singularity");
         }
           // std::cout<<"==========================process after ik"<<std::endl;
           // manipulator_->forwardKinematics(7);

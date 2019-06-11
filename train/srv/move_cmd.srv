@@ -9,3 +9,4 @@ float64[] quaterniond
 float64[] curr_angle
 bool      quat_inv
 bool      success
+bool      singularity

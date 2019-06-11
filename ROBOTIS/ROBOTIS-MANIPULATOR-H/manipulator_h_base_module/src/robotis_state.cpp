@@ -66,7 +66,7 @@ RobotisState::~RobotisState()
 {
 }
 
-bool RobotisState::setInverseKinematics(int cnt, int all_steps, Eigen::MatrixXd start_rotation, double start_phi)
+bool RobotisState::setInverseKinematics(int cnt, int all_steps, Eigen::MatrixXd start_rotation, double start_phi, Eigen::VectorXd Old_JointAngle)
 {
   for (int dim = 0; dim < 3; dim++)
     ik_target_position_.coeffRef(dim, 0) = calc_task_tra_.coeff(cnt, dim);
@@ -83,12 +83,14 @@ bool RobotisState::setInverseKinematics(int cnt, int all_steps, Eigen::MatrixXd 
   {
     is_inv = false;
     int c;
-    bool ik_s;
+    bool ik_s = false;
+    bool limit_success;
     Eigen::Vector3d test_position;
     Eigen::MatrixXd test_rotation;
-    Eigen::VectorXd Old_JointAngle(8);
     float test_phi;
     float test_slide_pos;
+    for (int id = 0; id <= MAX_JOINT_ID; id++)
+        IK_test->manipulator_link_data_[id]->joint_angle_ = Old_JointAngle(id);
     for(float i=0; i<=12; i++)
     {
       c = int(((double)all_steps-1) * i/12);
@@ -98,10 +100,23 @@ bool RobotisState::setInverseKinematics(int cnt, int all_steps, Eigen::MatrixXd 
       test_rotation = robotis_framework::convertQuaternionToRotation(q);
       test_phi = start_phi + i/12 * (kinematics_pose_msg_.phi - start_phi);
       test_slide_pos = calc_slide_tra_.coeff(c,0);
-      // for (int id = 0; id < idx.size(); id++)
-      //   Old_JointAngle[idx[id]] = manipulator_link_data_[idx[id]]->joint_angle_;
-      ik_s = IK_test->InverseKinematics_p2p(test_position, test_rotation, test_phi, test_slide_pos, Old_JointAngle, bool(i));
-      if(!ik_s){
+      ik_s = IK_test->InverseKinematics_p2p(test_position, test_rotation, test_phi, test_slide_pos, Old_JointAngle, true);
+      for (int id = 1; id <= 7; id++)
+      {
+        if (IK_test->manipulator_link_data_[id]->joint_angle_ > IK_test->manipulator_link_data_[id]->joint_limit_max_)
+        {
+          limit_success = false;   
+          break;
+        }
+        else if (IK_test->manipulator_link_data_[id]->joint_angle_ < IK_test->manipulator_link_data_[id]->joint_limit_min_)
+        {
+          limit_success = false;   
+          break;
+        }
+        else
+          limit_success = true;
+      }
+      if(!ik_s || !limit_success){
         if(!is_inv){
           is_inv = true;
           i = -1;

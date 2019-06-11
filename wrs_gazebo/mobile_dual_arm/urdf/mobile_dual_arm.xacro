@@ -26,7 +26,7 @@
   </joint>
        
   <xacro:single_arm side="r"  parent="Arm_Base_R_Link" child="r_tool_link" toolrot="1.57">
-    <origin xyz="0 -0.016 0" rpy="1.57 1.57 0" />
+    <origin xyz="0 -0.1 0" rpy="1.57 3.14 0" />
   </xacro:single_arm>
 
   <xacro:suction side="r"  parent="r_Link_6">
@@ -34,7 +34,7 @@
   </xacro:suction>
 
   <xacro:single_arm side="l"  parent="Arm_Base_L_Link" child="l_tool_link" toolrot="-1.57">
-    <origin xyz="0 0.016 0" rpy="-1.57 1.57 0" />
+    <origin xyz="0 0.1 0" rpy="-1.57 0 0" />
   </xacro:single_arm>
 
   <xacro:suction side="l"  parent="l_Link_6">

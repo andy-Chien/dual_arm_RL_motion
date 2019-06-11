@@ -14,7 +14,7 @@
 	    name="${side}_Base">
 	    <inertial>
 	      <origin
-		xyz="0.000156250860732315 0.000202963757501797 -0.0546720420122521"
+		xyz="4.11470055452497E-06 -0.000230371464482181 0.0621924893349088"
 		rpy="0 0 0" />
 	      <mass
 		value="1.323603974032196" />
@@ -61,7 +61,7 @@
 	    name="${side}_Link_1">
 	    <inertial>
 	      <origin
-		xyz="-3.64540734812575E-06 0.00119778550610652 -0.000421399675048756"
+		xyz="0.000398625697734733 -3.44839622274201E-06 0.157268979305323"
 		rpy="0 0 0" />
 	      <mass
 		value="1.386131223153925" />
@@ -101,25 +101,25 @@
 	    name="${side}_joint_1"
 	    type="revolute">
 	    <origin
-	      xyz="0 0 0.0550000000000002"
-	      rpy="-1.5707963267949 -2.60398896659329E-32 1.5707963267949" />
+	      xyz="0 0 0"
+	      rpy="0 0 -1.5708" />
 	    <parent
 	      link="${side}_Base" />
 	    <child
 	      link="${side}_Link_1" />
 	    <axis
-	      xyz="0 -1 0" />
+	      xyz="0 0 1" />
 	    <limit
 	      lower="-3.14"
 	      upper="3.14"
 	      effort="75"
-	      velocity="650" />
+	      velocity="65" />
 	  </joint>
 	  <link
 	    name="${side}_Link_2">
 	    <inertial>
 	      <origin
-		xyz="0.000683310419598862 -8.00535195483731E-05 0.117541995924546"
+		xyz="0.0872199190349209 -2.17078867403853E-06 -0.00123755630277769"
 		rpy="0 0 0" />
 	      <mass
 		value="1.479430893999342" />
@@ -159,25 +159,25 @@
 	    name="${side}_joint_2"
 	    type="revolute">
 	    <origin
-	      xyz="0 0 0"
-	      rpy="-1.5707963267949 7.39557098644699E-32 -1.5707963267949" />
+	      xyz="0 0 0.16"
+	      rpy="1.5708 0 1.5708" />
 	    <parent
 	      link="${side}_Link_1" />
 	    <child
 	      link="${side}_Link_2" />
 	    <axis
-	      xyz="0 -1 0" />
+	      xyz="0 0 -1" />
 	    <limit
 	      lower="-3.14"
 	      upper="3.14"
 	      effort="75"
-	      velocity="650" />
+	      velocity="65" />
 	  </joint>
 	  <link
 	    name="${side}_Link_3">
 	    <inertial>
 	      <origin
-		xyz="-0.0220564838621471 0.101455973505417 -8.62457453022769E-05"
+		xyz="-0.0149070189110112 5.93125910155643E-05 0.262650975551228"
 		rpy="0 0 0" />
 	      <mass
 		value="1.568306813792926" />
@@ -217,25 +217,25 @@
 	    name="${side}_joint_3"
 	    type="revolute">
 	    <origin
-	      xyz="0 0 0.174"
-	      rpy="1.5707963267949 4.63843178081015E-17 6.91111242388425E-16" />
+	      xyz="0 0 0"
+	      rpy="1.5708 0 1.5708" />
 	    <parent
 	      link="${side}_Link_2" />
 	    <child
 	      link="${side}_Link_3" />
 	    <axis
-	      xyz="0 1 0" />
+	      xyz="0 0 1" />
 	    <limit
 	      lower="-3.14"
 	      upper="3.14"
 	      effort="65"
-	      velocity="650" />
+	      velocity="65" />
 	  </joint>
 	  <link
 	    name="${side}_Link_4">
 	    <inertial>
 	      <origin
-		xyz="0.0297389855299131 0.0361651889050357 0.108377256276242"
+		xyz="-0.0294457805062883 -0.0888739607940883 8.91006395364796E-05"
 		rpy="0 0 0" />
 	      <mass
 		value="1.457613402476782" />
@@ -275,25 +275,25 @@
 	    name="${side}_joint_4"
 	    type="revolute">
 	    <origin
-	      xyz="-0.0299999998727122 0.115999993001519 0.0359999999999999"
-	      rpy="-1.5707963267949 -1.40443212615082E-14 1.75438367537121E-15" />
+	      xyz="-0.03 0 0.29"
+	      rpy="-1.5708 0 -3.1416" />
 	    <parent
 	      link="${side}_Link_3" />
 	    <child
 	      link="${side}_Link_4" />
 	    <axis
-	      xyz="0 -1 0" />
+	      xyz="0 0 1" />
 	    <limit
 	      lower="-3.14"
 	      upper="3.14"
 	      effort="65"
-	      velocity="650" />
+	      velocity="65" />
 	  </joint>
 	  <link
 	    name="${side}_Link_5">
 	    <inertial>
 	      <origin
-		xyz="-0.000172095429412281 0.102690028206534 -6.66794215013755E-05"
+		xyz="1.27279603523434E-10 5.99983513058479E-05 0.247701821537204"
 		rpy="0 0 0" />
 	      <mass
 		value="1.448277275798768" />
@@ -333,25 +333,25 @@
 	    name="${side}_joint_5"
 	    type="revolute">
 	    <origin
-	      xyz="0.029999999872713 0.0359999999999987 0.162"
-	      rpy="1.5707963267949 -8.80083043478898E-16 -2.49800180540655E-16" />
+	      xyz="-0.03 0 0"
+	      rpy="-1.5708 -6.5485E-17 -3.1416" />
 	    <parent
 	      link="${side}_Link_4" />
 	    <child
 	      link="${side}_Link_5" />
 	    <axis
-	      xyz="0 1 0" />
+	      xyz="0 0 1" />
 	    <limit
 	      lower="-3.14"
 	      upper="3.14"
 	      effort="65"
-	      velocity="650" />
+	      velocity="65" />
 	  </joint>
 	  <link
 	    name="${side}_Link_6">
 	    <inertial>
 	      <origin
-		xyz="1.14707347786958E-08 0.0359051244401507 0.076720238383497"
+		xyz="1.27298144247945E-10 -0.0744505668165777 -7.66617635603494E-05"
 		rpy="0 0 0" />
 	      <mass
 		value="1.205818407044008" />
@@ -361,7 +361,7 @@
 		ixz="1.44977628429904E-16"
 		iyy="0.000143902079306418"
 		iyz="2.7663385335139E-07"
-		izz="0.000196835999327886"/>
+		izz="0.000196835999327886" />
 	    </inertial>
 	    <visual>
 	      <origin
@@ -391,19 +391,19 @@
 	    name="${side}_joint_6"
 	    type="revolute">
 	    <origin
-	      xyz="0 0.108000511190835 0.0360000000000014"
-	      rpy="-1.5707963267949 0 4.46815747097797E-32" />
+	      xyz="0 0 0.263"
+	      rpy="-1.5708 0 4.5659E-16" />
 	    <parent
 	      link="${side}_Link_5" />
 	    <child
 	      link="${side}_Link_6" />
 	    <axis
-	      xyz="0 -1 0" />
+	      xyz="0 0 -1" />
 	    <limit
 	      lower="-3.14"
 	      upper="3.14"
 	      effort="65"
-	      velocity="650" />
+	      velocity="65" />
 	  </joint>
 	  <!-- <link
 	    name="${side}_Link_7">
@@ -449,11 +449,8 @@
 			name="${side}_joint_7"
 			type="revolute">
 			<origin
-				xyz="0 0.03680 0.135"
-				rpy="0 0 0" />
-				<!-- rpy="1.5708 ${toolrot} 0" /> -->
-				<!-- xyz="-0.008041 0.038 0.13545" -->
-				<!-- xyz="-0.0025 0.038 0.135" -->
+				xyz="0 -0.1345 0"
+				rpy="1.5708 ${toolrot} 0" />
 			<parent
 				link="${side}_Link_6" />
 			<child
@@ -464,7 +461,7 @@
 				lower="-3.14"
 				upper="3.14"
 				effort="22"
-				velocity="650" />
+				velocity="65" />
 		</joint>
 		
           <!--

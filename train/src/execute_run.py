@@ -33,6 +33,9 @@ def run(nameIndx):
     IKFAIL_ARRAY = np.zeros([1000])
     IKFAIL_ARRAY_P2P = np.zeros([1000])
     IKFAIL_ARRAY_LINE = np.zeros([1000])
+    SINGULARITY_ARRAY = np.zeros([1000])
+    SINGULARITY_ARRAY_P2P = np.zeros([1000])
+    SINGULARITY_ARRAY_LINE = np.zeros([1000])
     S_RATE = 0
     S_RATE_P2P = 0
     S_RATE_LINE = 0
@@ -44,6 +47,7 @@ def run(nameIndx):
     I_RATE_LINE = 0
     COLLISION = False
     IKFAIL = False
+    SINGULARITY = False
 
     env = Test(nameIndx, 0) #0 = right
     arm = ArmTask(SIDE[nameIndx]+'arm')
@@ -61,7 +65,7 @@ def run(nameIndx):
         start = s[:8]
         for __ in range(1000):
             a = agent.choose_action(s)
-            s, done, collision, ik_success= env.step(a)
+            s, done, collision, ik_success, singularity = env.step(a)
             done_cnt += int(done)
             if COLLISION:
                 COLLISION_ARRAY[cnt%1000] = 1
@@ -71,6 +75,10 @@ def run(nameIndx):
                 IKFAIL_ARRAY[cnt%1000] = 1
             elif not ik_success:
                 IKFAIL = True
+            if SINGULARITY:
+                SINGULARITY_ARRAY[cnt%1000] = 1
+            elif singularity:
+                SINGULARITY = True
             if done_cnt > 2:    
                 SUCCESS_ARRAY[cnt%1000] = 1
                 COLLISION_ARRAY[cnt%1000] = 0
@@ -79,6 +87,7 @@ def run(nameIndx):
 
         COLLISION = False
         IKFAIL = False
+        SINGULARITY = False
         time.sleep(0.5)
         env.move_arm(start)
         time.sleep(1)
@@ -87,11 +96,14 @@ def run(nameIndx):
             if env.check_collision():
                 COLLISION = True
                 COLLISION_ARRAY_P2P[cnt%1000] = 1
-                break
             if arm.is_ikfail:
                 IKFAIL = True
                 IKFAIL_ARRAY_P2P[cnt%1000] = 1
+                arm.clear_cmd()
                 break
+            if arm.singularity:
+                SINGULARITY = True
+                SINGULARITY_ARRAY_P2P[cnt%1000] = 1
         if not COLLISION and not IKFAIL:
             SUCCESS_ARRAY_P2P[cnt%1000] = 1
         COLLISION = False
@@ -104,11 +116,14 @@ def run(nameIndx):
             if env.check_collision():
                 COLLISION = True
                 COLLISION_ARRAY_LINE[cnt%1000] = 1
-                break
             if arm.is_ikfail:
                 IKFAIL = True
                 IKFAIL_ARRAY_LINE[cnt%1000] = 1
+                arm.clear_cmd()
                 break
+            if arm.singularity:
+                SINGULARITY = True
+                SINGULARITY_ARRAY_LINE[cnt%1000] = 1
         if not COLLISION and not IKFAIL:
             SUCCESS_ARRAY_LINE[cnt%1000] = 1
 
@@ -121,6 +136,9 @@ def run(nameIndx):
         I_RATE = 0
         I_RATE_P2P = 0
         I_RATE_LINE = 0
+        SI_RATE = 0
+        SI_RATE_P2P = 0
+        SI_RATE_LINE = 0
         for z in SUCCESS_ARRAY:
             S_RATE += z
         for z in SUCCESS_ARRAY_P2P:
@@ -139,7 +157,14 @@ def run(nameIndx):
             I_RATE_P2P += z
         for z in IKFAIL_ARRAY_LINE:
             I_RATE_LINE += z
-        print('Ep:', cnt, 's_rate:', S_RATE, S_RATE_P2P, S_RATE_LINE, '    c_rate:', C_RATE, C_RATE_P2P, C_RATE_LINE, '    i_rate', I_RATE, I_RATE_P2P, I_RATE_LINE)
+        for z in SINGULARITY_ARRAY:
+            SI_RATE += z
+        for z in SINGULARITY_ARRAY_P2P:
+            SI_RATE_P2P += z
+        for z in SINGULARITY_ARRAY_LINE:
+            SI_RATE_LINE += z
+        print('Ep:', cnt, 's_rate:', S_RATE, S_RATE_P2P, S_RATE_LINE, '    c_rate:', C_RATE, C_RATE_P2P, C_RATE_LINE, \
+                      '    i_rate', I_RATE, I_RATE_P2P, I_RATE_LINE, '    si_rate:', SI_RATE, SI_RATE_P2P, SI_RATE_LINE)
 
 def right_callback(msg):
     global cmd, move

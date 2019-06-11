@@ -62,6 +62,7 @@ add_service_files(
   move_cmd.srv
   set_goal.srv
   set_start.srv
+  environment.srv
 )
 
 ## Generate actions in the 'action' folder

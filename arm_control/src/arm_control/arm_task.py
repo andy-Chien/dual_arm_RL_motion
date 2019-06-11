@@ -43,6 +43,7 @@ class ArmTask:
         self.__ik_fail = False
         self.__is_stop = False
         self.__is_wait = False
+        self.__is_singularity = False
         self.__speed = 50
 
     def __set_pubSub(self):
@@ -106,6 +107,8 @@ class ArmTask:
         elif 'End Trajectory' in msg.status_msg:
             self.__is_busy = False
             # print('Arm task receive End Trajectory')
+        elif 'singularity' in msg.status_msg:
+            self.__is_singularity = True
 
     def __stop_callback(self, msg):
         if msg.data:
@@ -138,6 +141,10 @@ class ArmTask:
     @property
     def is_ikfail(self):
         return self.__ik_fail
+
+    @property
+    def singularity(self):
+        return self.__is_singularity
 
     @property
     def is_stop(self):
@@ -230,6 +237,7 @@ class ArmTask:
         """Publish msg of ik cmd (deg) to manager node."""
         self.__is_busy = True
         self.__ik_fail = False
+        self.__is_singularity = False
 
         msg = KinematicsPose()
         msg.name = 'arm'
