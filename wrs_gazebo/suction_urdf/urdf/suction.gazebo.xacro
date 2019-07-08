@@ -15,14 +15,14 @@
   <gazebo reference="${side}_tool_link">
     <mu1>0.2</mu1>
     <mu2>0.2</mu2>
-    <material>Gazebo/white</material>
+    <material>Gazebo/BlackTransparent</material>
     <selfCollide>false</selfCollide>
   </gazebo>
 
   <gazebo reference="${side}_tool_end_Link">
     <mu1>0.2</mu1>
     <mu2>0.2</mu2>
-    <material>Gazebo/grey</material>
+    <material>Gazebo/BlackTransparent</material>
     <selfCollide>false</selfCollide>
   </gazebo>
 

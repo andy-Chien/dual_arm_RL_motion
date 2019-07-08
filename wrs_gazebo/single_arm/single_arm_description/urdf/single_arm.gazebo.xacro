@@ -62,6 +62,7 @@
     <material>Gazebo/Orange</material>
     <selfCollide>false</selfCollide>
   </gazebo>
+
   <!-- <gazebo reference="${side}_Link_7">
     <mu1>0.2</mu1>
     <mu2>0.2</mu2>

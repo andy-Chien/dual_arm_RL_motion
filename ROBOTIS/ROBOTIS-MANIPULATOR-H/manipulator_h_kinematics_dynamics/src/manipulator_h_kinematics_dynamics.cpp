@@ -1099,7 +1099,7 @@ bool ManipulatorKinematicsDynamics::InverseKinematics_p2p( Eigen::VectorXd goal_
     Distance(2) *= 3;
     Distance(4) *= 3;
     Distance(6) *= 3;
-    dis_max = Distance.cwiseAbs().maxCoeff();
+    dis_max = Distance.block(0,0,1,7).cwiseAbs().maxCoeff();
     Distance(2) /= 3;
     Distance(4) /= 3;
     Distance(6) /= 3;
@@ -1112,7 +1112,7 @@ bool ManipulatorKinematicsDynamics::InverseKinematics_p2p( Eigen::VectorXd goal_
       {
         JointAngle(id) = Old_JointAngle(id) + Distance(id)*(move_max/dis_max);
       }
-      std::cout<<"fuckfuckfuckfuckfuckfuckfuckfuck"<<manipulator_link_data_[0]->mov_speed_<<std::endl;
+      // std::cout<<"fuckfuckfuckfuckfuckfuckfuckfuck"<<manipulator_link_data_[0]->mov_speed_<<std::endl;
     }
     else
       manipulator_link_data_[0]->singularity_ = false;

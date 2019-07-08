@@ -30,6 +30,7 @@
               <radius>0.02</radius>
             </sphere>
           </geometry>
+          <material><ambient>1 0 0 1</ambient></material>
         </visual>
       </link>
     </model>
@@ -45,12 +46,13 @@
               <radius>0.02</radius>
             </sphere>
           </geometry>
+          <material><ambient>1 0 0 1</ambient></material>
         </visual>
       </link>
     </model>
 
     <model name="/right_qarm">
-      <pose>0.3 -0.1 13  0 0 0</pose>
+      <pose>0.3 0.1 13  0 0 0</pose>
       <static>false</static>
       <link name="/left_arm">
         <visual name="visual">
@@ -61,6 +63,7 @@
               <length>0.2</length>
             </cylinder>
           </geometry>
+          <material><ambient>1 0 0 1</ambient></material>
         </visual>
       </link>
     </model>
@@ -77,6 +80,7 @@
               <length>0.2</length>
             </cylinder>
           </geometry>
+          <material><ambient>1 0 0 1</ambient></material>
         </visual>
       </link>
     </model>

@@ -22,7 +22,8 @@
  */
 
 #include <stdio.h>
-
+#include <stdlib.h>
+#include <time.h>
 #include "manipulator_h_base_module/base_module.h"
 
 using namespace robotis_manipulator_h;
@@ -183,9 +184,9 @@ bool BaseModule::move_cmd_callback(train::move_cmd::Request &req, train::move_cm
   bool ik_success = false;
   bool setIk_success = false;
   Eigen::Matrix3d target_rotation;
-  Eigen::Vector3d target_positoin;
+  Eigen::Vector3d target_position;
 
-  target_positoin << req.action[0], 
+  target_position << req.action[0], 
                      req.action[1],
                      req.action[2];
 
@@ -199,10 +200,10 @@ bool BaseModule::move_cmd_callback(train::move_cmd::Request &req, train::move_cm
 
   robotis_->is_ik = true;
   slide_->goal_slide_pos = 0;
-  manipulator_->manipulator_link_data_[0]->mov_speed_ = 400;
-  limit_success = manipulator_->limit_check(target_positoin, target_rotation);
+  manipulator_->manipulator_link_data_[0]->mov_speed_ = 800;
+  limit_success = manipulator_->limit_check(target_position, target_rotation);
   if(limit_success)
-    ik_success = manipulator_->inverseKinematics(END_LINK, target_positoin, target_rotation, target_phi, slide_->goal_slide_pos, false);
+    ik_success = manipulator_->inverseKinematics(END_LINK, target_position, target_rotation, target_phi, slide_->goal_slide_pos, false);
   robotis_->is_ik = false;
   
   if (ik_success && enable_)
@@ -227,7 +228,7 @@ bool BaseModule::set_goal_callback(train::set_goal::Request &req, train::set_goa
   bool ik_success = false;
   bool setIk_success = false;
   bool limit_success = false;
-  Eigen::Vector3d positoin;
+  Eigen::Vector3d position;
   Eigen::Matrix3d rotation;
   double angle_tmp[8] = {0};
   double phi;
@@ -246,14 +247,51 @@ bool BaseModule::set_goal_callback(train::set_goal::Request &req, train::set_goa
     manipulator_->manipulator_link_data_[i]->joint_angle_ = req.action[i];
   manipulator_->forwardKinematics(7);
   //==========================================================================================================================
-  positoin = manipulator_->manipulator_link_data_[6]->position_;
+  position = manipulator_->manipulator_link_data_[6]->position_;
+  // srand(time(NULL));
+  // int rr = rand();
+  // std::cout<<"rrrrrrrrrrrrrrrrrrrrr"<<rr<<std::endl;
+  // int rrr = int(req.rpy[3]);
+  // switch(rrr){
+  //   case 0:
+  //     position << 0.2, 0.15, -0.1;
+  //     break;
+  //   case 1:
+  //     position << 0.35, 0.1, -0.1;
+  //     break;
+  //   case 2:
+  //     position << 0.2, -0.15, -0.1;
+  //     break;
+  //   case 3:
+  //     position << 0.35, -0.1, -0.1;
+  //     break;
+  //   case 4:
+  //     position << 0.275, 0.35, -0.1;
+  //     std::cout<<"fuckkkkkkkkkkqqqqqqqqqqqqqqqqqqqqqqkkkkkkkkkkkk"<<std::endl;
+  //     break;
+  //   case 5:
+  //     position << 0.275, -0.35, -0.1;
+  //     std::cout<<"fuckkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"<<std::endl;
+  //     break;
+  //   case 6:
+  //     position << 0.275, 0.35, -0.1;
+  //     std::cout<<"fuckkkkkkkkkkqqqqqqqqqqqqqqqqqqqqqqkkkkkkkkkkkk"<<std::endl;
+  //     break;
+  //   case 7:
+  //     position << 0.275, -0.35, -0.1;
+  //     std::cout<<"fuckkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"<<std::endl;
+  //     break;
+  // }
   rotation = robotis_framework::convertRPYToRotation(req.rpy[0]*M_PI, req.rpy[1]*M_PI, req.rpy[2]*M_PI);
-  positoin += manipulator_->get_d4()*rotation.block(0,2,3,1);
-  phi = req.rpy[3]*M_PI/2;
+  // rotation = robotis_framework::convertRPYToRotation(1.57, 0, 0);
+  position += manipulator_->get_d4()*rotation.block(0,2,3,1);
+
+  phi = req.rpy[3]*M_PI/4;
+  // phi = 0;
   slide_->goal_slide_pos = 0;
-  limit_success = manipulator_->limit_check(positoin, rotation);
+  limit_success = manipulator_->limit_check(position, rotation);
   if(limit_success)
-    ik_success = manipulator_->inverseKinematics(END_LINK, positoin, rotation, phi, slide_->goal_slide_pos, true);
+    ik_success = manipulator_->inverseKinematics(END_LINK, position, rotation, phi, slide_->goal_slide_pos, true);
   //==============================================================================================================================
   robotis_->is_ik = false;
   this->set_response(res);
@@ -272,7 +310,7 @@ bool BaseModule::set_start_callback(train::set_start::Request &req, train::set_s
   double dis, mu;
   bool ik_success = true;
   bool limit_success = false;
-  Eigen::Vector3d positoin;
+  Eigen::Vector3d position;
   Eigen::Matrix3d rotation;
   double phi;
   
@@ -288,14 +326,15 @@ bool BaseModule::set_start_callback(train::set_start::Request &req, train::set_s
     manipulator_->manipulator_link_data_[i]->joint_angle_ = req.action[i];
   manipulator_->forwardKinematics(7);
   //==========================================================================================================================
-  positoin = manipulator_->manipulator_link_data_[6]->position_;
+  position = manipulator_->manipulator_link_data_[6]->position_;
   rotation = robotis_framework::convertRPYToRotation(req.rpy[0]*M_PI, req.rpy[1]*M_PI, req.rpy[2]*M_PI);
-  positoin += manipulator_->get_d4()*rotation.block(0,2,3,1);
+  // rotation = robotis_framework::convertRPYToRotation(0, 0, 0);
+  position += manipulator_->get_d4()*rotation.block(0,2,3,1);
   phi = req.rpy[3]*M_PI/2;
   slide_->goal_slide_pos = 0;
-  limit_success = manipulator_->limit_check(positoin, rotation);
+  limit_success = manipulator_->limit_check(position, rotation);
   if(limit_success)
-    ik_success = manipulator_->inverseKinematics(END_LINK, positoin, rotation, phi, slide_->goal_slide_pos, true);
+    ik_success = manipulator_->inverseKinematics(END_LINK, position, rotation, phi, slide_->goal_slide_pos, true);
   //===============================================================================================================================
   robotis_->is_ik = false;
   Eigen::Quaterniond quaternion = robotis_framework::convertRotationToQuaternion(rotation);
@@ -316,7 +355,7 @@ bool BaseModule::env_reset_callback(train::environment::Request &req, train::env
   bool ik_success = true;
   if(req.action.size() > 1)
   {
-    Eigen::Vector3d p2p_positoin;
+    Eigen::Vector3d p2p_position;
     Eigen::Matrix3d p2p_rotation;
     double p2p_phi;
     
@@ -332,14 +371,14 @@ bool BaseModule::env_reset_callback(train::environment::Request &req, train::env
       manipulator_->manipulator_link_data_[i]->joint_angle_ = req.action[i];
     manipulator_->forwardKinematics(7);
     //==========================================================================================================================
-    p2p_positoin = manipulator_->manipulator_link_data_[6]->position_;
+    p2p_position = manipulator_->manipulator_link_data_[6]->position_;
     p2p_rotation = robotis_framework::convertRPYToRotation(req.rpy[0]*M_PI, req.rpy[1]*M_PI, req.rpy[2]*M_PI);
-    p2p_positoin += 0.24*p2p_rotation.block(0,2,3,1);
+    p2p_position += 0.24*p2p_rotation.block(0,2,3,1);
     p2p_phi = 0;
     slide_->goal_slide_pos = 0;
     robotis_->ik_id_end_   = END_LINK;
     ik_success = manipulator_->inverseKinematics(robotis_->ik_id_end_,
-                                                              p2p_positoin, p2p_rotation, p2p_phi, slide_->goal_slide_pos, true);
+                                                              p2p_position, p2p_rotation, p2p_phi, slide_->goal_slide_pos, true);
     //===============================================================================================================================
     robotis_->is_ik = false;
     if(enable_ && ik_success)
@@ -366,12 +405,12 @@ bool BaseModule::training_callback(train::environment::Request &req, train::envi
     robotis_->ik_id_start_ = 0;
     robotis_->ik_id_end_   = END_LINK;
     
-    Eigen::Vector3d p2p_positoin;
+    Eigen::Vector3d p2p_position;
 
     int     max_iter    = 30;
     double  ik_tol      = 1e-3;
 
-    p2p_positoin << req.action[0], 
+    p2p_position << req.action[0], 
                     req.action[1], 
                     req.action[2];
 
@@ -384,10 +423,10 @@ bool BaseModule::training_callback(train::environment::Request &req, train::envi
     p2p_rotation = robotis_framework::convertQuaternionToRotation(p2p_quaterniond);
     robotis_->is_ik = true;
     slide_->goal_slide_pos = 0;
-    limit_success = manipulator_->limit_check(p2p_positoin, p2p_rotation);
+    limit_success = manipulator_->limit_check(p2p_position, p2p_rotation);
     if(limit_success)
       ik_success = manipulator_->inverseKinematics(robotis_->ik_id_end_,
-                                                              p2p_positoin, p2p_rotation, p2p_phi, slide_->goal_slide_pos, true);
+                                                              p2p_position, p2p_rotation, p2p_phi, slide_->goal_slide_pos, true);
     robotis_->is_ik = false;
   }
   
@@ -452,27 +491,33 @@ void BaseModule::set_response_limit(T &res)
     // dis = manipulator_->manipulator_link_data_[i]->joint_limit_max_ - manipulator_->manipulator_link_data_[i]->joint_limit_min_;
     // res.joint_angle[(i+2)%3] = pow((2*(manipulator_->manipulator_link_data_[i]->joint_angle_ - manipulator_->manipulator_link_data_[i]->joint_limit_min_)/fabs(dis))-1, 3);
     dis = manipulator_->manipulator_link_data_[i]->joint_limit_max_ - manipulator_->manipulator_link_data_[i]->joint_limit_min_;
-    res.joint_angle[i-1] = pow((2*(manipulator_->manipulator_link_data_[i]->joint_angle_ - manipulator_->manipulator_link_data_[i]->joint_limit_min_)/fabs(dis))-1, 3);
+    // res.joint_angle[i-1] = pow((2*(manipulator_->manipulator_link_data_[i]->joint_angle_ - manipulator_->manipulator_link_data_[i]->joint_limit_min_)/fabs(dis))-1, 3);
+    res.joint_angle[i-1] = (2*(manipulator_->manipulator_link_data_[i]->joint_angle_ - manipulator_->manipulator_link_data_[i]->joint_limit_min_)/fabs(dis))-1;
+
   }
   
   if(manipulator_->manipulator_link_data_[2]->joint_angle_  < -M_PI/2)
   {
     dis = fabs(manipulator_->manipulator_link_data_[2]->joint_angle_ - manipulator_->manipulator_link_data_[2]->joint_limit_min_);
-    res.joint_angle[7] = pow(dis/fabs(manipulator_->manipulator_link_data_[2]->joint_limit_min_ - (-M_PI/2)), 3);
+    // res.joint_angle[7] = pow(dis/fabs(manipulator_->manipulator_link_data_[2]->joint_limit_min_ - (-M_PI/2)), 3);
+    res.joint_angle[7] = dis/fabs(manipulator_->manipulator_link_data_[2]->joint_limit_min_ - (-M_PI/2));
   }
   else
   {
     dis = fabs(manipulator_->manipulator_link_data_[2]->joint_angle_ - manipulator_->manipulator_link_data_[2]->joint_limit_max_);
-    res.joint_angle[7] = pow(dis/fabs(manipulator_->manipulator_link_data_[2]->joint_limit_max_ - (-M_PI/2)), 3);
+    // res.joint_angle[7] = pow(dis/fabs(manipulator_->manipulator_link_data_[2]->joint_limit_max_ - (-M_PI/2)), 3);
+    res.joint_angle[7] = dis/fabs(manipulator_->manipulator_link_data_[2]->joint_limit_max_ - (-M_PI/2));
   }
 
   dis = fabs(fabs(manipulator_->manipulator_link_data_[6]->joint_angle_) - fabs(manipulator_->manipulator_link_data_[6]->joint_limit_min_));
-  res.joint_angle[8] = pow(dis/fabs(manipulator_->manipulator_link_data_[6]->joint_limit_min_), 3);
+  // res.joint_angle[8] = pow(dis/fabs(manipulator_->manipulator_link_data_[6]->joint_limit_min_), 3);
+  res.joint_angle[8] = dis/fabs(manipulator_->manipulator_link_data_[6]->joint_limit_min_);
   
   Eigen::Vector3d limit_vec = manipulator_->manipulator_link_data_[6]->position_ - manipulator_->manipulator_link_data_[2]->position_;
   double limit_dis = limit_vec.norm();
   limit_dis = ((limit_dis - 0.148)/0.4)*2 - 1;
-  res.limit[0] = pow(limit_dis, 3);
+  // res.limit[0] = pow(limit_dis, 3);
+  res.limit[0] = limit_dis;
 }
 
 template <typename T>
@@ -688,13 +733,13 @@ void BaseModule::p2pPoseMsgCallback(const manipulator_h_base_module_msgs::P2PPos
   robotis_->ik_id_start_ = 0;
   robotis_->ik_id_end_   = END_LINK;
 
-  Eigen::Vector3d p2p_positoin;
+  Eigen::Vector3d p2p_position;
   Eigen::Matrix3d p2p_rotation;
 
   int     max_iter    = 30;
   double  ik_tol      = 1e-3;
 
-  p2p_positoin << robotis_->p2p_pose_msg_.pose.position.x, 
+  p2p_position << robotis_->p2p_pose_msg_.pose.position.x, 
                   robotis_->p2p_pose_msg_.pose.position.y, 
                   robotis_->p2p_pose_msg_.pose.position.z;
 
@@ -708,19 +753,19 @@ void BaseModule::p2pPoseMsgCallback(const manipulator_h_base_module_msgs::P2PPos
   p2p_rotation = robotis_framework::convertQuaternionToRotation(p2p_quaterniond);
 
   manipulator_->forwardKinematics(7);
-  // std::cout<<"p2p_positoinp2p_positoin"<<std::endl<<p2p_positoin<<std::endl;
+  // std::cout<<"p2p_positionp2p_position"<<std::endl<<p2p_position<<std::endl;
   // std::cout<<"p2p_rotationp2p_rotation"<<std::endl<<p2p_rotation<<std::endl;
 
   robotis_->is_ik = true;
   bool slide_success = true;
   //===============!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!=================================================================
-  // bool slide_success = manipulator_->slideInverseKinematics(p2p_positoin, p2p_rotation, 
+  // bool slide_success = manipulator_->slideInverseKinematics(p2p_position, p2p_rotation, 
   //                                                           slide_->slide_pos, slide_->goal_slide_pos);
 
   // std::cout<<"<<<<<<<<<<<<<<<<<<<slide_->goal_slide_pos<<<<<<<<<<<<<<<<<"<<std::endl<<slide_->goal_slide_pos<<std::endl;
   slide_->goal_slide_pos = 0;
   bool    ik_success = manipulator_->inverseKinematics(robotis_->ik_id_end_,
-                                                            p2p_positoin, p2p_rotation, p2p_phi, slide_->goal_slide_pos, true);
+                                                            p2p_position, p2p_rotation, p2p_phi, slide_->goal_slide_pos, true);
 
   if (ik_success == true && slide_success == true)
   {
@@ -889,8 +934,8 @@ void BaseModule::generateTaskTrajProcess()
 
   manipulator_->manipulator_link_data_[0]->mov_speed_ = mov_speed;
 
-  Eigen::Vector3d goal_positoin;
-  goal_positoin << robotis_->kinematics_pose_msg_.pose.position.x,
+  Eigen::Vector3d goal_position;
+  goal_position << robotis_->kinematics_pose_msg_.pose.position.x,
                    robotis_->kinematics_pose_msg_.pose.position.y, 
                    robotis_->kinematics_pose_msg_.pose.position.z;
 
@@ -902,7 +947,7 @@ void BaseModule::generateTaskTrajProcess()
   Eigen::Matrix3d goal_rotation = robotis_framework::convertQuaternionToRotation(goal_quaterniond);
   //===============!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!=================================================================
   bool ik_success = true;
-  // bool ik_success = manipulator_->slideInverseKinematics(goal_positoin, goal_rotation, 
+  // bool ik_success = manipulator_->slideInverseKinematics(goal_position, goal_rotation, 
   //                                                           slide_->slide_pos, slide_->goal_slide_pos);
 
   slide_->goal_slide_pos = 0;

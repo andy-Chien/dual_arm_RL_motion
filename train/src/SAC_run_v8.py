@@ -8,7 +8,7 @@ import numpy as np
 import math
 import rospy
 import tensorflow as tf
-from sac_v14 import SAC
+from sac_v15 import SAC
 from env_v22 import Test
 from manipulator_h_base_module_msgs.msg import P2PPose
 
@@ -75,20 +75,20 @@ def worker(name, workers, agent):
             rd = np.random.rand()
             a *= (rd*3+0.5)
             s_, r, done, success, fail = env.step(a)
-            if j>1:
+            if j>10:
                 s_arr.append(s)
                 a_arr.append(a)
                 r_arr.append(r)
                 s__arr.append(s_)
                 done_arr.append(done)
                 # agent.replay_buffer[workers].store_transition(s, a, r, s_, done)
-                if fail:
-                    if first_fail:
-                        first_fail = False
-                        for k in range(50):
-                            if k>=len(r_arr):
-                                break
-                            r_arr[-k-1] -= (2-(k*0.04))
+                # if fail:
+                #     if first_fail:
+                #         first_fail = False
+                #         for k in range(50):
+                #             if k>=len(r_arr):
+                #                 break
+                #             r_arr[-k-1] -= (2-(k*0.04))
                 #     else:
                 #         r_arr[-1] -= 2
 

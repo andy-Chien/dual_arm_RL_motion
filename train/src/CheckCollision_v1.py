@@ -3,11 +3,11 @@ import math
 
 class CheckCollision():
     def __init__(self):
-        self.threshold = np.array([[0.16, 0.16, 0.14],
-                          [0.16, 0.14, 0.12], 
-                          [0.14, 0.14, 0.12], 
-                          [0.14, 0.14, 0.12], 
-                          [0.12, 0.12, 0.1]])
+        self.threshold = np.array([[0.18, 0.18, 0.16],
+                          [0.18, 0.16, 0.14], 
+                          [0.16, 0.16, 0.14], 
+                          [0.16, 0.16, 0.14], 
+                          [0.14, 0.14, 0.12]])
 
     def checkCollision(self, RobotLinkPos_Master, RobotLinkPos_Slave):
 
@@ -28,9 +28,10 @@ class CheckCollision():
                                                                         RobotLinkPos_Master[cnt_M, :], RobotLinkPos_Master[cnt_M+1, :])
                 if cnt_S == 0:
                     RobotLinkPos_Slave[cnt_S+1, 2] = tmp
-                if Slave2Master_Dist[cnt_S, cnt_M-2] < self.threshold[cnt_S, cnt_M-2]:
+                if Slave2Master_Dist[cnt_S, cnt_M-2] < self.threshold[cnt_S, cnt_M-2]-0.02:
                     Alarm[cnt_S] = 1
-        Slave2Master_Dist = pow(self.threshold - Slave2Master_Dist + 1, 3)
+        # Slave2Master_Dist = pow(self.threshold - Slave2Master_Dist + 1, 3)
+        Slave2Master_Dist = self.threshold - Slave2Master_Dist + 1
         return Alarm,  np.reshape(Slave2Master_Dist, 15)
 
     def calculateDistance(self, pA, pB, pC, pD):

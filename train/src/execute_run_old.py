@@ -7,7 +7,6 @@ import shutil
 import numpy as np
 import math
 import rospy
-import tensorflow as tf
 from execute_sac import SAC
 from execute_env import Test
 from arm_control.arm_task import ArmTask
@@ -54,48 +53,38 @@ def run(nameIndx):
     arm = ArmTask(SIDE[nameIndx]+'arm')
 
     agent = SAC(act_dim=env.act_dim, obs_dim=env.obs_dim, name=SIDE[nameIndx])
-    reset_start = True
 
     for cnt in range(1000):
         done_cnt = 0
         COLLISION = False
         IKFAIL = False
-        SINGULARITY = False
 
-        s = env.reset(reset_start)
-        reset_start = True
+        s = env.reset()
         goal = env.get_goal
         goal = np.append(goal, 0)
-        start = (s[:8])
-        for __ in range(600):
+        start = s[:8]
+        for __ in range(1000):
             a = agent.choose_action(s)
             s, done, collision, ik_success, singularity = env.step(a)
             done_cnt += int(done)
-            if COLLISION and collision:
+            if COLLISION:
                 COLLISION_ARRAY[cnt%1000] = 1
             elif collision:
                 COLLISION = True
-            else:
-                COLLISION = False
-            if IKFAIL and not ik_success:
+            if IKFAIL:
                 IKFAIL_ARRAY[cnt%1000] = 1
             elif not ik_success:
                 IKFAIL = True
-            else:
-                IKFAIL = False
-            if __ > 5:
-                if SINGULARITY:
-                    SINGULARITY_ARRAY[cnt%1000] = 1
-                elif singularity:
-                    SINGULARITY = True
-            if done_cnt > 20:    
+            if SINGULARITY:
+                SINGULARITY_ARRAY[cnt%1000] = 1
+            elif singularity:
+                SINGULARITY = True
+            if done_cnt > 2:    
                 SUCCESS_ARRAY[cnt%1000] = 1
-                reset_start = False
-                # COLLISION_ARRAY[cnt%1000] = 0
-                # IKFAIL_ARRAY[cnt%1000] = 0
+                COLLISION_ARRAY[cnt%1000] = 0
+                IKFAIL_ARRAY[cnt%1000] = 0
                 break
-            if __ == 599:
-                reset_start = False
+
         # COLLISION = False
         # IKFAIL = False
         # SINGULARITY = False
@@ -119,7 +108,6 @@ def run(nameIndx):
         #     SUCCESS_ARRAY_P2P[cnt%1000] = 1
         # COLLISION = False
         # IKFAIL = False
-        # SINGULARITY = False
         # time.sleep(0.5)
         # env.move_arm(start)
         # time.sleep(1)
@@ -205,15 +193,13 @@ if __name__ == '__main__':
     threads = []
     cmd = np.zeros([2,7])
     move = [False, False]
-    COORD = tf.train.Coordinator()
     
     for i in range(2):
         t = threading.Thread(target=run, args=(i,))
         threads.append(t)
     for i in range(2):
         threads[i].start()
-        time.sleep(5)
-    COORD.join(threads)
+        time.sleep(3)
     rospy.Subscriber('right_arm/drl_pose_msg', P2PPose, right_callback)
     rospy.Subscriber('left_arm/drl_pose_msg', P2PPose, left_callback)
     rospy.spin()

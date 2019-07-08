@@ -3,7 +3,7 @@ import tensorflow as tf
 import gym
 import random
 
-NAME = 'SAC_v15_1'
+NAME = 'SAC_v14_21'
 EPS = 1e-8
 
 class ActorNetwork(object):
@@ -18,11 +18,8 @@ class ActorNetwork(object):
             h3 = tf.layers.dense(h2, 512, tf.nn.leaky_relu, name='h3')
             h4 = tf.layers.dense(h3, 512, tf.nn.leaky_relu, name='h4')
             h5 = tf.layers.dense(h4, 512, tf.nn.leaky_relu, name='h5')
-            h6 = tf.layers.dense(h5, 512, tf.nn.leaky_relu, name='h6')
-            h7 = tf.layers.dense(h6, 512, tf.nn.leaky_relu, name='h7')
-            h8 = tf.layers.dense(h7, 512, tf.nn.leaky_relu, name='h8')
-            mu = tf.layers.dense(h8, self.act_dim, None, name='mu')
-            log_std = tf.layers.dense(h8, self.act_dim, tf.tanh, name='log_std')
+            mu = tf.layers.dense(h4, self.act_dim, None, name='mu')
+            log_std = tf.layers.dense(h4, self.act_dim, tf.tanh, name='log_std')
             log_std = log_std_min + 0.5 * (log_std_max - log_std_min) * (log_std + 1)
 
             std = tf.exp(log_std)
@@ -39,7 +36,6 @@ class ActorNetwork(object):
         return mu
 
 
-
 class SAC(object):
     def __init__(self, act_dim, obs_dim, name=None):
         # tf.reset_default_graph()
@@ -54,12 +50,11 @@ class SAC(object):
 
         self.mu = policy.evaluate(self.OBS0)
         if self.name == 'right_':
-            self.path = '/home/andy/collision_ws/src/Collision_Avoidance/train/weights/'+ NAME +'/'+ self.name+'80'
+            self.path = '/home/andy/collision_ws/src/Collision_Avoidance/train/weights/'+ NAME +'/'+ self.name+'85'
         else:
             self.path = '/home/andy/collision_ws/src/Collision_Avoidance/train/weights/'+ NAME +'/'+ self.name+'85'
 
-        gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.4)
-        self.sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
+        self.sess = tf.Session()
         self.saver = tf.train.Saver()
         self.saver.restore(self.sess, tf.train.latest_checkpoint(self.path))
 

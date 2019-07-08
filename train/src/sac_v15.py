@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 import gym
 import random
-NAME = 'SAC_v14_24'
+NAME = 'SAC_v15_2'
 # SAC_v14_6 is the best no fail
 # SAC_v14_7 1024 and last is 512 no fail
 # SAC_v14_8 all of 512 has fail
@@ -21,6 +21,7 @@ NAME = 'SAC_v14_24'
 # SAC_v14_21 no cube
 # SAC_v14_22 change reward
 # SAC_v14_23 no no fail
+# SAC_v14_24 bigger network
 EPS = 1e-8
 LOAD = False
 BATCH_SIZE = 512
@@ -58,8 +59,9 @@ class ValueNetwork(object):
             h1 = tf.layers.dense(obs, 512, tf.nn.leaky_relu, name='h1')
             h2 = tf.layers.dense(h1, 512, tf.nn.leaky_relu, name='h2')
             h3 = tf.layers.dense(h2, 512, tf.nn.leaky_relu, name='h3')
-            # h4 = tf.layers.dense(h3, 1024, tf.nn.leaky_relu)
-            value = tf.layers.dense(h3, 1)
+            h4 = tf.layers.dense(h3, 512, tf.nn.leaky_relu, name='h4')
+            h5 = tf.layers.dense(h4, 512, tf.nn.leaky_relu, name='h5')
+            value = tf.layers.dense(h5, 1)
             value = tf.squeeze(value, axis=1)
             return value
 
@@ -78,8 +80,9 @@ class QValueNetwork(object):
             h1 = tf.layers.dense(input, 512, tf.nn.leaky_relu, name='h1')
             h2 = tf.layers.dense(h1, 512, tf.nn.leaky_relu, name='h2')
             h3 = tf.layers.dense(h2, 512, tf.nn.leaky_relu, name='h3')
-            # h4 = tf.layers.dense(h3, 1024, tf.nn.leaky_relu)
-            q_value = tf.layers.dense(h3, 1)
+            h4 = tf.layers.dense(h3, 512, tf.nn.leaky_relu, name='h4')
+            h5 = tf.layers.dense(h4, 512, tf.nn.leaky_relu, name='h5')
+            q_value = tf.layers.dense(h5, 1)
             q_value = tf.squeeze(q_value, axis=1)
             return q_value
 
@@ -100,8 +103,11 @@ class ActorNetwork(object):
             h3 = tf.layers.dense(h2, 512, tf.nn.leaky_relu, name='h3')
             h4 = tf.layers.dense(h3, 512, tf.nn.leaky_relu, name='h4')
             h5 = tf.layers.dense(h4, 512, tf.nn.leaky_relu, name='h5')
-            mu = tf.layers.dense(h5, self.act_dim, None, name='mu')
-            log_std = tf.layers.dense(h5, self.act_dim, tf.tanh, name='log_std')
+            h6 = tf.layers.dense(h5, 512, tf.nn.leaky_relu, name='h6')
+            h7 = tf.layers.dense(h6, 512, tf.nn.leaky_relu, name='h7')
+            h8 = tf.layers.dense(h7, 512, tf.nn.leaky_relu, name='h8')
+            mu = tf.layers.dense(h8, self.act_dim, None, name='mu')
+            log_std = tf.layers.dense(h8, self.act_dim, tf.tanh, name='log_std')
             log_std = log_std_min + 0.5 * (log_std_max - log_std_min) * (log_std + 1)
 
             std = tf.exp(log_std)

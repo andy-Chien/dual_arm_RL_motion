@@ -127,7 +127,7 @@
           xyz="0 0 0"
           rpy="0 0 0" />
 	<geometry>
-           <box size="0.01 0.01 0.01"/>
+           <box size="0.001 0.001 0.001"/>
         </geometry>
         <material
           name="transparent">
@@ -174,7 +174,7 @@
           xyz="0 0 0"
           rpy="0 0 0" />
 	<geometry>
-           <box size="0.01 0.01 0.01"/>
+           <box size="0.001 0.001 0.001"/>
         </geometry>
         <material
           name="transparent">
@@ -221,7 +221,7 @@
           xyz="0 0 0"
           rpy="0 0 0" />
 	<geometry>
-           <box size="0.01 0.01 0.01"/>
+           <box size="0.001 0.001 0.001"/>
         </geometry>
         <material
           name="transparent">
@@ -268,7 +268,7 @@
           xyz="0 0 0"
           rpy="0 0 0" />
 	<geometry>
-           <box size="0.01 0.01 0.01"/>
+           <box size="0.001 0.001 0.001"/>
         </geometry>
         <material
           name="transparent">
@@ -315,7 +315,7 @@
           xyz="0 0 0"
           rpy="0 0 0" />
 	<geometry>
-           <box size="0.01 0.01 0.01"/>
+           <box size="0.001 0.001 0.001"/>
         </geometry>
         <material
           name="transparent">

@@ -14,9 +14,9 @@ from gazebo_msgs.msg import ModelState
 # from CheckCollision_tensor import CheckCollision
 # from vacuum_cmd_msg.srv import VacuumCmd
 class Test(core.Env):
-    ACTION_VEC_TRANS = 1/180
-    ACTION_ORI_TRANS = 1/60
-    ACTION_PHI_TRANS = 1/60
+    ACTION_VEC_TRANS = 1/720
+    ACTION_ORI_TRANS = 1/240
+    ACTION_PHI_TRANS = 1/240
 
     NAME = ['/right_', '/left_', '/right_']
 
@@ -66,12 +66,12 @@ class Test(core.Env):
         # self.dis_pos
         self.cc = CheckCollision()
         self.collision = False
-        self.range_cnt = 0.95
-        self.rpy_range = 0.5
+        self.range_cnt = 0.7
+        self.rpy_range = 1
         self.done = True
         self.s_cnt = 0
-        self.goal_err = 0.05
-        self.ori_err = 0.5
+        self.goal_err = 0.03
+        self.ori_err = 0.25
         self.quat_inv = False
         self.goal_angle = []
         self.object_pub = 0
@@ -82,8 +82,8 @@ class Test(core.Env):
             queue_size=1,
             latch=True
         )
-        self.seed()
-        self.reset()
+        self.seed(254*(name+1))
+        self.reset(True)
     
     @property
     def is_success(self):
@@ -202,23 +202,42 @@ class Test(core.Env):
         self.state = s
         return s
 
-    def reset(self):
+    def reset(self, reset_start):
+        # self.goal, self.goal_angle, self.joint_pos[:15], self.joint_pos[15:30]= self.set_goal()
+        # linkPosM, linkPosS = self.collision_init()
+        # alarm, Link_dis = self.cc.checkCollision(linkPosM, linkPosS)
+        # alarm_cnt = 0
+        # for i in alarm:
+        #     alarm_cnt += i
+        # if alarm_cnt>0:
+        #     return self.reset()
+        # self.old, self.joint_pos[:15], self.joint_pos[15:30], self.joint_angle, self.limit, self.goal_quat, self.quat_inv = self.set_old()
+        # linkPosM, linkPosS = self.collision_init()
+        # alarm, Link_dis = self.cc.checkCollision(linkPosM, linkPosS)
+        # alarm_cnt = 0
+        # for i in alarm:
+        #     alarm_cnt += i
+        # if alarm_cnt>0:
+        #     return self.reset()
+        if reset_start:
+            self.old, self.joint_pos[:15], self.joint_pos[15:30], self.joint_angle, self.limit, self.goal_quat, self.quat_inv = self.set_old()
+            linkPosM, linkPosS = self.collision_init()
+            alarm, Link_dis = self.cc.checkCollision(linkPosM, linkPosS)
+            alarm_cnt = 0
+            for i in alarm:
+                alarm_cnt += i
+            if alarm_cnt>0:
+                return self.reset(reset_start)
+        joint_pos_tmp = self.joint_pos
         self.goal, self.goal_angle, self.joint_pos[:15], self.joint_pos[15:30]= self.set_goal()
         linkPosM, linkPosS = self.collision_init()
         alarm, Link_dis = self.cc.checkCollision(linkPosM, linkPosS)
         alarm_cnt = 0
         for i in alarm:
             alarm_cnt += i
-        if alarm_cnt>0:
-            return self.reset()
-        self.old, self.joint_pos[:15], self.joint_pos[15:30], self.joint_angle, self.limit, self.goal_quat, self.quat_inv = self.set_old()
-        linkPosM, linkPosS = self.collision_init()
-        alarm, Link_dis = self.cc.checkCollision(linkPosM, linkPosS)
-        alarm_cnt = 0
-        for i in alarm:
-            alarm_cnt += i
-        if alarm_cnt>0:
-            return self.reset()
+        # if alarm_cnt>0:
+        #     return self.reset(reset_start)
+        self.joint_pos = joint_pos_tmp
         self.state = np.append(self.old, np.subtract(self.goal[:3], self.old[:3]))
         self.state = np.append(self.state, self.goal_quat)
         # self.state = np.append(self.state, np.subtract(self.goal[3:7], self.old[3:7]))
@@ -239,39 +258,46 @@ class Test(core.Env):
 
     def set_goal(self):
         self.goal = self.np_random.uniform(low=0., high=self.range_cnt, size=(8,))
-        rpy = self.np_random.uniform(low=-1*self.rpy_range, high=self.rpy_range, size=(3,))
+        # rpy = self.np_random.uniform(low=-1*self.rpy_range, high=self.rpy_range, size=(4,))
+        rpy = self.np_random.uniform(low=0, high=8, size=(4,))
         # print('self.goal = ', self.goal)
+        # if self.goal[0]>0.5:
+        #     if self.goal[0]>0.75:
+        #         self.goal[2] /= -3
+        #     else:
+        #         self.goal[2] /= -2
+        #     self.goal[2]+=1
+
         self.goal[0] = 0
         # self.goal[3] = self.range_cnt/2
         self.goal = np.append(self.goal, self.range_cnt)
         res = self.set_goal_client(self.goal, rpy, self.__name)
         res_ = self.get_state_client(self.__obname)
         goal_pos = np.array(res.state)
-        if not res.success:
+        if not res.success:# or math.fabs(goal_pos[1])>0.2:
             return self.set_goal()
-        if np.linalg.norm(goal_pos[:2])>0.2:
-            return goal_pos[:7], res.joint_angle, res.joint_pos, res_.joint_pos
         else:
-            return self.set_goal()
+            return goal_pos[:7], res.joint_angle, res.joint_pos, res_.joint_pos
 
     def set_old(self):
         self.start = self.np_random.uniform(low=0., high=self.range_cnt, size=(8,))
-        # self.start = self.old[]
-        rpy = self.np_random.uniform(low=-1*self.rpy_range, high=self.rpy_range, size=(3,))
-        
+        rpy = self.np_random.uniform(low=-1*self.rpy_range, high=self.rpy_range, size=(4,))
+        # if self.start[0]>0.5:
+        #     if self.start[0]>0.75:
+        #         self.start[2] /= -3
+        #     else:
+        #         self.start[2] /= -2
+        #     self.start[2] +=1
         self.start[0] = 0
         # self.start[3] = self.range_cnt/2
         self.start = np.append(self.start, self.range_cnt)
         res = self.set_start_client(self.start, rpy, self.__name)
-        # res = self.set_start_client(self.start,self.__name)
         res_ = self.get_state_client(self.__obname)
         old_pos = np.array(res.state)
-        if not res.success:
+        if not res.success:# or math.fabs(old_pos[1])>0.2:
             return self.set_old()
-        if np.linalg.norm(np.subtract(old_pos[:3], self.goal[:3])) > 0.1:
-            return old_pos, res.joint_pos, res_.joint_pos, res.joint_angle, res.limit, res.quaterniond, res.quat_inv
         else:
-            return self.set_old()
+            return old_pos, res.joint_pos, res_.joint_pos, res.joint_angle, res.limit, res.quaterniond, res.quat_inv
 
     def collision_init(self):
         linkPosM = np.array(self.joint_pos[:15])
