@@ -49,6 +49,7 @@
         <remap from="/move_cmd"  to="/$(arg side)_arm/move_cmd"/>
         <remap from="/set_goal"  to="/$(arg side)_arm/set_goal"/>
         <remap from="/set_start"  to="/$(arg side)_arm/set_start"/>
+        <remap from="/move_init"  to="/$(arg side)_arm/move_init"/>
 
     </node>
 

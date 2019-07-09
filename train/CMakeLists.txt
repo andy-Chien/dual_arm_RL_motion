@@ -58,6 +58,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate services in the 'srv' folder
 add_service_files(
   FILES
+  move_init.srv
   get_state.srv
   move_cmd.srv
   set_goal.srv

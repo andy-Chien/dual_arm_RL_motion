@@ -61,6 +61,7 @@
 #include "train/set_goal.h"
 #include "train/move_cmd.h"
 #include "train/get_state.h"
+#include "train/move_init.h"
 
 namespace robotis_manipulator_h
 {
@@ -95,6 +96,7 @@ class BaseModule
 private:
   bool stop_flag;
   bool wait_flag;
+  bool drl_move;
   int             control_cycle_msec_;
   boost::thread   queue_thread_;
   boost::thread  *tra_gene_thread_;
@@ -139,6 +141,8 @@ public:
                             manipulator_h_base_module_msgs::GetJointPose::Response &res);
   bool getKinematicsPoseCallback(manipulator_h_base_module_msgs::GetKinematicsPose::Request &req,
                                  manipulator_h_base_module_msgs::GetKinematicsPose::Response &res);
+  bool move_init_callback(train::move_init::Request &req,
+                          train::move_init::Response &res);
 
   template <typename T>
   void set_response(T &res);
