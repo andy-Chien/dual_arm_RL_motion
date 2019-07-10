@@ -70,7 +70,7 @@ public:
   int ik_id_start_, ik_id_end_;   
   double slide_pos_;
 
-  bool setInverseKinematics(int cnt, int all_steps, Eigen::MatrixXd start_rotation, double start_phi, Eigen::VectorXd Old_JointAngle);
+  bool setInverseKinematics(int cnt, int all_steps, Eigen::MatrixXd& start_rotation, double start_phi, Eigen::VectorXd& Old_JointAngle);
   Eigen::Quaterniond slerp(double t, Eigen::Quaterniond& self, Eigen::Quaterniond& other, bool inv);
 };
 

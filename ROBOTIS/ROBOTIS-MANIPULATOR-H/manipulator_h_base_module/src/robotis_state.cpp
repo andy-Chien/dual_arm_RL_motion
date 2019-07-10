@@ -66,7 +66,7 @@ RobotisState::~RobotisState()
 {
 }
 
-bool RobotisState::setInverseKinematics(int cnt, int all_steps, Eigen::MatrixXd start_rotation, double start_phi, Eigen::VectorXd Old_JointAngle)
+bool RobotisState::setInverseKinematics(int cnt, int all_steps, Eigen::MatrixXd& start_rotation, double start_phi, Eigen::VectorXd& Old_JointAngle)
 {
   for (int dim = 0; dim < 3; dim++)
     ik_target_position_.coeffRef(dim, 0) = calc_task_tra_.coeff(cnt, dim);
@@ -91,14 +91,15 @@ bool RobotisState::setInverseKinematics(int cnt, int all_steps, Eigen::MatrixXd 
     float test_slide_pos;
     for (int id = 0; id <= MAX_JOINT_ID; id++)
         IK_test->manipulator_link_data_[id]->joint_angle_ = Old_JointAngle(id);
-    for(float i=0; i<=12; i++)
+    float checkPoint = 12;
+    for(float i=0; i<=checkPoint; i++)
     {
-      c = int(((double)all_steps-1) * i/12);
+      c = int(((double)all_steps-1) * i/checkPoint);
       for (int dim = 0; dim < 3; dim++)
         test_position.coeffRef(dim, 0) = calc_task_tra_.coeff(c, dim);
-      Eigen::Quaterniond q = slerp(i/12, start_quaternion, target_quaternion, is_inv);
+      Eigen::Quaterniond q = slerp(i/checkPoint, start_quaternion, target_quaternion, is_inv);
       test_rotation = robotis_framework::convertQuaternionToRotation(q);
-      test_phi = start_phi + i/12 * (kinematics_pose_msg_.phi - start_phi);
+      test_phi = start_phi + i/checkPoint * (kinematics_pose_msg_.phi - start_phi);
       test_slide_pos = calc_slide_tra_.coeff(c,0);
       ik_s = IK_test->InverseKinematics_p2p(test_position, test_rotation, test_phi, test_slide_pos, Old_JointAngle, true);
       for (int id = 1; id <= 7; id++)

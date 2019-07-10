@@ -8,7 +8,7 @@ import numpy as np
 import math
 import rospy
 import tensorflow as tf
-from sac_v15 import SAC
+from sac_v14 import SAC
 from env_v22 import Test
 from manipulator_h_base_module_msgs.msg import P2PPose
 

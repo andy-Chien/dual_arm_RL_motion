@@ -125,10 +125,6 @@ public:
   void kinematicsPoseMsgCallback(const manipulator_h_base_module_msgs::KinematicsPose::ConstPtr& msg);
   void p2pPoseMsgCallback(const manipulator_h_base_module_msgs::P2PPose::ConstPtr& msg);   //new
 
-  bool training_callback(train::environment::Request &req,
-                         train::environment::Response &res);
-  bool env_reset_callback(train::environment::Request &req,
-                          train::environment::Response &res);
   bool get_state_callback(train::get_state::Request &req,
                           train::get_state::Response &res);
   bool move_cmd_callback(train::move_cmd::Request &req,
@@ -145,9 +141,9 @@ public:
                           train::move_init::Response &res);
 
   template <typename T>
-  void set_response(T &res);
+  void set_response(T &res, ManipulatorKinematicsDynamics *&Kinematics);
   template <typename T>
-  void set_response_limit(T &res);
+  void set_response_limit(T &res, ManipulatorKinematicsDynamics *&Kinematics);
   template <typename T>
   void set_response_quat(T &res, Eigen::Quaterniond q);
   template <typename T>
@@ -174,7 +170,7 @@ public:
   BaseJointState                 *joint_state_;
   RobotisState                   *robotis_;
   ManipulatorKinematicsDynamics  *manipulator_;
-  ManipulatorKinematicsDynamics  *drl_Kinematics_
+  ManipulatorKinematicsDynamics  *drl_Kinematics_;
   slide_control                  *slide_;    //new   
 };
 

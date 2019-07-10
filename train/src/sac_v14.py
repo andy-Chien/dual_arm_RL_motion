@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 import gym
 import random
-NAME = 'SAC_v14_24'
+NAME = 'SAC_v14_25'
 # SAC_v14_6 is the best no fail
 # SAC_v14_7 1024 and last is 512 no fail
 # SAC_v14_8 all of 512 has fail
@@ -21,6 +21,7 @@ NAME = 'SAC_v14_24'
 # SAC_v14_21 no cube
 # SAC_v14_22 change reward
 # SAC_v14_23 no no fail
+# SAC_v14_25 no rev quat
 EPS = 1e-8
 LOAD = False
 BATCH_SIZE = 512

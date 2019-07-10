@@ -11,6 +11,7 @@ import time
 from train.srv import get_state, move_cmd, set_goal, set_start
 from CheckCollision_v1 import CheckCollision
 from gazebo_msgs.msg import ModelState
+from std_msgs.msg import String
 # from CheckCollision_tensor import CheckCollision
 # from vacuum_cmd_msg.srv import VacuumCmd
 class Test(core.Env):
@@ -45,7 +46,7 @@ class Test(core.Env):
         self.observation_space = spaces.Box(low=low, high=high, dtype=np.float32)
         self.action_space = spaces.Discrete(3)
         self.act_dim=8
-        self.obs_dim=61
+        self.obs_dim=57
         self.state = []
         self.action = []
         self.cmd = []
@@ -75,12 +76,19 @@ class Test(core.Env):
         self.quat_inv = False
         self.goal_angle = []
         self.object_pub = 0
-        self.set_mode_pub = rospy.Publisher(
+        self.set_model_pub = rospy.Publisher(
             '/gazebo/set_model_state',
             ModelState,
             queue_size=1,
             latch=True
         )
+        self.set_mode_pub = rospy.Publisher(
+            self.__name+self.workers+'/set_mode_msg',
+            String,
+            queue_size=1,
+            latch=True
+        )
+        # self.set_mode_pub.publish('set_mode')
         self.seed(345*(workers+1) + 467*(name+1))
         self.reset()
     
@@ -167,7 +175,7 @@ class Test(core.Env):
         msg.pose.orientation.y = ori[2]
         msg.pose.orientation.z = ori[3]
         msg.reference_frame = 'world'
-        self.set_mode_pub.publish(msg)
+        self.set_model_pub.publish(msg)
 
     def seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
@@ -217,7 +225,7 @@ class Test(core.Env):
             return self.reset()
         self.joint_pos = joint_pos_tmp
         self.state = np.append(self.old, np.subtract(self.goal[:3], self.old[:3]))
-        self.state = np.append(self.state, self.goal_quat)
+        self.state = np.append(self.state, self.goal_quat[:4])
         # self.state = np.append(self.state, np.subtract(self.goal[3:7], self.old[3:7]))
         # self.state = np.append(self.state, np.subtract(-1*self.goal[3:7], self.old[3:7]))
         self.state = np.append(self.state, Link_dis)
@@ -307,7 +315,7 @@ class Test(core.Env):
             linkPosM, linkPosS = self.collision_init()
             alarm, Link_dis = self.cc.checkCollision(linkPosM, linkPosS)
             s = np.append(self.old, np.subtract(self.goal[:3], self.old[:3]))
-            s = np.append(s, self.goal_quat)
+            s = np.append(s, self.goal_quat[:4])
             # s = np.append(s, np.subtract(self.goal[3:7], self.old[3:7]))
             # s = np.append(s, np.subtract(-1*self.goal[3:7], self.old[3:7]))
             s = np.append(s, Link_dis)

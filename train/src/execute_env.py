@@ -214,7 +214,7 @@ class Test(core.Env):
         alarm_cnt = 0
         for i in alarm:
             alarm_cnt += i
-
+        
         self.state = np.append(self.old, np.subtract(self.goal[:3], self.old[:3]))
         self.state = np.append(self.state, self.goal_quat)
 
@@ -229,7 +229,9 @@ class Test(core.Env):
         self.state = np.append(self.state, self.goal_angle)
         self.collision = False
         self.done = False
-        return self.state, res.success
+        if alarm_cnt > 0:
+            self.collision = True
+        return self.state, res.success, self.collision
 
     def collision_init(self):
         linkPosM = np.array(self.joint_pos[:15])
