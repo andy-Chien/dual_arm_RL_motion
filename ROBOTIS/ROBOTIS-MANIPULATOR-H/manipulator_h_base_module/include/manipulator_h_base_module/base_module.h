@@ -174,6 +174,7 @@ public:
   BaseJointState                 *joint_state_;
   RobotisState                   *robotis_;
   ManipulatorKinematicsDynamics  *manipulator_;
+  ManipulatorKinematicsDynamics  *drl_Kinematics_
   slide_control                  *slide_;    //new   
 };
 

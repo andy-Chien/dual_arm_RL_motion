@@ -229,7 +229,7 @@ class Test(core.Env):
         self.state = np.append(self.state, self.goal_angle)
         self.collision = False
         self.done = False
-        return self.state
+        return self.state, res.success
 
     def collision_init(self):
         linkPosM = np.array(self.joint_pos[:15])

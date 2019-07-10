@@ -55,10 +55,11 @@ BaseModule::BaseModule()
   joint_name_to_id_["joint5"] = 5;
   joint_name_to_id_["joint6"] = 6;
 */
-  robotis_      = new RobotisState();
-  joint_state_  = new BaseJointState();
-  manipulator_  = new ManipulatorKinematicsDynamics(ARM);
-  slide_        = new slide_control();
+  robotis_        = new RobotisState();
+  joint_state_    = new BaseJointState();
+  manipulator_    = new ManipulatorKinematicsDynamics(ARM);
+  drl_Kinematics_ = new ManipulatorKinematicsDynamics(ARM);
+  slide_          = new slide_control();
 }
 
 BaseModule::~BaseModule()

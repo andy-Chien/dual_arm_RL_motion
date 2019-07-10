@@ -22,24 +22,30 @@ def run(nameIndx):
 
     agent = SAC(act_dim=env.act_dim, obs_dim=env.obs_dim, name=SIDE[nameIndx])
     
-    t = threading.currentThread()
+    # t = threading.currentThread()
     # while getattr(t, "do_run", True):
     while not rospy.is_shutdown():
         MOVE_EVENT[nameIndx].wait()
         time.sleep(0.1)
         if rospy.is_shutdown(): break
-
-        s = env.reset(cmd[nameIndx])
+        s, ik_success = env.reset(cmd[nameIndx])
         done_cnt = 0
         for __ in range(2000):
+            if done_cnt > 5 or collision or not ik_success:
+                arm.clear_cmd()
+                if not ik_success:
+                    print("!!!!!!!!!!!!!!!!=IK FAIL=!!!!!!!!!!!!!!!!")
+                elif collision:
+                    print("!!!!!!!!!!!!!!!=COLLISION=!!!!!!!!!!!!!!!")
+                else:
+                    print("!!!!!!!!!!!!!!!=FUCK DONE=!!!!!!!!!!!!!!!")
+                break
+
             a = agent.choose_action(s)
             if arm.is_stop: break
             s, done, collision, ik_success, _ = env.step(a)
             done_cnt += int(done)
-            if done_cnt > 2 or collision or not ik_success:
-                arm.clear_cmd()
-                print("fuckdonefuckdonefuckdonefuckdone")
-                break
+            
         move[nameIndx] = False
         MOVE_EVENT[nameIndx].clear()
 
@@ -56,6 +62,7 @@ def right_callback(msg):
     cmd[0][8] = msg.speed
     move[0] = True
     MOVE_EVENT[0].set()
+    print("got it")
 
 def left_callback(msg):
     global cmd, move
@@ -70,6 +77,7 @@ def left_callback(msg):
     cmd[1][8] = msg.speed
     move[1] = True
     MOVE_EVENT[1].set()
+    print("got it")
 
 def stop_thread():
     MOVE_EVENT[0].set()

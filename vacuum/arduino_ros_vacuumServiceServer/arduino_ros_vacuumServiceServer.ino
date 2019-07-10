@@ -53,7 +53,7 @@ ros::Subscriber<std_msgs::Bool> armTask_sub("/arduino/mode", &armTaskCallback);
 DynamixelClass Dxl_right(Serial1);
 DynamixelClass Dxl_left(Serial3);
 
-bool armTask = false;
+bool armTask = true;
 int MaxPos;
 int MinPos;
 int MaxPos_right;
