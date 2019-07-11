@@ -1094,8 +1094,6 @@ bool ManipulatorKinematicsDynamics::InverseKinematics_p2p( Eigen::VectorXd goal_
   if ( Deviation < 0.001 )
   {
     ik_success = true;
-    if(!AA && !BB)
-      ROS_INFO("[FUCK A2B2] Solution A2B2");
   }
   else
   {
@@ -1113,20 +1111,20 @@ bool ManipulatorKinematicsDynamics::InverseKinematics_p2p( Eigen::VectorXd goal_
       else
         ROS_INFO("[FUCK IKFIAL] Solution A2B2");
     }
-    std::cout<<"Deviation = "<<Deviation<<std::endl;
-    std::cout<<"goal_position = "<<goal_position<<std::endl;
-    std::cout<<"testPos = "<<testPos<<std::endl;
-    std::cout<<"JointAngle = "<<JointAngle<<std::endl;
-    std::cout<<"Angle = "<<Angle<<std::endl;
-    std::cout<<"dis = "<<dis1<<" "<<dis2<<" "<<dis3<<" "<<dis4<<" "<<dis5<<" "<<dis6<<std::endl;
-    std::cout<<"theta = "<<theta_1<<" "<<theta_2<<" "<<theta_3<<" "<<theta_4<<" "<<theta_5<<" "<<theta_6<<" "<<theta_7<<std::endl;
-    std::cout<<"tmpAngle = "<<tmpAngle<<std::endl;
-    std::cout<<"Vsw = "<<Vsw<<" Lsw = "<<Lsw<<std::endl;
-    std::cout<<"theta_e = "<<theta_e<<std::endl;
-    std::cout<<"(Lse*Lse + Lsw*Lsw - Lew*Lew) = "<<(Lse*Lse + Lsw*Lsw - Lew*Lew)<<std::endl;
-    std::cout<<"(2*Lse*Lsw) = "<<(2*Lse*Lsw)<<std::endl;
-    std::cout<<"Oc = "<<Oc<<"Ps = "<<Ps<<std::endl;
-    std::cout<<"R07 = "<<std::endl<<R07<<std::endl;
+    // std::cout<<"Deviation = "<<Deviation<<std::endl;
+    // std::cout<<"goal_position = "<<goal_position<<std::endl;
+    // std::cout<<"testPos = "<<testPos<<std::endl;
+    // std::cout<<"JointAngle = "<<JointAngle<<std::endl;
+    // std::cout<<"Angle = "<<Angle<<std::endl;
+    // std::cout<<"dis = "<<dis1<<" "<<dis2<<" "<<dis3<<" "<<dis4<<" "<<dis5<<" "<<dis6<<std::endl;
+    // std::cout<<"theta = "<<theta_1<<" "<<theta_2<<" "<<theta_3<<" "<<theta_4<<" "<<theta_5<<" "<<theta_6<<" "<<theta_7<<std::endl;
+    // std::cout<<"tmpAngle = "<<tmpAngle<<std::endl;
+    // std::cout<<"Vsw = "<<Vsw<<" Lsw = "<<Lsw<<std::endl;
+    // std::cout<<"theta_e = "<<theta_e<<std::endl;
+    // std::cout<<"(Lse*Lse + Lsw*Lsw - Lew*Lew) = "<<(Lse*Lse + Lsw*Lsw - Lew*Lew)<<std::endl;
+    // std::cout<<"(2*Lse*Lsw) = "<<(2*Lse*Lsw)<<std::endl;
+    // std::cout<<"Oc = "<<Oc<<"Ps = "<<Ps<<std::endl;
+    // std::cout<<"R07 = "<<std::endl<<R07<<std::endl;
   }
 
   if(!is_p2p && ik_success) //Tough to do singularity
