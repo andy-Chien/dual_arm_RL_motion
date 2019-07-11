@@ -28,7 +28,12 @@ def run(nameIndx):
         MOVE_EVENT[nameIndx].wait()
         time.sleep(0.1)
         if rospy.is_shutdown(): break
-        s, ik_success, collision = env.reset(cmd[nameIndx])
+        s, ik_success, collision, arm_enable = env.reset(cmd[nameIndx])
+        if not arm_enable:
+            MOVE_EVENT[nameIndx].clear()
+            print("ffffffffffffffffffffffffffffffffffffffffffffffffff")
+            continue
+
         done_cnt = 0
         for __ in range(2000):
             if done_cnt > 5 or collision or not ik_success:

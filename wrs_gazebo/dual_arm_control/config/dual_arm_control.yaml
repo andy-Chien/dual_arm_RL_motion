@@ -82,6 +82,3 @@ mobile_dual_arm:
     joint: Slide_L
     pid: {p: 800.0, i: 0.0, d: 0.0}
 
-
-
-

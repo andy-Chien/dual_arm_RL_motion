@@ -202,8 +202,10 @@ class Test(core.Env):
 
     def reset(self, cmd):
         self.move_speed = cmd[8]/100
-        _res = self.get_state_client(self.__name)
         res = self.move_init_client(cmd, self.__name)
+        if not res.enable:
+            return [], False, True, res.enable 
+        _res = self.get_state_client(self.__name)
         res_ = self.get_state_client(self.__obname)
         self.goal, self.goal_angle, = np.array(res.state)[:7], res.joint_angle
         self.old, self.joint_pos[:15], self.joint_pos[15:30] = _res.state, _res.joint_pos, res_.joint_pos
@@ -231,7 +233,7 @@ class Test(core.Env):
         self.done = False
         if alarm_cnt > 0:
             self.collision = True
-        return self.state, res.success, self.collision
+        return self.state, res.success, self.collision, res.enable
 
     def collision_init(self):
         linkPosM = np.array(self.joint_pos[:15])

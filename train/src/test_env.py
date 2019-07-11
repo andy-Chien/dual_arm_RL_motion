@@ -15,9 +15,9 @@ from gazebo_msgs.msg import ModelState
 # from CheckCollision_tensor import CheckCollision
 # from vacuum_cmd_msg.srv import VacuumCmd
 class Test(core.Env):
-    ACTION_VEC_TRANS = 1/720
-    ACTION_ORI_TRANS = 1/240
-    ACTION_PHI_TRANS = 1/240
+    ACTION_VEC_TRANS = 1/300
+    ACTION_ORI_TRANS = 1/100
+    ACTION_PHI_TRANS = 1/100
 
     NAME = ['/right_', '/left_', '/right_']
 
@@ -71,8 +71,8 @@ class Test(core.Env):
         self.rpy_range = 1
         self.done = True
         self.s_cnt = 0
-        self.goal_err = 0.03
-        self.ori_err = 0.25
+        self.goal_err = 0.04
+        self.ori_err = 0.4
         self.quat_inv = False
         self.goal_angle = []
         self.object_pub = 0
@@ -83,7 +83,7 @@ class Test(core.Env):
             queue_size=1,
             latch=True
         )
-        self.seed(254*(name+1))
+        self.seed(156*(name+1))
         self.reset(True)
     
     @property

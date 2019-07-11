@@ -63,7 +63,7 @@ def run(nameIndx):
         SINGULARITY = False
 
         s = env.reset(reset_start)
-        reset_start = False
+        reset_start = True
         goal = env.get_goal
         goal = np.append(goal, 0)
         start = (s[:8])
@@ -95,7 +95,7 @@ def run(nameIndx):
                 # IKFAIL_ARRAY[cnt%1000] = 0
                 break
             if __ == 999:
-                reset_start = False
+                reset_start = True
         arm.clear_cmd()
         # COLLISION = False
         # IKFAIL = False
@@ -214,7 +214,7 @@ if __name__ == '__main__':
     COORD.join(threads)
     for i in range(2):
         threads[i].start()
-        # time.sleep(10)
+        time.sleep(10)
     
     rospy.Subscriber('right_arm/drl_pose_msg', P2PPose, right_callback)
     rospy.Subscriber('left_arm/drl_pose_msg', P2PPose, left_callback)

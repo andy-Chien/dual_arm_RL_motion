@@ -3,7 +3,7 @@ import tensorflow as tf
 import gym
 import random
 
-NAME = 'SAC_v14_21'
+NAME = 'SAC_v14_23'
 EPS = 1e-8
 
 class ActorNetwork(object):
@@ -57,7 +57,7 @@ class SAC(object):
         #     self.path = '/home/andy/collision_ws/src/Collision_Avoidance/train/weights/'+ NAME +'/'+ self.name+'85'
         # else:
         #     self.path = '/home/andy/collision_ws/src/Collision_Avoidance/train/weights/'+ NAME +'/'+ self.name+'85'
-        self.path = '/home/andy/collision_ws/src/Collision_Avoidance/train/weights/'+ NAME +'/'+ self.name+'90'
+        self.path = '/home/andy/collision_ws/src/Collision_Avoidance/train/weights/'+ NAME +'/'+ self.name+'85'
 
         gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.3)
         self.sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))

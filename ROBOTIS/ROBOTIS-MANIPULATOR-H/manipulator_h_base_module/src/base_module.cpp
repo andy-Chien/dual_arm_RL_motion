@@ -169,12 +169,23 @@ void BaseModule::queueThread()
 
 bool BaseModule::move_init_callback(train::move_init::Request &req, train::move_init::Response &res)
 {
-  double dis, mu;
+  if(enable_ == false)
+  {
+    res.enable = false;
+    ROS_INFO("please set mode");
+    return true;
+  }
+  if(robotis_->is_moving_ == true)
+  {
+    res.enable = false;
+    ROS_INFO("previous task is alive");
+    return true;
+  }
+  res.enable = true;
   bool ik_success = false;
   bool limit_success = false;
   Eigen::Vector3d position;
   Eigen::Matrix3d rotation;
-  double angle_tmp[8] = {0};
   double phi;
   robotis_->all_time_steps_ = 0;
   robotis_->cnt_ = 0;
@@ -211,6 +222,7 @@ bool BaseModule::move_init_callback(train::move_init::Request &req, train::move_
 
 bool BaseModule::get_state_callback(train::get_state::Request &req, train::get_state::Response &res)
 {
+  manipulator_->forwardKinematics(7);
   this->set_response(res, manipulator_);
   return true;
 }
@@ -280,43 +292,43 @@ bool BaseModule::set_goal_callback(train::set_goal::Request &req, train::set_goa
     drl_Kinematics_->manipulator_link_data_[i]->joint_angle_ = req.action[i];
   drl_Kinematics_->forwardKinematics(7);
   //==========================================================================================================================
-  position = drl_Kinematics_->manipulator_link_data_[6]->position_;
-  // srand(time(NULL));
-  // int rr = rand();
-  // std::cout<<"rrrrrrrrrrrrrrrrrrrrr"<<rr<<std::endl;
-  // int rrr = int(req.rpy[4]);
-  // switch(rrr){
-  //   case 0:
-  //     position << 0.2, 0.15, -0.15;
-  //     break;
-  //   case 1:
-  //     position << 0.35, 0.1, -0.15;
-  //     break;
-  //   case 2:
-  //     position << 0.2, -0.15, -0.15;
-  //     break;
-  //   case 3:
-  //     position << 0.35, -0.1, -0.15;
-  //     break;
-  //   case 4:
-  //     position << 0.275, 0.35, -0.15;
-  //     std::cout<<"fuckkkkkkkkkkqqqqqqqqqqqqqqqqqqqqqqkkkkkkkkkkkk"<<std::endl;
-  //     break;
-  //   case 5:
-  //     position << 0.275, -0.35, -0.15;
-  //     std::cout<<"fuckkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"<<std::endl;
-  //     break;
-  //   case 6:
-  //     position << 0.275, 0.35, -0.15;
-  //     std::cout<<"fuckkkkkkkkkkqqqqqqqqqqqqqqqqqqqqqqkkkkkkkkkkkk"<<std::endl;
-  //     break;
-  //   case 7:
-  //     position << 0.275, -0.35, -0.15;
-  //     std::cout<<"fuckkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"<<std::endl;
-  //     break;
-  // }
-  rotation = robotis_framework::convertRPYToRotation(req.rpy[0]*M_PI, req.rpy[1]*M_PI, req.rpy[2]*M_PI);
-  // rotation = robotis_framework::convertRPYToRotation(0.5, 0, 0);
+  // position = drl_Kinematics_->manipulator_link_data_[6]->position_;
+  srand(time(NULL));
+  int rr = rand();
+  std::cout<<"rrrrrrrrrrrrrrrrrrrrr"<<rr<<std::endl;
+  int rrr = int(req.rpy[4]);
+  switch(rrr){
+    case 0:
+      position << 0.2, 0.15, -0.15;
+      break;
+    case 1:
+      position << 0.35, 0.1, -0.15;
+      break;
+    case 2:
+      position << 0.2, -0.15, -0.15;
+      break;
+    case 3:
+      position << 0.35, -0.1, -0.15;
+      break;
+    case 4:
+      position << 0.275, 0.35, -0.15;
+      std::cout<<"fuckkkkkkkkkkqqqqqqqqqqqqqqqqqqqqqqkkkkkkkkkkkk"<<std::endl;
+      break;
+    case 5:
+      position << 0.275, -0.35, -0.15;
+      std::cout<<"fuckkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"<<std::endl;
+      break;
+    case 6:
+      position << 0.275, 0.35, -0.15;
+      std::cout<<"fuckkkkkkkkkkqqqqqqqqqqqqqqqqqqqqqqkkkkkkkkkkkk"<<std::endl;
+      break;
+    case 7:
+      position << 0.275, -0.35, -0.15;
+      std::cout<<"fuckkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"<<std::endl;
+      break;
+  }
+  // rotation = robotis_framework::convertRPYToRotation(req.rpy[0]*M_PI, req.rpy[1]*M_PI, req.rpy[2]*M_PI);
+  rotation = robotis_framework::convertRPYToRotation(0.5, 0, 0);
   position += drl_Kinematics_->get_d4()*rotation.block(0,2,3,1);
 
   phi = req.rpy[3]*M_PI/2;
@@ -360,8 +372,8 @@ bool BaseModule::set_start_callback(train::set_start::Request &req, train::set_s
   drl_Kinematics_->forwardKinematics(7);
   
   position = drl_Kinematics_->manipulator_link_data_[6]->position_;
-  rotation = robotis_framework::convertRPYToRotation(req.rpy[0]*M_PI, req.rpy[1]*M_PI, req.rpy[2]*M_PI);
-  // rotation = robotis_framework::convertRPYToRotation(0, 0, 0);
+  // rotation = robotis_framework::convertRPYToRotation(req.rpy[0]*M_PI, req.rpy[1]*M_PI, req.rpy[2]*M_PI);
+  rotation = robotis_framework::convertRPYToRotation(0, 0, 0);
   position += drl_Kinematics_->get_d4()*rotation.block(0,2,3,1);
   phi = req.rpy[3]*M_PI/2;
   slide_->goal_slide_pos = 0;
