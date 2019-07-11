@@ -289,8 +289,7 @@ class exampleTask:
             else:
                 self.state = self.nextState
             
-if __name__ == '__main__':
-    print "2222222"
+if __name__ == '__main__':[]
     rospy.init_node('example')        #enable this node
     right = exampleTask('right')      #Set up right arm controller
     left  = exampleTask('left')       #Set up left arm controller

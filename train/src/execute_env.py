@@ -202,6 +202,7 @@ class Test(core.Env):
 
     def reset(self, cmd):
         self.move_speed = cmd[8]/100
+        cmd[7] = cmd[7]*2/pi
         res = self.move_init_client(cmd, self.__name)
         if not res.enable:
             return [], False, True, res.enable 

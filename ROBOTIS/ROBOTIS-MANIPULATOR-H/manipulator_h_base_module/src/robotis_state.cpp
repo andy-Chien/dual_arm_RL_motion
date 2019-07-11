@@ -131,7 +131,8 @@ bool RobotisState::setInverseKinematics(int cnt, int all_steps, Eigen::MatrixXd&
   double count = (double) cnt / (double) all_steps;
 
   ik_target_quaternion = slerp(count, start_quaternion, target_quaternion, is_inv);
-  inv_target_quaternion = slerp(count, start_quaternion, target_quaternion, true);
+  // inv_target_quaternion = slerp(count, start_quaternion, target_quaternion, true);
+  // ik_target_quaternion = start_quaternion.slerp(count, target_quaternion);
 
   ik_target_phi_ = start_phi + count * (kinematics_pose_msg_.phi - start_phi);
 
@@ -144,7 +145,7 @@ Eigen::Quaterniond RobotisState::slerp(double t, Eigen::Quaterniond& self, Eigen
   using std::acos;
   using std::sin;
   using std::abs;
-  static const double one = 1 - 0.0001;
+  static const double one = 1 - 0.000001;
 
   double d = self.dot(other);
   double absD = abs(d);
@@ -152,7 +153,7 @@ Eigen::Quaterniond RobotisState::slerp(double t, Eigen::Quaterniond& self, Eigen
   double scale0;
   double scale1;
 
-  if(absD>=one)
+  if(absD>=0.999999)
   {
     scale0 = 1 - t;
     scale1 = t;
@@ -167,12 +168,17 @@ Eigen::Quaterniond RobotisState::slerp(double t, Eigen::Quaterniond& self, Eigen
     scale1 = sin( ( t * theta) ) / sinTheta;
   }
   if(inv)
+  {
+    std::cout<<"!!!!!!=REVERSE SLERP=!!!!!!"<<std::endl;
     if(d>=0) scale1 = -scale1;
+  }
   else
+  {
     if(d<0) scale1 = -scale1;
+  }
   Eigen::Quaterniond q;
   q.coeffs() = (scale0 * self.coeffs()) + (scale1 * other.coeffs());
-  q.coeffs() /= q.norm();
+  q = q.normalized();
   return q;
 }
 

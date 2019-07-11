@@ -200,7 +200,7 @@ bool BaseModule::move_init_callback(train::move_init::Request &req, train::move_
                                  req.action[6]);
   rotation = robotis_framework::convertQuaternionToRotation(quaterniond);
 
-  phi = req.action[7];
+  phi = req.action[7]*M_PI/2;
 
   drl_Kinematics_->manipulator_link_data_[0]->slide_position_ = slide_->slide_pos;
   for (int id = 1; id <= MAX_JOINT_ID; id++)
@@ -541,7 +541,7 @@ void BaseModule::clearCmdCallback(const std_msgs::Bool::ConstPtr& msg)
     robotis_->ik_solve_ = false;
     robotis_->cnt_ = 0;
     drl_move = false;
-    ROS_INFO("[end] send trajectory");
+    ROS_INFO("[end] End trajectory");
     publishStatusMsg(robotis_controller_msgs::StatusMsg::STATUS_INFO, "End Trajectory");
   }
 }
@@ -732,7 +732,7 @@ void BaseModule::p2pPoseMsgCallback(const manipulator_h_base_module_msgs::P2PPos
   }
   else
   {
-    ROS_INFO("[end] send trajectory (ik failed)");
+    ROS_INFO("[end] End trajectory (ik failed)");
     publishStatusMsg(robotis_controller_msgs::StatusMsg::STATUS_INFO, "End Trajectory (p2p IK Failed)");
   }
   robotis_->is_ik = false;
@@ -945,7 +945,7 @@ void BaseModule::generateTaskTrajProcess()
   }
   else
   {
-    ROS_INFO("[end] send trajectory (ik failed)");
+    ROS_INFO("[end] End trajectory (ik failed)");
     publishStatusMsg(robotis_controller_msgs::StatusMsg::STATUS_INFO, "End Trajectory (IK Failed)");
 
     robotis_->is_moving_ = false;
@@ -1039,7 +1039,7 @@ void BaseModule::process(std::map<std::string, robotis_framework::Dynamixel *> d
       }
       else
       {
-        ROS_INFO("[end] send trajectory (ik failed)");
+        ROS_INFO("[end] End trajectory (ik failed)");
         publishStatusMsg(robotis_controller_msgs::StatusMsg::STATUS_INFO, "End Trajectory (IK Failed)");
 
         robotis_->is_moving_ = false;
@@ -1077,7 +1077,7 @@ void BaseModule::process(std::map<std::string, robotis_framework::Dynamixel *> d
     robotis_->is_moving_ = false;
     robotis_->ik_solve_ = false;
     robotis_->cnt_ = 0;
-    // ROS_INFO("[end] send trajectory");
+    // ROS_INFO("[end] End trajectory");
     publishStatusMsg(robotis_controller_msgs::StatusMsg::STATUS_INFO, "End Trajectory");
   }
 }

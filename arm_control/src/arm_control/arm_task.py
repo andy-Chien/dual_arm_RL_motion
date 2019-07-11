@@ -22,7 +22,7 @@ from vacuum_cmd_msg.srv import VacuumCmd
 
 
 _POS = (0, 0, 0)
-_ORI = (0, 0, 0)
+_EULER = (0, 0, 0)
 _PHI = 45
 _suction_angle = 0
 
@@ -69,7 +69,7 @@ class ArmTask:
         self.__joint_pub = rospy.Publisher(
             str(self.name) + '/joint_pose_msg',
             JointPose,
-            # latch=True,transformations
+            # latch=True,
             queue_size=1
         )
         self.__p2p_pub = rospy.Publisher(
@@ -81,6 +81,12 @@ class ArmTask:
         self.__line_pub = rospy.Publisher(
             str(self.name) + '/kinematics_pose_msg',
             KinematicsPose,
+            # latch=True,
+            queue_size=1
+        )
+        self.__drl_pub = rospy.Publisher(
+            str(self.name) + '/drl_pose_msg',
+            P2PPose,
             # latch=True,
             queue_size=1
         )
@@ -199,10 +205,14 @@ class ArmTask:
 
     def euler2quaternion(self, euler):
         roll, pitch, yaw = euler
-        quaternion = transformations.quaternion_from_euler(-pitch+pi, -yaw, roll-pi, 'ryxz')
+        q = transformations.quaternion_from_euler(-pitch+pi, -yaw, roll-pi, 'ryxz')
+        # q = [0.0,0.0,0.0,0.0]
+        # different between ros-tf(x,y,z,w) and  transformations(w,x,y,z)
+        quaternion = [q[1],q[2],q[3],q[0]]
+        # different between ros-tf(x,y,z,w) and  transformations(w,x,y,z)
         return (quaternion)
 
-    def ikMove(self, mode='line', pos=_POS, euler=_ORI, phi=_PHI):
+    def ikMove(self, mode='line', pos=_POS, euler=_EULER, phi=_PHI):
         """Publish msg of ik cmd (deg) to manager node."""
         roll, pitch, yaw = euler
         roll  = roll * pi/ 180
@@ -262,10 +272,10 @@ class ArmTask:
 
     def quaternion2euler(self, ori):
         quaternion = (
+            ori.w,
             ori.x,
             ori.y,
-            ori.z,
-            ori.w
+            ori.z
         )
         pitch, yaw, roll = transformations.euler_from_quaternion(quaternion, 'ryxz')
         # euler = roll+pi ,-pitch+pi, -yaw
@@ -334,7 +344,7 @@ class ArmTask:
             degrees(phi)
         )
 
-    def noa_relative_pos(self, mode='p2p', pos=_POS, euler=_ORI, phi=_PHI, suction_angle=_suction_angle, n=0, o=0, a=0):
+    def noa_relative_pos(self, mode='p2p', pos=_POS, euler=_EULER, phi=_PHI, suction_angle=_suction_angle, n=0, o=0, a=0):
         #由a點移動至基於b點延noa向量移動後的c點
         suction_angle = suction_angle * pi/180
         suction_rot = np.matrix([[cos(suction_angle),  0.0, sin(suction_angle)],
@@ -376,7 +386,7 @@ class ArmTask:
             degrees(phi)
         )
 
-    def relative_move(self, mode='p2p', euler=_ORI, pos = _POS, phi=_PHI):
+    def relative_move(self, mode='p2p', euler=_EULER, pos = _POS, phi=_PHI):
         fb = self.get_fb()
         curr_pos = fb.group_pose.position
         pos[0] += curr_pos.x
@@ -390,7 +400,7 @@ class ArmTask:
             phi
         )
 
-    def move_euler(self, mode='p2p', euler=_ORI):
+    def move_euler(self, mode='p2p', euler=_EULER):
         fb = self.get_fb()
         pos = fb.group_pose.position
         phi = fb.phi
@@ -430,6 +440,29 @@ class ArmTask:
             phi
         )
         return suc_angle
+
+    def drl_move(self, pos=_POS, euler=_EULER, phi=_PHI):
+        roll, pitch, yaw = euler
+        roll  = roll * pi/ 180
+        pitch = pitch* pi/ 180
+        yaw   = yaw  * pi/ 180
+
+        self.__is_busy = True
+
+        msg = P2PPose()
+        msg.pose.position.x = pos[0]
+        msg.pose.position.y = pos[1]
+        msg.pose.position.z = pos[2]
+
+        quaternion = self.euler2quaternion((roll, pitch, yaw))
+        msg.pose.orientation.x = quaternion[0]
+        msg.pose.orientation.y = quaternion[1]
+        msg.pose.orientation.z = quaternion[2]
+        msg.pose.orientation.w = quaternion[3]
+
+        msg.speed = self.__speed
+        msg.phi = radians(phi)
+        self.__drl_pub.publish(msg)
 
     def wait_busy(self):
         """This is blocking method."""

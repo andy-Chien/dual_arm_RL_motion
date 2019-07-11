@@ -936,8 +936,8 @@ bool ManipulatorKinematicsDynamics::InverseKinematics_p2p( Eigen::VectorXd goal_
 
   Ps << 0, d1*cos(DHTABLE(0,3)), slide_position;   
   Vsw = Oc - Ps;
-  Lsw = Vsw.norm();
-  theta_e = acos((Lse*Lse + Lsw*Lsw - Lew*Lew) / (2*Lse*Lsw));  
+  Lsw = Vsw.norm();   //肩腕
+  theta_e = acos((Lse*Lse + Lsw*Lsw - Lew*Lew) / (2*Lse*Lsw));  //Lse 肩肘 Lew 肘腕
   eRc = Ps + (Vsw * Lse * cos(theta_e) / Lsw);    //Phi旋轉中心位置
   Lsc = Lse * cos(theta_e); 
   Lec = Lse * sin(theta_e); 
@@ -956,6 +956,7 @@ bool ManipulatorKinematicsDynamics::InverseKinematics_p2p( Eigen::VectorXd goal_
   double theta7_tmp;
 
   Angle << 0, theta_1, theta_2, theta_3, theta_4;
+  Eigen::VectorXd tmpAngle = Angle;
   T = Eigen::MatrixXd::Identity(4,4);
   for ( int i=0; i<5; i++ )
   {
@@ -982,6 +983,14 @@ bool ManipulatorKinematicsDynamics::InverseKinematics_p2p( Eigen::VectorXd goal_
   theta_6 = acos(R47(2,2));
   theta_7 = atan(-R47(2,1) / R47(2,0));
 
+  bool AA = false;
+  bool BB = false;
+  double dis1 = 0;
+  double dis2 = 0;
+  double dis3 = 0;
+  double dis4 = 0;
+  double dis5 = 0;
+  double dis6 = 0;
   for ( int i = 1; i>= -1; i-=2 )
   { 
     bool theta_1_flag = false;
@@ -1019,16 +1028,19 @@ bool ManipulatorKinematicsDynamics::InverseKinematics_p2p( Eigen::VectorXd goal_
     }
     else
     {
-      double dis1 = fabs(Angle(1) - theta1_tmp);
-      double dis2 = fabs(JointAngle(1) - theta1_tmp);
-      double dis3 = fabs(Angle(1) - theta1_start);
-      double dis4 = fabs(JointAngle(1) - theta1_start);
+      dis1 = fabs(Angle(1) - theta1_tmp);
+      dis2 = fabs(JointAngle(1) - theta1_tmp);
+      dis3 = fabs(Angle(1) - theta1_start);
+      dis4 = fabs(JointAngle(1) - theta1_start);
       if(fabs(2*M_PI-dis1)<0.00001)
         dis1 = 0;
       if(fabs(2*M_PI-dis2)<0.00001)
         dis2 = 0;
       if((dis1<dis2 && dis4>M_1_PI) || dis3<M_1_PI)
+      {
         JointAngle = Angle;
+        AA = true;
+      }
     }
   }
 
@@ -1066,18 +1078,56 @@ bool ManipulatorKinematicsDynamics::InverseKinematics_p2p( Eigen::VectorXd goal_
     }
     else
     {
-      double dis3 = fabs(Angle(5) - theta5_start/2);
-      double dis4 = fabs(JointAngle(5) - theta5_start/2);
-      if(dis3<dis4)
+      dis5 = fabs(Angle(5) - theta5_start/2);
+      dis6 = fabs(JointAngle(5) - theta5_start/2);
+      if(dis5<dis6)
+      {
         JointAngle = Angle;
+        BB = true;
+      }
     }    
   }
-  
+  Angle = JointAngle;
   Eigen::VectorXd testPos = forwardKinematics_7(7,JointAngle);
   testPos = testPos - goal_position;
   Deviation = testPos.norm();
-  if ( Deviation < 0.0001 )
+  if ( Deviation < 0.001 )
+  {
     ik_success = true;
+    if(!AA && !BB)
+      ROS_INFO("[FUCK A2B2] Solution A2B2");
+  }
+  else
+  {
+    if(AA)
+    {
+      if(BB)
+        ROS_INFO("[FUCK IKFIAL] Solution A1B1");
+      else
+        ROS_INFO("[FUCK IKFIAL] Solution A1B2");
+    }
+    else
+    {
+      if(BB)
+        ROS_INFO("[FUCK IKFIAL] Solution A2B1");
+      else
+        ROS_INFO("[FUCK IKFIAL] Solution A2B2");
+    }
+    std::cout<<"Deviation = "<<Deviation<<std::endl;
+    std::cout<<"goal_position = "<<goal_position<<std::endl;
+    std::cout<<"testPos = "<<testPos<<std::endl;
+    std::cout<<"JointAngle = "<<JointAngle<<std::endl;
+    std::cout<<"Angle = "<<Angle<<std::endl;
+    std::cout<<"dis = "<<dis1<<" "<<dis2<<" "<<dis3<<" "<<dis4<<" "<<dis5<<" "<<dis6<<std::endl;
+    std::cout<<"theta = "<<theta_1<<" "<<theta_2<<" "<<theta_3<<" "<<theta_4<<" "<<theta_5<<" "<<theta_6<<" "<<theta_7<<std::endl;
+    std::cout<<"tmpAngle = "<<tmpAngle<<std::endl;
+    std::cout<<"Vsw = "<<Vsw<<" Lsw = "<<Lsw<<std::endl;
+    std::cout<<"theta_e = "<<theta_e<<std::endl;
+    std::cout<<"(Lse*Lse + Lsw*Lsw - Lew*Lew) = "<<(Lse*Lse + Lsw*Lsw - Lew*Lew)<<std::endl;
+    std::cout<<"(2*Lse*Lsw) = "<<(2*Lse*Lsw)<<std::endl;
+    std::cout<<"Oc = "<<Oc<<"Ps = "<<Ps<<std::endl;
+    std::cout<<"R07 = "<<std::endl<<R07<<std::endl;
+  }
 
   if(!is_p2p && ik_success) //Tough to do singularity
   {
@@ -1112,7 +1162,6 @@ bool ManipulatorKinematicsDynamics::InverseKinematics_p2p( Eigen::VectorXd goal_
       {
         JointAngle(id) = Old_JointAngle(id) + Distance(id)*(move_max/dis_max);
       }
-      // std::cout<<"fuckfuckfuckfuckfuckfuckfuckfuck"<<manipulator_link_data_[0]->mov_speed_<<std::endl;
     }
     else
       manipulator_link_data_[0]->singularity_ = false;
