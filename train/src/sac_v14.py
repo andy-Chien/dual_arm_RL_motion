@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 import gym
 import random
-NAME = 'SAC_v14_18'
+NAME = 'SAC_v14_115'
 # SAC_v14_6 is the best no fail
 # SAC_v14_7 1024 and last is 512 no fail
 # SAC_v14_8 all of 512 has fail
@@ -16,6 +16,16 @@ NAME = 'SAC_v14_18'
 # SAC_v14_16 range_cnt += 0.001 and the same
 # SAC_v14_17 range_cnt max 0.95 -> 0.85 and the same
 # SAC_v14_18 change kinematics and singularity reward and the same
+# SAC_v14_106 fail does'n include collision
+# SAC_v14_107 collision's reward = -10, cos reward = /8-> /4
+# SAC_v14_108 cos reward = /4-> /12
+# SAC_v14_109 cos reward = /12-> /8, MAX_EP_STEPS or success_cnt > 10 done = True
+# SAC_v14_110 no +0.4 and >0 *2 and the end -=1.8 -> -=1, done = 108
+# SAC_v14_111 restore +0.5 and >0 *2 and the end -=2, done = 109, buffer = 5e6
+# SAC_v14_112 done is all false
+# SAC_v14_113 done is true only success
+# SAC_v14_114 done is true when success and collision
+# SAC_v14_115 done = 108
 EPS = 1e-8
 LOAD = False
 BATCH_SIZE = 512
@@ -139,7 +149,7 @@ class SAC(object):
         self.buffers = buffers
 
         for i in range(buffers):
-            b = ReplayBuffer(capacity=int(1e6), name=self.name+'buffer'+str(i))
+            b = ReplayBuffer(capacity=int(5e6), name=self.name+'buffer'+str(i))
             self.replay_buffer.append(b)
 
         self.OBS0 = tf.placeholder(tf.float32, [None, self.obs_dim], name=self.name+"observations0")
@@ -207,9 +217,9 @@ class SAC(object):
         tf.summary.scalar(self.name+'ep_reward', self.EPRWD)
         tf.summary.scalar(self.name+'rwd', self.RWD[0])
         self.merged = tf.summary.merge_all()
-        self.writer = tf.summary.FileWriter('/home/andy/collision_ws/src/Collision_Avoidance/train/logs/'+NAME+'/'+self.name+'/', self.sess.graph)
+        self.writer = tf.summary.FileWriter('/home/iclab-arm/Andy/collision/src/Collision_Avoidance/train/logs/'+NAME+'/'+self.name+'/', self.sess.graph)
         self.saver = tf.train.Saver()
-        self.path = '/home/andy/collision_ws/src/Collision_Avoidance/train/weights/'+ NAME +'/'+ self.name
+        self.path = '/home/iclab-arm/Andy/collision/src/Collision_Avoidance/train/weights/'+ NAME +'/'+ self.name
 
         self.sess.run(tf.global_variables_initializer())
         self.sess.run(target_init)

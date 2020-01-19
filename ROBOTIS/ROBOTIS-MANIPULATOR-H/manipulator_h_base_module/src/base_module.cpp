@@ -194,12 +194,12 @@ bool BaseModule::move_cmd_callback(train::move_cmd::Request &req, train::move_cm
                                         req.action[5],
                                         req.action[6]);
 
-  double target_phi = req.action[7]*M_PI/2;
+  double target_phi = req.action[7]*M_PI/4;
   target_rotation = robotis_framework::convertQuaternionToRotation(target_quaterniond);
 
   robotis_->is_ik = true;
   slide_->goal_slide_pos = 0;
-  manipulator_->manipulator_link_data_[0]->mov_speed_ = 400;
+  manipulator_->manipulator_link_data_[0]->mov_speed_ = 800;
   limit_success = manipulator_->limit_check(target_positoin, target_rotation);
   if(limit_success)
     ik_success = manipulator_->inverseKinematics(END_LINK, target_positoin, target_rotation, target_phi, slide_->goal_slide_pos, false);
@@ -249,7 +249,7 @@ bool BaseModule::set_goal_callback(train::set_goal::Request &req, train::set_goa
   positoin = manipulator_->manipulator_link_data_[6]->position_;
   rotation = robotis_framework::convertRPYToRotation(req.rpy[0]*M_PI, req.rpy[1]*M_PI, req.rpy[2]*M_PI);
   positoin += manipulator_->get_d4()*rotation.block(0,2,3,1);
-  phi = req.rpy[3]*M_PI/2;
+  phi = req.rpy[3]*M_PI/4;
   slide_->goal_slide_pos = 0;
   limit_success = manipulator_->limit_check(positoin, rotation);
   if(limit_success)
@@ -291,7 +291,7 @@ bool BaseModule::set_start_callback(train::set_start::Request &req, train::set_s
   positoin = manipulator_->manipulator_link_data_[6]->position_;
   rotation = robotis_framework::convertRPYToRotation(req.rpy[0]*M_PI, req.rpy[1]*M_PI, req.rpy[2]*M_PI);
   positoin += manipulator_->get_d4()*rotation.block(0,2,3,1);
-  phi = req.rpy[3]*M_PI/2;
+  phi = req.rpy[3]*M_PI/4;
   slide_->goal_slide_pos = 0;
   limit_success = manipulator_->limit_check(positoin, rotation);
   if(limit_success)
@@ -452,27 +452,31 @@ void BaseModule::set_response_limit(T &res)
     // dis = manipulator_->manipulator_link_data_[i]->joint_limit_max_ - manipulator_->manipulator_link_data_[i]->joint_limit_min_;
     // res.joint_angle[(i+2)%3] = pow((2*(manipulator_->manipulator_link_data_[i]->joint_angle_ - manipulator_->manipulator_link_data_[i]->joint_limit_min_)/fabs(dis))-1, 3);
     dis = manipulator_->manipulator_link_data_[i]->joint_limit_max_ - manipulator_->manipulator_link_data_[i]->joint_limit_min_;
-    res.joint_angle[i-1] = pow((2*(manipulator_->manipulator_link_data_[i]->joint_angle_ - manipulator_->manipulator_link_data_[i]->joint_limit_min_)/fabs(dis))-1, 3);
+    //~~~~ res.joint_angle[i-1] = pow((2*(manipulator_->manipulator_link_data_[i]->joint_angle_ - manipulator_->manipulator_link_data_[i]->joint_limit_min_)/fabs(dis))-1, 3);
+    res.joint_angle[i-1] = (2*(manipulator_->manipulator_link_data_[i]->joint_angle_ - manipulator_->manipulator_link_data_[i]->joint_limit_min_)/fabs(dis))-1;
   }
   
   if(manipulator_->manipulator_link_data_[2]->joint_angle_  < -M_PI/2)
   {
     dis = fabs(manipulator_->manipulator_link_data_[2]->joint_angle_ - manipulator_->manipulator_link_data_[2]->joint_limit_min_);
-    res.joint_angle[7] = pow(dis/fabs(manipulator_->manipulator_link_data_[2]->joint_limit_min_ - (-M_PI/2)), 3);
+    //~~~~ res.joint_angle[7] = pow(dis/fabs(manipulator_->manipulator_link_data_[2]->joint_limit_min_ - (-M_PI/2)), 3);
+    res.joint_angle[7] = dis/fabs(manipulator_->manipulator_link_data_[2]->joint_limit_min_ - (-M_PI/2));
   }
   else
   {
     dis = fabs(manipulator_->manipulator_link_data_[2]->joint_angle_ - manipulator_->manipulator_link_data_[2]->joint_limit_max_);
-    res.joint_angle[7] = pow(dis/fabs(manipulator_->manipulator_link_data_[2]->joint_limit_max_ - (-M_PI/2)), 3);
+    //~~~~ res.joint_angle[7] = pow(dis/fabs(manipulator_->manipulator_link_data_[2]->joint_limit_max_ - (-M_PI/2)), 3);
+    res.joint_angle[7] = dis/fabs(manipulator_->manipulator_link_data_[2]->joint_limit_max_ - (-M_PI/2));
   }
 
   dis = fabs(fabs(manipulator_->manipulator_link_data_[6]->joint_angle_) - fabs(manipulator_->manipulator_link_data_[6]->joint_limit_min_));
-  res.joint_angle[8] = pow(dis/fabs(manipulator_->manipulator_link_data_[6]->joint_limit_min_), 3);
+  //~~~~ res.joint_angle[8] = pow(dis/fabs(manipulator_->manipulator_link_data_[6]->joint_limit_min_), 3);
+  res.joint_angle[8] = dis/fabs(manipulator_->manipulator_link_data_[6]->joint_limit_min_);
   
   Eigen::Vector3d limit_vec = manipulator_->manipulator_link_data_[6]->position_ - manipulator_->manipulator_link_data_[2]->position_;
   double limit_dis = limit_vec.norm();
   limit_dis = ((limit_dis - 0.148)/0.4)*2 - 1;
-  res.limit[0] = pow(limit_dis, 3);
+  res.limit[0] = limit_dis; //~~~~ pow(limit_dis, 3);
 }
 
 template <typename T>

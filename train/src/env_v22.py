@@ -81,7 +81,7 @@ class Test(core.Env):
             queue_size=1,
             latch=True
         )
-        self.seed(1234*(workers+1) + 5678*(name+1))
+        self.seed(288*(workers+1) + 467*(name+1))
         self.reset()
     
     @property
@@ -334,7 +334,7 @@ class Test(core.Env):
                 self.set_object(self.__name+'q', (self.goal[0]-0.08, self.goal[1], self.goal[2]+1.45086), self.goal[3:7])
                 self.object_pub = 0
         fail = False
-        if not res.success or self.collision or res.singularity:
+        if not res.success or res.singularity: #self.collision or
             fail = True
 
         return self.state, reward, terminal, self.success, fail
@@ -368,23 +368,29 @@ class Test(core.Env):
         reward = 0.
 
         if not ik_success:
-            return -8
+            return -5
         if self.collision:
-            return -8
+            return -5 #-8
         if math.fabs(s[7])>0.9:
             return -5
 
         reward -= self.dis_pos
         reward -= self.dis_ori
-        reward += 0.4
+
+        reward += 0.5
         
         if reward > 0:
             reward *= 2
 
+        # cos_vec = np.dot(self.action[:3],  self.state[8:11])/(np.linalg.norm(self.action[:3]) *np.linalg.norm(self.state[8:11]))
+        
+        # reward += (cos_vec*self.dis_pos - self.dis_pos)/2
+        
         cos_vec = np.dot(self.action[:3],  self.state[8:11])/(np.linalg.norm(self.action[:3]) *np.linalg.norm(self.state[8:11]))
         
-        reward += (cos_vec*self.dis_pos - self.dis_pos)/2
-        reward -= 1.8
+        reward += (cos_vec*self.dis_pos - self.dis_pos)/8
+
+        reward -= 2
         if singularity:
             reward -= 3
         return reward
