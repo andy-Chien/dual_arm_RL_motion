@@ -1021,13 +1021,15 @@ bool ManipulatorKinematicsDynamics::InverseKinematics_p2p( Eigen::VectorXd goal_
     {
       double dis1 = fabs(Angle(1) - theta1_tmp);
       double dis2 = fabs(JointAngle(1) - theta1_tmp);
-      double dis3 = fabs(Angle(1) - theta1_start);
-      double dis4 = fabs(JointAngle(1) - theta1_start);
+      // double dis3 = fabs(Angle(1) - theta1_start);
+      // double dis4 = fabs(JointAngle(1) - theta1_start);
       if(fabs(2*M_PI-dis1)<0.00001)
         dis1 = 0;
       if(fabs(2*M_PI-dis2)<0.00001)
         dis2 = 0;
-      if((dis1<dis2 && dis4>M_1_PI) || dis3<M_1_PI)
+      // if((dis1<dis2 && dis4>M_1_PI) || dis3<M_1_PI)
+      //   JointAngle = Angle;
+      if(dis1<dis2)
         JointAngle = Angle;
     }
   }
@@ -1066,9 +1068,11 @@ bool ManipulatorKinematicsDynamics::InverseKinematics_p2p( Eigen::VectorXd goal_
     }
     else
     {
-      double dis3 = fabs(Angle(5) - theta5_start/2);
-      double dis4 = fabs(JointAngle(5) - theta5_start/2);
-      if(dis3<dis4)
+      // double dis3 = fabs(Angle(5) - theta5_start/2);
+      // double dis4 = fabs(JointAngle(5) - theta5_start/2);
+      // if(dis3<dis4)
+      //   JointAngle = Angle;
+      if(Angle(6) < JointAngle(6))
         JointAngle = Angle;
     }    
   }

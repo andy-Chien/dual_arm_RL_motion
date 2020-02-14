@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 import gym
 import random
-NAME = 'SAC_v14_115'
+NAME = 'SAC_v14_117'
 # SAC_v14_6 is the best no fail
 # SAC_v14_7 1024 and last is 512 no fail
 # SAC_v14_8 all of 512 has fail
@@ -26,6 +26,8 @@ NAME = 'SAC_v14_115'
 # SAC_v14_113 done is true only success
 # SAC_v14_114 done is true when success and collision
 # SAC_v14_115 done = 108
+# SAC_v14_116 change IK in first axis, dosen't consider old angle
+# SAC_v14_117 change IK in 6 axis, always negative
 EPS = 1e-8
 LOAD = False
 BATCH_SIZE = 512
