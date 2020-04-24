@@ -6,7 +6,7 @@ using namespace robotis_manipulator_h;
 slide_control::slide_control()
 {
     ros::NodeHandle nh_private("~");
-    gazebo_mode = nh_private.param<bool>("gazebo", false);
+    gazebo_mode = nh_private.param<bool>("en_sim", false);
     if(gazebo_mode)
     {
         std::string side_str  = nh_private.param<std::string>("side", "");
@@ -15,7 +15,7 @@ slide_control::slide_control()
     }
     else
     {
-        slide_cmd_pub = n.advertise<manipulator_h_base_module_msgs::SlideCommand>("/slide_command_msg", 1);
+        slide_cmd_pub = n.advertise<manipulator_h_base_module_msgs::SlideCommand>("slide_command_msg", 1);
     }
     slide_pos = 0;
     goal_slide_pos = 0;

@@ -60,20 +60,24 @@ bool QNode::init() {
 
   ros::start(); // explicitly needed since our nodehandle is going out of scope.
   ros::NodeHandle n;
+  ros::NodeHandle n_private("~");
 
   // Add your ros communications here.
-  ini_pose_msg_pub_ = n.advertise<std_msgs::String>("/robotis/base/ini_pose_msg", 0);
-  set_mode_msg_pub_ = n.advertise<std_msgs::String>("/robotis/base/set_mode_msg", 0);
+  ini_pose_msg_pub_ = n.advertise<std_msgs::String>("ini_pose_msg", 0);
+  set_mode_msg_pub_ = n.advertise<std_msgs::String>("set_mode_msg", 0);
 
-  joint_pose_msg_pub_ = n.advertise<manipulator_h_base_module_msgs::JointPose>("/robotis/base/joint_pose_msg", 0);
-  kinematics_pose_msg_pub_ = n.advertise<manipulator_h_base_module_msgs::KinematicsPose>("/robotis/base/kinematics_pose_msg", 0);
-  p2p_pose_msg_pub_ = n.advertise<manipulator_h_base_module_msgs::P2PPose>("/robotis/base/p2p_pose_msg", 0);
-  drl_pose_msg_pub_ = n.advertise<manipulator_h_base_module_msgs::P2PPose>("/robotis/base/drl_pose_msg", 0);
+  joint_pose_msg_pub_ = n.advertise<manipulator_h_base_module_msgs::JointPose>("joint_pose_msg", 0);
+  kinematics_pose_msg_pub_ = n.advertise<manipulator_h_base_module_msgs::KinematicsPose>("kinematics_pose_msg", 0);
+  p2p_pose_msg_pub_ = n.advertise<manipulator_h_base_module_msgs::P2PPose>("p2p_pose_msg", 0);
+  drl_pose_msg_pub_ = n.advertise<manipulator_h_base_module_msgs::P2PPose>("drl_pose_msg", 0);
 
-  get_joint_pose_client_ = n.serviceClient<manipulator_h_base_module_msgs::GetJointPose>("/robotis/base/get_joint_pose", 0);
-  get_kinematics_pose_client_ = n.serviceClient<manipulator_h_base_module_msgs::GetKinematicsPose>("/robotis/base/get_kinematics_pose", 0);
+  get_joint_pose_client_ = n.serviceClient<manipulator_h_base_module_msgs::GetJointPose>("get_joint_pose", 0);
+  get_kinematics_pose_client_ = n.serviceClient<manipulator_h_base_module_msgs::GetKinematicsPose>("get_kinematics_pose", 0);
 
-  status_msg_sub_ = n.subscribe("/robotis/status", 10, &QNode::statusMsgCallback, this);
+  status_msg_sub_ = n.subscribe("status", 10, &QNode::statusMsgCallback, this);
+
+  name_ = n_private.param<std::string>("robot_name", "FUCK");
+  self_name_ = QString::fromUtf8(name_.c_str());
 
   start();
   return true;

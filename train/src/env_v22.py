@@ -66,12 +66,12 @@ class Test(core.Env):
         # self.dis_pos
         self.cc = CheckCollision()
         self.collision = False
-        self.range_cnt = 0.6#+(workers*0.1)
-        self.rpy_range = 0.2*(workers+1)
+        self.range_cnt = 0.3 #0.85 #0.6
+        self.rpy_range = 0.2*(workers+1) #0.8 #0.2*(workers+1)
         self.done = True
         self.s_cnt = 0
-        self.goal_err = 0.08
-        self.ori_err = 0.4
+        self.goal_err = 0.08 #0.015 #0.08
+        self.ori_err = 0.4 #0.2  #0.4
         self.quat_inv = False
         self.goal_angle = []
         self.object_pub = 0
@@ -82,6 +82,8 @@ class Test(core.Env):
             latch=True
         )
         self.seed(288*(workers+1) + 467*(name+1))
+        # self.seed(12*(workers+1) + 32*(name+1))
+        # self.seed(128*(workers+1) + 146*(name+1))
         self.reset()
     
     @property
@@ -224,7 +226,8 @@ class Test(core.Env):
         self.state = np.append(self.state, self.joint_angle)
         self.state = np.append(self.state, self.limit)
         self.dis_pos = np.linalg.norm(self.goal[:3] - self.old[:3])
-        self.dis_ori = math.sqrt(np.linalg.norm(self.goal[3:7] - self.old[3:7]) + np.linalg.norm(-1*self.goal[3:7] - self.old[3:7]) - 2)
+        # self.dis_ori = math.sqrt(np.linalg.norm(self.goal[3:7] - self.old[3:7]) + np.linalg.norm(-1*self.goal[3:7] - self.old[3:7]) - 2)
+        self.dis_ori = np.linalg.norm(self.goal[3:7] - self.old[3:7]) + np.linalg.norm(-1*self.goal[3:7] - self.old[3:7]) - 2
         # self.angle_ori = self.quat_angle()
         self.state = np.append(self.state, self.dis_pos)
         self.state = np.append(self.state, self.dis_ori)
@@ -236,18 +239,11 @@ class Test(core.Env):
         return self.state
 
     def set_goal(self):
-        self.goal = self.np_random.uniform(low=0., high=self.range_cnt, size=(8,))
+        # self.goal = self.np_random.uniform(low=0., high=self.range_cnt, size=(8,))
+        self.goal = self.np_random.uniform(low=-0.5, high=0.5, size=(8,))
         rpy = self.np_random.uniform(low=-1*self.rpy_range, high=self.rpy_range, size=(4,))
-        # print('self.goal = ', self.goal)
-        # if self.goal[0]>0.5:
-        #     if self.goal[0]>0.75:
-        #         self.goal[2] /= -3
-        #     else:
-        #         self.goal[2] /= -2
-        #     self.goal[2]+=1
 
         self.goal[0] = 0
-        # self.goal[3] = self.range_cnt/2
         self.goal = np.append(self.goal, self.range_cnt)
         res = self.set_goal_client(self.goal, rpy, self.__name)
         res_ = self.get_state_client(self.__obname)
@@ -258,7 +254,7 @@ class Test(core.Env):
             return goal_pos[:7], res.joint_angle, res.joint_pos, res_.joint_pos
 
     def set_old(self):
-        self.start = self.np_random.uniform(low=0., high=self.range_cnt, size=(8,))
+        self.start = self.np_random.uniform(low=-0.5, high=0.5, size=(8,))
         rpy = self.np_random.uniform(low=-1*self.rpy_range, high=self.rpy_range, size=(4,))
         # if self.start[0]>0.5:
         #     if self.start[0]>0.75:
@@ -314,7 +310,8 @@ class Test(core.Env):
             s = np.append(s, self.joint_angle)
             s = np.append(s, self.limit)
             self.dis_pos = np.linalg.norm(self.goal[:3] - s[:3])
-            self.dis_ori = math.sqrt(np.linalg.norm(self.goal[3:7] - s[3:7]) + np.linalg.norm(-1*self.goal[3:7] - s[3:7]) - 2)
+            # self.dis_ori = math.sqrt(np.linalg.norm(self.goal[3:7] - s[3:7]) + np.linalg.norm(-1*self.goal[3:7] - s[3:7]) - 2)
+            self.dis_ori = np.linalg.norm(self.goal[3:7] - s[3:7]) + np.linalg.norm(-1*self.goal[3:7] - s[3:7]) - 2
             # self.angle_ori = self.quat_angle()
             s = np.append(s, self.dis_pos)
             s = np.append(s, self.dis_ori)
@@ -352,7 +349,7 @@ class Test(core.Env):
                     self.done = True
                     self.s_cnt += 1
                     self.range_cnt = self.range_cnt + 0.001 if self.range_cnt < 0.85 else 0.85 #0.004
-                    self.rpy_range = self.rpy_range + 0.001 if self.rpy_range < 0.8 else 0.8 #0.002
+                    self.rpy_range = self.rpy_range + 0.001 if self.rpy_range < 0.999 else 1 #0.002
                     self.goal_err = self.goal_err*0.993 if self.goal_err > 0.015 else 0.015
                     self.ori_err = self.ori_err*0.993 if self.ori_err > 0.2 else 0.2
                 return True

@@ -31,7 +31,7 @@
 #ifndef Q_MOC_RUN
 
 #include <ros/ros.h>
-#include <QtGui/QMainWindow>
+#include <QMainWindow>
 #include "ui_main_window.h"
 #include "qnode.hpp"
 

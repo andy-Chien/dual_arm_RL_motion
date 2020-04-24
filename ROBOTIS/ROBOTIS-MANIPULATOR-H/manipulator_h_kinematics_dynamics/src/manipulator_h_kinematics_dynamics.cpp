@@ -64,8 +64,8 @@ ManipulatorKinematicsDynamics::ManipulatorKinematicsDynamics(TreeSelect tree)
     manipulator_link_data_[1]->center_of_mass_    = robotis_framework::getTransitionXYZ(0.0, 0.0, 0.0);
     manipulator_link_data_[1]->joint_limit_max_   =  180 * M_PI/180;
     manipulator_link_data_[1]->joint_limit_min_   = -180 * M_PI/180;
-    manipulator_link_data_[1]->train_limit_max_   =  135 * M_PI/180; //135
-    manipulator_link_data_[1]->train_limit_min_   = -135 * M_PI/180;
+    manipulator_link_data_[1]->train_limit_max_   =  180 * M_PI/180; //135
+    manipulator_link_data_[1]->train_limit_min_   = -180 * M_PI/180;
     manipulator_link_data_[1]->inertia_           = robotis_framework::getInertiaXYZ(1.0, 0.0, 0.0, 1.0, 0.0, 1.0);
 
     manipulator_link_data_[2]->name_    = "joint2";
@@ -77,9 +77,9 @@ ManipulatorKinematicsDynamics::ManipulatorKinematicsDynamics(TreeSelect tree)
     manipulator_link_data_[2]->joint_axis_        = robotis_framework::getTransitionXYZ(0.0, 0.0, -1.0);
     manipulator_link_data_[2]->center_of_mass_    = robotis_framework::getTransitionXYZ(0.0, 0.0, 0.0);
     manipulator_link_data_[2]->joint_limit_max_   =   30 * M_PI/180;
-    manipulator_link_data_[2]->joint_limit_min_   = -210 * M_PI/180;
+    manipulator_link_data_[2]->joint_limit_min_   = -180 * M_PI/180;
     manipulator_link_data_[2]->train_limit_max_   =   30 * M_PI/180;
-    manipulator_link_data_[2]->train_limit_min_   = -150 * M_PI/180;//150
+    manipulator_link_data_[2]->train_limit_min_   = -180 * M_PI/180;//150
     manipulator_link_data_[2]->inertia_           = robotis_framework::getInertiaXYZ(1.0, 0.0, 0.0, 1.0, 0.0, 1.0);
 
     manipulator_link_data_[3]->name_    = "joint3";
@@ -200,34 +200,34 @@ void ManipulatorKinematicsDynamics::load_LinkParam()
         DHTABLE(link_num , 3) = param["theta"] * M_PI / 180.0;
     }
 //================================================================================================
-    file_path  = nh_private.param<std::string>("inv_link_file_path", "");
+    // file_path  = nh_private.param<std::string>("inv_link_file_path", "");
     
-    // YAML::Node doc;
-    try
-    {
-        // load yaml
-        doc = YAML::LoadFile(file_path.c_str());
-    }
-    catch (const std::exception &e)
-    {
-        std::cout << "Fail to load yaml file." << std::endl;
-        return;
-    }
+    // // YAML::Node doc;
+    // try
+    // {
+    //     // load yaml
+    //     doc = YAML::LoadFile(file_path.c_str());
+    // }
+    // catch (const std::exception &e)
+    // {
+    //     std::cout << "Fail to load yaml file." << std::endl;
+    //     return;
+    // }
 
-    INV_DHTABLE.resize(6, 4);
+    // INV_DHTABLE.resize(6, 4);
 
-    // parse dh links
-    _dh_links = doc["dh_links"];
-    for (YAML::iterator _it = _dh_links.begin(); _it != _dh_links.end(); ++_it)
-    {
-        int link_num = _it->first.as<int>();
+    // // parse dh links
+    // _dh_links = doc["dh_links"];
+    // for (YAML::iterator _it = _dh_links.begin(); _it != _dh_links.end(); ++_it)
+    // {
+    //     int link_num = _it->first.as<int>();
 
-        std::map<std::string, double> param = _it->second.as<std::map<std::string, double> >();
-        INV_DHTABLE(link_num , 0) = param["a"];
-        INV_DHTABLE(link_num , 1) = param["alpha"] * M_PI / 180.0;
-        INV_DHTABLE(link_num , 2) = param["d"];
-        INV_DHTABLE(link_num , 3) = param["theta"] * M_PI / 180.0;
-    }
+    //     std::map<std::string, double> param = _it->second.as<std::map<std::string, double> >();
+    //     INV_DHTABLE(link_num , 0) = param["a"];
+    //     INV_DHTABLE(link_num , 1) = param["alpha"] * M_PI / 180.0;
+    //     INV_DHTABLE(link_num , 2) = param["d"];
+    //     INV_DHTABLE(link_num , 3) = param["theta"] * M_PI / 180.0;
+    // }
 //==================================================================================================
     d1 = DHTABLE(1,2);
     d2 = DHTABLE(3,2);

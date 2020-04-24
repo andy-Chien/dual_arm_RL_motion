@@ -620,17 +620,17 @@ void RobotisController::msgQueueThread()
   ros_node.setCallbackQueue(&callback_queue);
 
   /* subscriber */
-  ros::Subscriber write_control_table_sub = ros_node.subscribe("/robotis/write_control_table", 5,
+  ros::Subscriber write_control_table_sub = ros_node.subscribe("robotis/write_control_table", 5,
                                                                &RobotisController::writeControlTableCallback, this);
-  ros::Subscriber sync_write_item_sub     = ros_node.subscribe("/robotis/sync_write_item", 10,
+  ros::Subscriber sync_write_item_sub     = ros_node.subscribe("robotis/sync_write_item", 10,
                                                                &RobotisController::syncWriteItemCallback, this);
-  ros::Subscriber joint_ctrl_modules_sub  = ros_node.subscribe("/robotis/set_joint_ctrl_modules", 10,
+  ros::Subscriber joint_ctrl_modules_sub  = ros_node.subscribe("robotis/set_joint_ctrl_modules", 10,
                                                                &RobotisController::setJointCtrlModuleCallback, this);
-  ros::Subscriber enable_ctrl_module_sub  = ros_node.subscribe("/robotis/enable_ctrl_module", 10,
+  ros::Subscriber enable_ctrl_module_sub  = ros_node.subscribe("robotis/enable_ctrl_module", 10,
                                                                &RobotisController::setCtrlModuleCallback, this);
-  ros::Subscriber control_mode_sub        = ros_node.subscribe("/robotis/set_control_mode", 10,
+  ros::Subscriber control_mode_sub        = ros_node.subscribe("robotis/set_control_mode", 10,
                                                                &RobotisController::setControllerModeCallback, this);
-  ros::Subscriber joint_states_sub        = ros_node.subscribe("/robotis/set_joint_states", 10,
+  ros::Subscriber joint_states_sub        = ros_node.subscribe("robotis/set_joint_states", 10,
                                                                &RobotisController::setJointStatesCallback, this);
 
   ros::Subscriber gazebo_joint_states_sub;
@@ -639,10 +639,10 @@ void RobotisController::msgQueueThread()
                                                  &RobotisController::gazeboJointStatesCallback, this);
 
   /* publisher */
-  goal_joint_state_pub_     = ros_node.advertise<sensor_msgs::JointState>("/robotis/goal_joint_states", 10);
-  present_joint_state_pub_  = ros_node.advertise<sensor_msgs::JointState>("/robotis/present_joint_states", 10);
+  goal_joint_state_pub_     = ros_node.advertise<sensor_msgs::JointState>("robotis/goal_joint_states", 10);
+  present_joint_state_pub_  = ros_node.advertise<sensor_msgs::JointState>("robotis/present_joint_states", 10);
   current_module_pub_       = ros_node.advertise<robotis_controller_msgs::JointCtrlModule>(
-                                                              "/robotis/present_joint_ctrl_modules", 10);
+                                                              "robotis/present_joint_ctrl_modules", 10);
 
   if (gazebo_mode_ == true)
   {
@@ -658,11 +658,11 @@ void RobotisController::msgQueueThread()
   }
 
   /* service */
-  ros::ServiceServer get_joint_module_server = ros_node.advertiseService("/robotis/get_present_joint_ctrl_modules",
+  ros::ServiceServer get_joint_module_server = ros_node.advertiseService("robotis/get_present_joint_ctrl_modules",
                                                         &RobotisController::getJointCtrlModuleService, this);
-  ros::ServiceServer set_joint_module_server = ros_node.advertiseService("/robotis/set_present_joint_ctrl_modules",
+  ros::ServiceServer set_joint_module_server = ros_node.advertiseService("robotis/set_present_joint_ctrl_modules",
                                                         &RobotisController::setJointCtrlModuleService, this);
-  ros::ServiceServer set_module_server = ros_node.advertiseService("/robotis/set_present_ctrl_modules",
+  ros::ServiceServer set_module_server = ros_node.advertiseService("robotis/set_present_ctrl_modules",
                                                         &RobotisController::setCtrlModuleService, this);
 
   ros::WallDuration duration(robot_->getControlCycle() / 1000.0);

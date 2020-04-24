@@ -91,6 +91,7 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
     ** Auto Start
     **********************/
   qnode.init();
+  setWindowTitle(qnode.getName());
 }
 
 MainWindow::~MainWindow() {}

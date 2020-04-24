@@ -18,12 +18,8 @@
   <depend>roscpp</depend>
   <depend>robotis_controller_msgs</depend>
   <depend>manipulator_h_base_module_msgs</depend>
-  <!--depend>qt_build</depend-->
-  <!--depend>libqt4-dev</depend-->
-  <depend>qtbase5-dev</depend>
-  <depend>qt5-qmake</depend>
-  <depend>libqt5-core</depend>
-  <depend>libqt5-gui</depend>
+  <depend>qt_build</depend>
+  <depend>libqt4-dev</depend>
   <depend>cmake_modules</depend>
   <depend>eigen_conversions</depend>
   <depend>eigen</depend>

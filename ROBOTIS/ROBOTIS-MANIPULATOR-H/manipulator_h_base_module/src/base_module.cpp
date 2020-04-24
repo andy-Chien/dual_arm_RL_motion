@@ -120,44 +120,44 @@ void BaseModule::queueThread()
   ros_node.setCallbackQueue(&callback_queue);
 
   /* publish topics */
-  status_msg_pub_ = ros_node.advertise<robotis_controller_msgs::StatusMsg>("/robotis/status", 1);
-  set_ctrl_module_pub_ = ros_node.advertise<std_msgs::String>("/robotis/enable_ctrl_module", 1);
+  status_msg_pub_ = ros_node.advertise<robotis_controller_msgs::StatusMsg>("status", 1);
+  set_ctrl_module_pub_ = ros_node.advertise<std_msgs::String>("robotis/enable_ctrl_module", 1);
 
   /* subscribe topics */
   ros::Subscriber stop_sub = ros_node.subscribe("/robot/is_stop", 5,
                                                 &BaseModule::stopMsgCallback, this);
-  ros::Subscriber wait_sub = ros_node.subscribe("/robot/wait", 5,
+  ros::Subscriber wait_sub = ros_node.subscribe("wait", 5,
                                                 &BaseModule::waitMsgCallback, this);
-  ros::Subscriber clear_cmd_sub = ros_node.subscribe("/robot/clear_cmd",5,
+  ros::Subscriber clear_cmd_sub = ros_node.subscribe("clear_cmd",5,
                                                      &BaseModule::clearCmdCallback, this);
-  ros::Subscriber ini_pose_msg_sub = ros_node.subscribe("/robotis/base/ini_pose_msg", 5,
+  ros::Subscriber ini_pose_msg_sub = ros_node.subscribe("base/ini_pose_msg", 5,
                                                         &BaseModule::initPoseMsgCallback, this);
-  ros::Subscriber set_mode_msg_sub = ros_node.subscribe("/robotis/base/set_mode_msg", 5,
+  ros::Subscriber set_mode_msg_sub = ros_node.subscribe("set_mode_msg", 5,
                                                         &BaseModule::setModeMsgCallback, this);
 
-  ros::Subscriber joint_pose_msg_sub = ros_node.subscribe("/robotis/base/joint_pose_msg", 5,
+  ros::Subscriber joint_pose_msg_sub = ros_node.subscribe("joint_pose_msg", 5,
                                                           &BaseModule::jointPoseMsgCallback, this);
-  ros::Subscriber kinematics_pose_msg_sub = ros_node.subscribe("/robotis/base/kinematics_pose_msg", 5,
+  ros::Subscriber kinematics_pose_msg_sub = ros_node.subscribe("kinematics_pose_msg", 5,
                                                                &BaseModule::kinematicsPoseMsgCallback, this);
-  ros::Subscriber p2p_pose_msg_sub = ros_node.subscribe("/robotis/base/p2p_pose_msg", 5,
+  ros::Subscriber p2p_pose_msg_sub = ros_node.subscribe("p2p_pose_msg", 5,
                                                                &BaseModule::p2pPoseMsgCallback, this);
   slide_->slide_fdb_sub = ros_node.subscribe("/slide_feedback_msg", 10, &slide_control::slideFeedback, slide_);
 
-  ros::ServiceServer get_joint_pose_server = ros_node.advertiseService("/robotis/base/get_joint_pose",
+  ros::ServiceServer get_joint_pose_server = ros_node.advertiseService("get_joint_pose",
                                                                        &BaseModule::getJointPoseCallback, this);
-  ros::ServiceServer get_kinematics_pose_server = ros_node.advertiseService("/robotis/base/get_kinematics_pose",
+  ros::ServiceServer get_kinematics_pose_server = ros_node.advertiseService("get_kinematics_pose",
                                                                             &BaseModule::getKinematicsPoseCallback, this);
-  ros::ServiceServer train_server = ros_node.advertiseService("/train_env",
+  ros::ServiceServer train_server = ros_node.advertiseService("train_env",
                                                               &BaseModule::training_callback, this);
-  ros::ServiceServer env_reset_server = ros_node.advertiseService("/env_reset",
+  ros::ServiceServer env_reset_server = ros_node.advertiseService("env_reset",
                                                               &BaseModule::env_reset_callback, this);
-  ros::ServiceServer get_state_server = ros_node.advertiseService("/get_state",
+  ros::ServiceServer get_state_server = ros_node.advertiseService("get_state",
                                                               &BaseModule::get_state_callback, this);
-  ros::ServiceServer move_cmd_server = ros_node.advertiseService("/move_cmd",
+  ros::ServiceServer move_cmd_server = ros_node.advertiseService("move_cmd",
                                                               &BaseModule::move_cmd_callback, this);
-  ros::ServiceServer set_goal_server = ros_node.advertiseService("/set_goal",
+  ros::ServiceServer set_goal_server = ros_node.advertiseService("set_goal",
                                                               &BaseModule::set_goal_callback, this);
-  ros::ServiceServer set_start_server = ros_node.advertiseService("/set_start",
+  ros::ServiceServer set_start_server = ros_node.advertiseService("set_start",
                                                               &BaseModule::set_start_callback, this);
 
   while (ros_node.ok())
@@ -237,7 +237,8 @@ bool BaseModule::set_goal_callback(train::set_goal::Request &req, train::set_goa
   {
     dis = manipulator_->manipulator_link_data_[i]->train_limit_max_ - manipulator_->manipulator_link_data_[i]->train_limit_min_;
     mu = (manipulator_->manipulator_link_data_[i]->train_limit_max_ + manipulator_->manipulator_link_data_[i]->train_limit_min_)/2;
-    req.action[i] = req.action[i] * fabs(dis) + (mu - req.action[8]*fabs(dis)/2);
+    // req.action[i] = req.action[i] * fabs(dis) + (mu - req.action[8]*fabs(dis)/2);
+    req.action[i] = (req.action[i] * fabs(dis) + mu) * req.action[8];
   }
   manipulator_->manipulator_link_data_[0]->slide_position_ = req.action[0];
   for (int i=1; i<=MAX_JOINT_ID; i++)
@@ -249,7 +250,7 @@ bool BaseModule::set_goal_callback(train::set_goal::Request &req, train::set_goa
   positoin = manipulator_->manipulator_link_data_[6]->position_;
   rotation = robotis_framework::convertRPYToRotation(req.rpy[0]*M_PI, req.rpy[1]*M_PI, req.rpy[2]*M_PI);
   positoin += manipulator_->get_d4()*rotation.block(0,2,3,1);
-  phi = req.rpy[3]*M_PI/4;
+  phi = req.rpy[3]*M_PI/3;
   slide_->goal_slide_pos = 0;
   limit_success = manipulator_->limit_check(positoin, rotation);
   if(limit_success)
@@ -281,7 +282,8 @@ bool BaseModule::set_start_callback(train::set_start::Request &req, train::set_s
   {
     dis = manipulator_->manipulator_link_data_[i]->train_limit_max_ - manipulator_->manipulator_link_data_[i]->train_limit_min_;
     mu = (manipulator_->manipulator_link_data_[i]->train_limit_max_ + manipulator_->manipulator_link_data_[i]->train_limit_min_)/2;
-    req.action[i] = req.action[i] * fabs(dis) + (mu - req.action[8]*fabs(dis)/2);
+    // req.action[i] = req.action[i] * fabs(dis) + (mu - req.action[8]*fabs(dis)/2);
+    req.action[i] = (req.action[i] * fabs(dis) + mu) * req.action[8];
   }
   manipulator_->manipulator_link_data_[0]->slide_position_ = req.action[0];
   for (int i=1; i<=MAX_JOINT_ID; i++)
@@ -291,7 +293,7 @@ bool BaseModule::set_start_callback(train::set_start::Request &req, train::set_s
   positoin = manipulator_->manipulator_link_data_[6]->position_;
   rotation = robotis_framework::convertRPYToRotation(req.rpy[0]*M_PI, req.rpy[1]*M_PI, req.rpy[2]*M_PI);
   positoin += manipulator_->get_d4()*rotation.block(0,2,3,1);
-  phi = req.rpy[3]*M_PI/4;
+  phi = req.rpy[3]*M_PI/3;
   slide_->goal_slide_pos = 0;
   limit_success = manipulator_->limit_check(positoin, rotation);
   if(limit_success)
@@ -325,7 +327,8 @@ bool BaseModule::env_reset_callback(train::environment::Request &req, train::env
     {
       dis = manipulator_->manipulator_link_data_[i]->train_limit_max_ - manipulator_->manipulator_link_data_[i]->train_limit_min_;
       mu = (manipulator_->manipulator_link_data_[i]->train_limit_max_ + manipulator_->manipulator_link_data_[i]->train_limit_min_)/2;
-      req.action[i] = req.action[i] * fabs(dis) + (mu - req.action[8]*fabs(dis)/2);
+      // req.action[i] = req.action[i] * fabs(dis) + (mu - req.action[8]*fabs(dis)/2);
+      req.action[i] = (req.action[i] * fabs(dis) + mu) * req.action[8];
     }
     manipulator_->manipulator_link_data_[0]->slide_position_ = req.action[0];
     for (int i=1; i<=MAX_JOINT_ID; i++)
@@ -484,7 +487,7 @@ void BaseModule::set_response_quat(T &res, Eigen::Quaterniond q)
 {
   Eigen::VectorXd Old_JointAngle(8);
   bool setIk_success = false;
-  int all_steps = 50;
+  int all_steps = 20;
   robotis_->calc_task_tra_.resize(all_steps, 3);
 
   robotis_->calc_slide_tra_ = Eigen::MatrixXd::Zero(all_steps, 1);
@@ -494,14 +497,23 @@ void BaseModule::set_response_quat(T &res, Eigen::Quaterniond q)
   setIk_success = robotis_->setInverseKinematics(1, all_steps, manipulator_->manipulator_link_data_[END_LINK]->orientation_, manipulator_->manipulator_link_data_[END_LINK]->phi_, Old_JointAngle);
   
   res.quaterniond.resize(8);
-  Eigen::Quaterniond goal_q;
-  goal_q.coeffs() = robotis_->ik_target_quaternion.coeffs() - q.coeffs();
+  Eigen::Quaterniond goal_q, tar_q;
+  tar_q = robotis_->ik_target_quaternion;
+  double d = q.dot(tar_q);
+  if(d<0)
+  {
+    tar_q.coeffs() *= -1;
+  }
+  goal_q.coeffs() = tar_q.coeffs() - q.coeffs();
   goal_q.coeffs() /= goal_q.norm();
   res.quaterniond[0] = goal_q.w();
   res.quaterniond[1] = goal_q.x();
   res.quaterniond[2] = goal_q.y();
   res.quaterniond[3] = goal_q.z();
-  goal_q.coeffs() = robotis_->inv_target_quaternion.coeffs() - q.coeffs();
+  tar_q = robotis_->inv_target_quaternion;
+  d = q.dot(tar_q);
+  if(d>=0) tar_q.coeffs() *= -1;
+  goal_q.coeffs() = tar_q.coeffs() - q.coeffs();
   goal_q.coeffs() /= goal_q.norm();
   res.quaterniond[4] = goal_q.w();
   res.quaterniond[5] = goal_q.x();

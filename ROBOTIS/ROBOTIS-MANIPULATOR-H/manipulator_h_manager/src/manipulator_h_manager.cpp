@@ -38,15 +38,15 @@ int main(int argc, char **argv)
   robotis_framework::RobotisController *controller = robotis_framework::RobotisController::getInstance();
 
   /* Load ROS Parameter */
-  std::string offset_file = nh.param<std::string>("offset_table", "");
-  std::string init_file   = nh.param<std::string>("init_file_path", "");
+  std::string offset_file = nh_private.param<std::string>("offset_table", "");
+  std::string init_file   = nh_private.param<std::string>("init_file_path", "");
   std::string robot_file  = nh_private.param<std::string>("robot_file_path", "");
 
   /* gazebo simulation */
-  controller->gazebo_mode_ = nh.param<bool>("gazebo", false);
+  controller->gazebo_mode_ = nh_private.param<bool>("en_sim", false);
   if (controller->gazebo_mode_ == true)
   {
-    std::string robot_name = nh.param<std::string>("gazebo_robot_name", "");
+    std::string robot_name = nh_private.param<std::string>("gazebo_robot_name", "");
     if (robot_name != "")
       controller->gazebo_robot_name_ = robot_name;
   }
