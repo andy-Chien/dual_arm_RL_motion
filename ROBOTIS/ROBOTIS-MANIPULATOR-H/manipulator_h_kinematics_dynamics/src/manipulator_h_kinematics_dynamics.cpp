@@ -64,8 +64,8 @@ ManipulatorKinematicsDynamics::ManipulatorKinematicsDynamics(TreeSelect tree)
     manipulator_link_data_[1]->center_of_mass_    = robotis_framework::getTransitionXYZ(0.0, 0.0, 0.0);
     manipulator_link_data_[1]->joint_limit_max_   =  180 * M_PI/180;
     manipulator_link_data_[1]->joint_limit_min_   = -180 * M_PI/180;
-    manipulator_link_data_[1]->train_limit_max_   =  180 * M_PI/180; //135
-    manipulator_link_data_[1]->train_limit_min_   = -180 * M_PI/180;
+    manipulator_link_data_[1]->train_limit_max_   =  90 * M_PI/180; //135
+    manipulator_link_data_[1]->train_limit_min_   = -90 * M_PI/180;
     manipulator_link_data_[1]->inertia_           = robotis_framework::getInertiaXYZ(1.0, 0.0, 0.0, 1.0, 0.0, 1.0);
 
     manipulator_link_data_[2]->name_    = "joint2";
@@ -79,7 +79,7 @@ ManipulatorKinematicsDynamics::ManipulatorKinematicsDynamics(TreeSelect tree)
     manipulator_link_data_[2]->joint_limit_max_   =   30 * M_PI/180;
     manipulator_link_data_[2]->joint_limit_min_   = -180 * M_PI/180;
     manipulator_link_data_[2]->train_limit_max_   =   30 * M_PI/180;
-    manipulator_link_data_[2]->train_limit_min_   = -180 * M_PI/180;//150
+    manipulator_link_data_[2]->train_limit_min_   = -90 * M_PI/180;//150
     manipulator_link_data_[2]->inertia_           = robotis_framework::getInertiaXYZ(1.0, 0.0, 0.0, 1.0, 0.0, 1.0);
 
     manipulator_link_data_[3]->name_    = "joint3";
@@ -922,6 +922,8 @@ bool ManipulatorKinematicsDynamics::InverseKinematics_p2p( Eigen::VectorXd goal_
   Eigen::VectorXd DH_row(4);
   Eigen::Matrix3d Modify_euler;
 
+  Eigen::Index maxRow, maxCol;
+
   modify_euler_theta = (-pi/2)*RL_prm;
   Modify_euler << cos(modify_euler_theta), -sin(modify_euler_theta), 0,
                   sin(modify_euler_theta),  cos(modify_euler_theta), 0,
@@ -1100,17 +1102,24 @@ bool ManipulatorKinematicsDynamics::InverseKinematics_p2p( Eigen::VectorXd goal_
     double dis_max = 0;
     double move_max = 0.01 + 0.04 * (manipulator_link_data_[0]->mov_speed_ / 100);
     Distance = JointAngle - Old_JointAngle;
-    Distance(2) *= 3;
-    Distance(4) *= 3;
-    Distance(6) *= 3;
+    // Distance(2) *= 3;
+    // Distance(4) *= 3;
+    // Distance(6) *= 3;
+    // std::cout<<Distance.block(0,0,1,7).cwiseAbs().maxCoeff(&maxCol)<<std::endl;
+    // std::cout<<Distance.block(0,0,1,7).cwiseAbs().maxCoeff()<<std::endl;
+    // std::cout<<Distance.block(0,0,1,7).cwiseAbs().maxCoeff(&maxRow, &maxCol)<<std::endl;
     dis_max = Distance.block(0,0,1,7).cwiseAbs().maxCoeff();
-    Distance(2) /= 3;
-    Distance(4) /= 3;
-    Distance(6) /= 3;
+    // Distance(2) /= 3;
+    // Distance(4) /= 3;
+    // Distance(6) /= 3;
     // if(fabs(Distance(5)) > 0.1) //Reduce end point displacemen
     //   JointAngle(6) = 0;comment for training
     if(dis_max > move_max)
     {
+      // Distance(2) *= 3;
+      // Distance(4) *= 3;
+      // Distance(6) *= 3;
+      // std::cout<<"max_dis is "<<Distance<<std::endl;
       manipulator_link_data_[0]->singularity_ = true;
       for (int id = 1; id <= MAX_JOINT_ID; id++)
       {

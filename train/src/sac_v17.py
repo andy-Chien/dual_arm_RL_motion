@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 import gym
 import random
-NAME = 'SAC_v17_2'
+NAME = 'SAC_v17_4'
 # SAC_v14_6 is the best no fail
 # SAC_v14_7 1024 and last is 512 no fail
 # SAC_v14_8 all of 512 has fail
@@ -22,6 +22,9 @@ NAME = 'SAC_v17_2'
 # SAC_v14_22 change reward
 # SAC_v14_23 no no fail
 # SAC_v14_25 no rev quat
+# SAC_v17_2 all range 122/64/64
+# SAC_v17_3 close fail50 and rand act, 20000up 60%
+# SAC_v17_4 open fail50
 EPS = 1e-8
 LOAD = False
 BATCH_SIZE = 256
@@ -57,8 +60,8 @@ class ValueNetwork(object):
     def step(self, obs):
         with tf.compat.v1.variable_scope(self.name):
             h1 = tf.compat.v1.layers.dense(obs, 122, tf.nn.leaky_relu, name='h1')
-            h2 = tf.compat.v1.layers.dense(h1, 64, tf.nn.leaky_relu, name='h2')
-            h3 = tf.compat.v1.layers.dense(h2, 32, tf.nn.leaky_relu, name='h3')
+            h2 = tf.compat.v1.layers.dense(h1, 122, tf.nn.leaky_relu, name='h2')
+            h3 = tf.compat.v1.layers.dense(h2, 122, tf.nn.leaky_relu, name='h3')
             # h4 = tf.compat.v1.layers.dense(h3, 1024, tf.nn.leaky_relu)
             value = tf.compat.v1.layers.dense(h3, 1)
             value = tf.squeeze(value, axis=1)
@@ -77,8 +80,8 @@ class QValueNetwork(object):
         with tf.compat.v1.variable_scope(self.name, reuse=reuse):
             input = tf.concat([obs, action], axis=-1)
             h1 = tf.compat.v1.layers.dense(input, 138, tf.nn.leaky_relu, name='h1')
-            h2 = tf.compat.v1.layers.dense(h1, 64, tf.nn.leaky_relu, name='h2')
-            h3 = tf.compat.v1.layers.dense(h2, 32, tf.nn.leaky_relu, name='h3')
+            h2 = tf.compat.v1.layers.dense(h1, 138, tf.nn.leaky_relu, name='h2')
+            h3 = tf.compat.v1.layers.dense(h2, 138, tf.nn.leaky_relu, name='h3')
             # h4 = tf.compat.v1.layers.dense(h3, 1024, tf.nn.leaky_relu)
             q_value = tf.compat.v1.layers.dense(h3, 1)
             q_value = tf.squeeze(q_value, axis=1)
@@ -97,8 +100,8 @@ class ActorNetwork(object):
     def step(self, obs, log_std_min=-20, log_std_max=2):
         with tf.compat.v1.variable_scope(self.name, reuse=tf.compat.v1.AUTO_REUSE):
             h1 = tf.compat.v1.layers.dense(obs, 122, tf.nn.leaky_relu, name='h1')
-            h2 = tf.compat.v1.layers.dense(h1, 64, tf.nn.leaky_relu, name='h2')
-            h3 = tf.compat.v1.layers.dense(h2, 32, tf.nn.leaky_relu, name='h3')
+            h2 = tf.compat.v1.layers.dense(h1, 122, tf.nn.leaky_relu, name='h2')
+            h3 = tf.compat.v1.layers.dense(h2, 122, tf.nn.leaky_relu, name='h3')
             # h4 = tf.compat.v1.layers.dense(h3, 128, tf.nn.leaky_relu, name='h4')
             # h5 = tf.compat.v1.layers.dense(h4, 128, tf.nn.leaky_relu, name='h5')
             mu = tf.compat.v1.layers.dense(h3, self.act_dim, None, name='mu')
@@ -200,7 +203,7 @@ class SAC(object):
         target_init = [tf.compat.v1.assign(tv, v)
                        for v, tv in zip(tf.compat.v1.global_variables(self.name+'Value'), tf.compat.v1.global_variables(self.name+'Target_Value'))]
         
-        gpu_options = tf.compat.v1.GPUOptions(per_process_gpu_memory_fraction=0.4)
+        gpu_options = tf.compat.v1.GPUOptions(per_process_gpu_memory_fraction=0.8)
         self.sess = tf.compat.v1.Session(config=tf.compat.v1.ConfigProto(gpu_options=gpu_options))
         # new_graph = tf.Graph()
         # new_graph.seed = SEED[seed]
@@ -217,9 +220,9 @@ class SAC(object):
         self.saver = tf.compat.v1.train.Saver()
         self.path = '/home/iclab/c_a_ws/src/train/weights/'+ NAME +'/'+ self.name
         # if 'right' in self.name:
-        #     self.saver.restore(self.sess, tf.train.latest_checkpoint(self.path + '92'))
+        #     self.saver.restore(self.sess, tf.train.latest_checkpoint(self.path + '55'))
         # else:
-        #     self.saver.restore(self.sess, tf.train.latest_checkpoint(self.path + '89'))
+        #     self.saver.restore(self.sess, tf.train.latest_checkpoint(self.path + '55'))
         self.sess.run(tf.compat.v1.global_variables_initializer())
         self.sess.run(target_init)
 

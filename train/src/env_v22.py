@@ -16,7 +16,7 @@ from gazebo_msgs.msg import ModelState
 class Test(core.Env):
     ACTION_VEC_TRANS = 1/180
     ACTION_ORI_TRANS = 1/60
-    ACTION_PHI_TRANS = 1/60
+    ACTION_PHI_TRANS = 1/30
 
     NAME = ['/right_', '/left_', '/right_']
 
@@ -66,12 +66,12 @@ class Test(core.Env):
         # self.dis_pos
         self.cc = CheckCollision()
         self.collision = False
-        self.range_cnt = 0.3 #0.85 #0.6
+        self.range_cnt = 0.5+0.1*workers #0.5+0.1*workers #0.85 #0.6 #1.0
         self.rpy_range = 0.2*(workers+1) #0.8 #0.2*(workers+1)
         self.done = True
         self.s_cnt = 0
-        self.goal_err = 0.08 #0.015 #0.08
-        self.ori_err = 0.4 #0.2  #0.4
+        self.goal_err = 0.015 #0.015 #0.08
+        self.ori_err = 0.2 #0.2  #0.4
         self.quat_inv = False
         self.goal_angle = []
         self.object_pub = 0
@@ -81,7 +81,7 @@ class Test(core.Env):
             queue_size=1,
             latch=True
         )
-        self.seed(288*(workers+1) + 467*(name+1))
+        self.seed(287*(workers+1) + 467*(name+1))
         # self.seed(12*(workers+1) + 32*(name+1))
         # self.seed(128*(workers+1) + 146*(name+1))
         self.reset()
@@ -348,8 +348,8 @@ class Test(core.Env):
                 if not self.done:
                     self.done = True
                     self.s_cnt += 1
-                    self.range_cnt = self.range_cnt + 0.001 if self.range_cnt < 0.85 else 0.85 #0.004
-                    self.rpy_range = self.rpy_range + 0.001 if self.rpy_range < 0.999 else 1 #0.002
+                    self.range_cnt = self.range_cnt + 0.0005 if self.range_cnt < 0.999 else 1.0 #0.004
+                    self.rpy_range = self.rpy_range + 0.001 if self.rpy_range < 0.999 else 1.0 #0.002
                     self.goal_err = self.goal_err*0.993 if self.goal_err > 0.015 else 0.015
                     self.ori_err = self.ori_err*0.993 if self.ori_err > 0.2 else 0.2
                 return True

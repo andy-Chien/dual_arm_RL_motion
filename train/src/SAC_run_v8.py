@@ -26,9 +26,9 @@ TRAIN_CNT = [0, 0]
 EP = [0, 0]
 WORKS = 4
 SUCCESS_ARRAY = np.zeros([2,500])
-GOAL_RATE = [70, 70]
+GOAL_RATE = [60, 60]
 ACTION_FLAG = [False, False]
-SD = 2.0
+SD = 1.5
 
 def worker(name, workers, agent):
     global SUCCESS_ARRAY, ACTION_FLAG, SAVE, COUNTER, EP, SD
@@ -73,7 +73,7 @@ def worker(name, workers, agent):
             WORKER_EVENT[name].wait()
             
             a = agent.choose_action(s)
-            a += np.random.normal(0, SD, 8)
+            # a += np.random.normal(0, SD, 8)
             # rd = np.random.rand()
             # a *= (rd*3+0.5)
             s_, r, done, success, fail = env.step(a)
@@ -84,6 +84,7 @@ def worker(name, workers, agent):
                 s__arr.append(s_)
                 done_arr.append(done)
                 # agent.replay_buffer[workers].store_transition(s, a, r, s_, done)
+                #============================================
                 if fail:
                     if first_fail:
                         first_fail = False
@@ -91,6 +92,7 @@ def worker(name, workers, agent):
                             if k>=len(r_arr):
                                 break
                             r_arr[-k-1] -= (2-(k*0.04))
+                #============================================
                 #     else:
                 #         r_arr[-1] -= 2
 
@@ -102,11 +104,13 @@ def worker(name, workers, agent):
             ep_reward += r
 
             COUNTER[name]+=1
-            if COUNTER[name] >= BATTH_SIZE*64 and COUNTER[name]%(32*WORKS) == 0:  #32
+            if COUNTER[name] >= BATTH_SIZE*64 and COUNTER[name]%(8*WORKS) == 0:  #32
                 WORKER_EVENT[name].clear()
-                for _ in range(2+int(ep/1000)):
+                for traing_times in range(2+int(ep/1000)):
                     agent.learn(TRAIN_CNT[name])
                     TRAIN_CNT[name]+=1
+                    if traing_times > 12:
+                        break
                 WORKER_EVENT[name].set()
                 
                 # LEARN_EVENT[name].set()
@@ -135,7 +139,7 @@ def worker(name, workers, agent):
             SAVE[name] = True
         else:
             SAVE[name] = False
-        agent.replay_buffer[workers].store_eprwd(ep_reward*j/100)
+        agent.replay_buffer[workers].store_eprwd(ep_reward/j)
         
         if workers == 0 and SAVE[name]:
             SUCCESS_ARRAY[name] = np.zeros([500])
@@ -154,7 +158,7 @@ def save(agent, name):
     save_path = agent.saver.save(agent.sess, ckpt_path, write_meta_graph=False)
     print("\nSave Model %s\n" % save_path)
     if GOAL_RATE[name] < 90:
-        GOAL_RATE[name] += 3
+        GOAL_RATE[name] += 5
     else:
         GOAL_RATE[name] += 2
     if GOAL_RATE[name] > 100:

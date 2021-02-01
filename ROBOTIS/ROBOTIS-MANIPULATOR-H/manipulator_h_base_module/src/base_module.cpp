@@ -199,7 +199,7 @@ bool BaseModule::move_cmd_callback(train::move_cmd::Request &req, train::move_cm
 
   robotis_->is_ik = true;
   slide_->goal_slide_pos = 0;
-  manipulator_->manipulator_link_data_[0]->mov_speed_ = 800;
+  manipulator_->manipulator_link_data_[0]->mov_speed_ = 400;   //singularity per smp_time move max is less then 0.2
   limit_success = manipulator_->limit_check(target_positoin, target_rotation);
   if(limit_success)
     ik_success = manipulator_->inverseKinematics(END_LINK, target_positoin, target_rotation, target_phi, slide_->goal_slide_pos, false);
@@ -216,6 +216,10 @@ bool BaseModule::move_cmd_callback(train::move_cmd::Request &req, train::move_cm
     res.curr_angle[i] = manipulator_->manipulator_link_data_[i]->joint_angle_;
   res.success = ik_success;
   res.singularity = manipulator_->manipulator_link_data_[0]->singularity_;
+  if(manipulator_->manipulator_link_data_[0]->singularity_)
+    std::cout<<"fuck_singularity:::"<<std::endl;
+  // if (res.singularity)
+    // std::cout<<"fuck_singularity:::"<<res.singularity<<"!!!"<<manipulator_->manipulator_link_data_[0]->singularity_<<std::endl;
   res.quat_inv = robotis_->is_inv;
   return true;
 }
