@@ -1,15 +1,4 @@
-# wrs2018
-TKU ICLab join 2018 WRS in Tokoyo
-
-youjun well done!!
-
-```bash
-$ cd <timda_ws>/src/
-$ source devel/setup.bash
-```
-
-# TIMDA IBM Assistant Web UI
-
+# Motion Planner for Dual-Arm Robot
 ## Necessary Packages
 ```bash
 $ sudo apt-get install ros-<distro>-qt-build
