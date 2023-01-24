@@ -2,7 +2,7 @@
 
 ### [Paper](https://ieeexplore.ieee.org/abstract/document/9345768) | [Video - training](https://youtube.com/shorts/92U7JFCy0Ck?feature=share) | [Video - implement](https://youtu.be/DZbsRPvqpTE)
 
-![implement on real robot](https://media.giphy.com/media/qf35rGREK5WPP3DJja/giphy.gif)
+![implement on real robot](implement.gif)
 
 ### Environment
   Ubuntu 16.04
