@@ -1,41 +1,26 @@
-# Motion Planner for Dual-Arm Robot
-## Necessary Packages
+# Motion controller for Dual-Arm Robot
+
+### [Paper](https://ieeexplore.ieee.org/abstract/document/9345768) | [Video - training](https://youtube.com/shorts/92U7JFCy0Ck?feature=share) | [Video - implement](https://youtu.be/DZbsRPvqpTE)
+
+![implement on real robot](https://media.giphy.com/media/qf35rGREK5WPP3DJja/giphy.gif)
+
+### Environment
+  Ubuntu 16.04
+  ROS kinetic
+  Tensorflow 1.xx
+
+## Install Packages
 ```bash
 $ sudo apt-get install ros-<distro>-qt-build
 $ sudo apt-get install ros-<distro>-rosbridge-server
 $ sudo apt-get install ros-<distro>-rosbridge-server
-$ sudo apt-get install ros-kinetic-rosserial-python ros-kinetic-rosserial-arduino
+$ sudo apt-get install ros-<distro>-rosserial-python ros-kinetic-rosserial-arduino
 # see linear_motion README.md to install libmodbus
-# install nvm, nodejs, npm
-$ git clone git://github.com/creationix/nvm.git ~/.nvm
-$ echo ". ~/.nvm/nvm.sh" >> ~/.bashrc
-$ source ~/.bashrc
-$ nvm install 8.12.0
-$ nvm alias default 8.12.0
-$ curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.2/install.sh | bash 
 ```
 
-## Build-up
+## Build
 ```bash
-$ cd <timda_ws>/
+$ cd <work_space>/
 $ catkin_make --pkg dual_arm_control
 $ catkin_make
-```
-### Installization
-```bash
-$ cd <timda_ws>/src/web/myapp
-$ npm install
-```
-### Run Web Server
-```bash
-$ node index.js
-```
-### Run Assistant Strategy
-```bash
-$ rosrun strategy custom_server.py
-```
-### Rotate Touch Screen
-```bash
-$ cd <timda_ws>/src/nodejs_pkg/web/script
-$ ./rotate_desktop.sh [normal|inverted|right|left] [revert_seconds]
 ```
