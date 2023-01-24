@@ -2,7 +2,7 @@
 
 ### [Paper](https://ieeexplore.ieee.org/abstract/document/9345768) | [Video - training](https://youtube.com/shorts/92U7JFCy0Ck?feature=share) | [Video - implement](https://youtu.be/DZbsRPvqpTE)
 
-![implement on real robot](implement.gif)
+![implement on real robot](implement.gif) ![training in sumulator](training.gif)
 
 ### Environment
   Ubuntu 16.04
